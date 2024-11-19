@@ -7,7 +7,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sona/application/theme/colors.dart';
 import 'package:sona/application/widgets/sona_scaffold.dart';
-import 'package:sona/features/chatbot/services/chatbot_client.dart';
+import 'package:sona/features/chatbot/chatbot_client.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;

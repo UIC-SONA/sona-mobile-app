@@ -21,7 +21,7 @@ class MenuOptions extends StatelessWidget {
               MenuButton(
                 label: 'Tips',
                 icon: Icons.lightbulb,
-                onPressed: () => Navigator.of(context).pushNamed('/information'),
+                onPressed: () => Navigator.of(context).pushNamed('/tips'),
               ),
               MenuButton(
                 label: 'Foro',

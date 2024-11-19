@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:sona/application/common/auth/oauth2.dart';
 import 'package:sona/application/common/auth/oauth2.dart' as oauth2;
-import 'package:sona/application/common/utils/full_state_widget.dart';
+import 'package:sona/application/widgets/full_state_widget.dart';
+import 'package:sona/application/theme/backgrounds.dart';
 
 class SonaAppBar extends StatelessWidget implements PreferredSizeWidget {
   //
@@ -254,11 +255,13 @@ class SonaScaffold extends StatelessWidget {
         showLeading: showLeading,
       ),
       drawer: showLeading ? const SonaDrawer() : null,
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: body,
+      body: Background(
+        child: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: body,
+            ),
           ),
         ),
       ),

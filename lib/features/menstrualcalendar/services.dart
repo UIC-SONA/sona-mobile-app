@@ -4,7 +4,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sona/application/common/auth/oauth2.dart' as oauth2;
 import 'package:sona/application/common/http/http.dart';
 import 'package:sona/application/common/models/models.dart';
-import 'package:sona/features/menstrualcalendar/models/models.dart';
+
+import 'models.dart';
 
 final apiUri = Uri.parse(dotenv.env['API_URI']!);
 

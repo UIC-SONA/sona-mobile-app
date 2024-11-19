@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sona/application/common/utils/full_state_widget.dart';
+import 'package:sona/application/widgets/full_state_widget.dart';
 
 class GridMenu extends StatelessWidget {
   final List<MenuButton> buttons;

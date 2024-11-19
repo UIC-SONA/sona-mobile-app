@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'package:sona/application/common/utils/full_state_widget.dart';
+import 'package:sona/application/widgets/full_state_widget.dart';
 
 typedef BytesResolver = Future<Uint8List> Function();
 

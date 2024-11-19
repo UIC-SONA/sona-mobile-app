@@ -18,10 +18,10 @@ Future<Message> signup({
     method: HttpMethod.post,
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode({
-      'username': username,
-      'password': password,
       'firstName': firstName,
       'lastName': lastName,
+      'username': username,
+      'password': password,
       'email': email,
     }),
   );

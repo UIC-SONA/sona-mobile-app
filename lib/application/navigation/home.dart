@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sona/application/theme/backgrounds.dart';
 import 'package:sona/application/theme/colors.dart';
 import 'package:sona/application/widgets/menu.dart';
 
@@ -13,32 +14,34 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset('assets/images/logo.png', width: MediaQuery.of(context).size.height * 0.3),
-                const SizedBox(height: 30),
-                _text(),
-                const SizedBox(height: 30),
-                GridMenu(
-                  buttons: [
-                    MenuButton(
-                      label: 'Calendario Menstrual',
-                      icon: Icons.calendar_today,
-                      onPressed: () => Navigator.of(context).pushNamed('/menstrual-calendar'),
-                    ),
-                    MenuButton(
-                      label: 'Información Didáctica',
-                      icon: Icons.menu_book,
-                      onPressed: () => Navigator.of(context).pushNamed('/information'),
-                    ),
-                  ],
-                ),
-              ],
+      body: Background(
+        child: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset('assets/images/logo.png', width: MediaQuery.of(context).size.height * 0.3),
+                  const SizedBox(height: 30),
+                  _text(),
+                  const SizedBox(height: 30),
+                  GridMenu(
+                    buttons: [
+                      MenuButton(
+                        label: 'Calendario Menstrual',
+                        icon: Icons.calendar_today,
+                        onPressed: () => Navigator.of(context).pushNamed('/menstrual-calendar'),
+                      ),
+                      MenuButton(
+                        label: 'Información Didáctica',
+                        icon: Icons.menu_book,
+                        onPressed: () => Navigator.of(context).pushNamed('/information'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

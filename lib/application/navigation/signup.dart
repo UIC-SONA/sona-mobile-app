@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:sona/application/common/http/http.dart';
-import 'package:sona/application/common/models/models.dart';
-import 'package:sona/application/common/utils/full_state_widget.dart';
+import 'package:sona/application/common/utils/dialogs.dart';
+import 'package:sona/application/widgets/full_state_widget.dart';
 import 'package:sona/application/widgets/sized_text_button.dart';
 import 'package:sona/application/common/auth/users.dart' as users;
+
+import '../widgets/loading_button.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -13,9 +14,12 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends FullState<SignUpPage> {
+  //
+  late final _signupState = fetchState(users.signup);
+
   final _formKey = GlobalKey<FormState>();
 
-  final _nameController = TextEditingController();
+  final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _userNameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -24,8 +28,6 @@ class _SignUpPageState extends FullState<SignUpPage> {
 
   var _obscurePassword = true;
   var _obscureConfirmPassword = true;
-
-  var _loading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +68,8 @@ class _SignUpPageState extends FullState<SignUpPage> {
       child: Column(
         children: [
           TextFormField(
-            controller: _nameController,
+            controller: _firstNameController,
+            enabled: !_signupState.isLoading,
             decoration: const InputDecoration(
               labelText: 'Nombre',
               prefixIcon: Icon(Icons.person),
@@ -75,6 +78,7 @@ class _SignUpPageState extends FullState<SignUpPage> {
           const SizedBox(height: 10),
           TextFormField(
             controller: _lastNameController,
+            enabled: !_signupState.isLoading,
             decoration: const InputDecoration(
               labelText: 'Apellido',
               prefixIcon: Icon(Icons.person),
@@ -83,6 +87,7 @@ class _SignUpPageState extends FullState<SignUpPage> {
           const SizedBox(height: 10),
           TextFormField(
             controller: _userNameController,
+            enabled: !_signupState.isLoading,
             decoration: const InputDecoration(
               labelText: 'Nombre de usuario',
               prefixIcon: Icon(Icons.person),
@@ -91,6 +96,7 @@ class _SignUpPageState extends FullState<SignUpPage> {
           const SizedBox(height: 10),
           TextFormField(
             controller: _emailController,
+            enabled: !_signupState.isLoading,
             decoration: const InputDecoration(
               labelText: 'Email',
               prefixIcon: Icon(Icons.email),
@@ -99,6 +105,7 @@ class _SignUpPageState extends FullState<SignUpPage> {
           const SizedBox(height: 10),
           TextFormField(
             controller: _passwordController,
+            enabled: !_signupState.isLoading,
             obscureText: _obscurePassword,
             decoration: InputDecoration(
               labelText: 'Password',
@@ -112,6 +119,7 @@ class _SignUpPageState extends FullState<SignUpPage> {
           const SizedBox(height: 10),
           TextFormField(
             controller: _confirmPasswordController,
+            enabled: !_signupState.isLoading,
             obscureText: _obscureConfirmPassword,
             decoration: InputDecoration(
               labelText: 'Confirmar Password',
@@ -123,8 +131,10 @@ class _SignUpPageState extends FullState<SignUpPage> {
             ),
           ),
           const SizedBox(height: 30),
-          ElevatedButton(
-            onPressed: _register,
+          LoadingButton(
+            icon: const Icon(Icons.person_add),
+            onPressed: _singUp,
+            loading: _signupState.isLoading,
             child: const Text(
               'Registrarse',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -135,39 +145,30 @@ class _SignUpPageState extends FullState<SignUpPage> {
     );
   }
 
-  Future<void> _register() async {
-    if (!_formKey.currentState!.validate()) {
+  Future<void> _singUp() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    await _signupState.fetch(
+      null,
+      {
+        #username: _userNameController.text,
+        #password: _passwordController.text,
+        #firstName: _firstNameController.text,
+        #lastName: _lastNameController.text,
+        #email: _emailController.text,
+      },
+    );
+
+    if (_signupState.hasError) {
+      showAlertErrorDialog(this, _signupState.error!);
       return;
     }
 
-    _loading = true;
-    refresh();
-
-    try {
-      final message = await users.signup(
-        username: _userNameController.text,
-        password: _passwordController.text,
-        firstName: _nameController.text,
-        lastName: _lastNameController.text,
-        email: _emailController.text,
-      );
-
-      showAlertDialog(
-        title: 'Registro Exitoso',
-        message: message.message,
-        actions: {'Aceptar': () => Navigator.of(context).pushReplacementNamed('/login')},
-      );
-    } on HttpException catch (error) {
-      if (error.response != null) {
-        var body = error.response!.getBody<ProblemDetails>();
-        showAlertDialog(title: body.title, message: body.detail);
-      } else {
-        showAlertDialog(title: 'Error', message: error.toString());
-      }
-    } finally {
-      _loading = false;
-      refresh();
-    }
+    showAlertDialog(
+      title: 'Registro Exitoso',
+      message: _signupState.data!.message,
+      actions: {'Aceptar': () => Navigator.of(context).pushReplacementNamed('/login')},
+    );
   }
 
   void _togglePasswordVisibility() {

@@ -12,7 +12,7 @@ class LoadingButton extends StatefulWidget {
   final bool loading;
   final Widget child;
   final Widget? icon;
-  final Widget loadingIndicator;
+  final Widget? loadingIndicator;
 
   const LoadingButton({
     super.key,
@@ -27,7 +27,7 @@ class LoadingButton extends StatefulWidget {
     this.loading = false,
     required this.child,
     this.icon,
-    this.loadingIndicator = const CircularProgressIndicator(),
+    this.loadingIndicator,
   });
 
   @override
@@ -37,25 +37,59 @@ class LoadingButton extends StatefulWidget {
 class _LoadingButtonState extends State<LoadingButton> {
   @override
   Widget build(BuildContext context) {
-    final loading = widget.loading;
+    Color iconColor = Theme.of(context).colorScheme.onPrimary; // Color del indicador de carga según el tema
+
+    Widget loadingWidget = widget.loadingIndicator ??
+        SizedBox(
+          width: 24.0,
+          height: 24.0,
+          child: CircularProgressIndicator(
+            color: iconColor,
+            strokeWidth: 2.2,
+          ),
+        );
+
     return ElevatedButton(
-      onPressed: loading ? null : widget.onPressed,
-      onLongPress: loading ? null : widget.onLongPress,
+      onPressed: widget.loading ? null : widget.onPressed,
+      onLongPress: widget.loading ? null : widget.onLongPress,
       onHover: widget.onHover,
       onFocusChange: widget.onFocusChange,
       style: widget.style,
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
       clipBehavior: widget.clipBehavior,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (loading) widget.loadingIndicator else
-            if (widget.icon != null) widget.icon!,
-          if (loading || widget.icon != null) const SizedBox(width: 4),
-          widget.child,
-        ],
-      ),
+      child: widget.loading
+          ? Stack(
+              alignment: Alignment.center, // Centra el indicador de carga
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.icon != null) ...[
+                      loadingWidget,
+                      const SizedBox(width: 8),
+                      widget.child,
+                    ] else ...[
+                      loadingWidget,
+                      Opacity(
+                        opacity: 0.0, // Hace invisible el child
+                        child: widget.child,
+                      ),
+                    ]
+                  ],
+                ),
+              ],
+            )
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.icon != null) ...[
+                  widget.icon!,
+                  const SizedBox(width: 8),
+                ],
+                widget.child,
+              ],
+            ),
     );
   }
 }
