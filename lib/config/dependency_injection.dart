@@ -27,6 +27,7 @@ void setupDependencies() {
   injector.registerSingleton<ChatBotService>(() => ApiChatBotService(authProvider: authProvider));
   injector.registerSingleton<TipService>(() => ApiTipService(authProvider: authProvider));
   injector.registerSingleton<UserService>(() => ApiUserService(authProvider: authProvider));
+  injector.registerSingleton<MenstrualCalendarService>(() => ApiMenstrualCalendarService(authProvider: authProvider));
 
   //Router
   injector.registerSingleton<AuthGuard>(() => AuthGuard(authProvider: authProvider));

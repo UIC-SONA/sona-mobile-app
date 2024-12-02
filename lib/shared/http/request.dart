@@ -11,8 +11,7 @@ import 'types.dart';
 const Duration kHttpRequestTimeout = Duration(seconds: 60);
 final Logger _log = Logger(level: Level.debug);
 
-Future<Response> request(
-  Uri url, {
+Future<Response> request(Uri url, {
   HttpMethod method = HttpMethod.get,
   Object? body,
   Map<String, String>? headers,

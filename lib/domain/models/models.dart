@@ -2,5 +2,5 @@ export 'menstrual_cycle.dart';
 export 'message.dart';
 export 'problem_details.dart';
 export 'promp_response.dart';
-import 'tip.dart';
+export 'tip.dart';
 export 'user.dart';

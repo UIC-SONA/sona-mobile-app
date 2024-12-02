@@ -7,6 +7,7 @@ import 'package:sona/domain/models/user.dart';
 import 'package:sona/domain/services/auth.dart';
 import 'package:sona/shared/constants.dart';
 import 'package:sona/shared/http/http.dart';
+import 'package:sona/shared/schemas/page.dart';
 
 abstract class UserService {
   //
@@ -24,7 +25,11 @@ abstract class UserService {
 
   Future<Message> deleteProfilePicture();
 
-  Future<List<User>> users();
+  Future<List<User>> list([String? search]);
+
+  Future<Page<User>> page([PageQuery? query]);
+
+  Future<User> find(int id);
 }
 
 class ApiUserService implements UserService {
@@ -95,14 +100,38 @@ class ApiUserService implements UserService {
   }
 
   @override
-  Future<List<User>> users() async {
+  Future<List<User>> list([String? search]) async {
     final response = await request(
-      apiUri.replace(path: '/chat/users'),
+      apiUri.replace(path: '/', queryParameters: {'search': search}),
       client: authProvider.client!,
       method: HttpMethod.get,
       headers: {'Content-Type': 'application/json'},
     );
 
     return response.getBody<List<User>>();
+  }
+
+  @override
+  Future<Page<User>> page([PageQuery? query]) async {
+    final response = await request(
+      apiUri.replace(path: "/page", queryParameters: query?.toJson()),
+      client: authProvider.client!,
+      method: HttpMethod.get,
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    return response.getBody<PageMap>().as<User>();
+  }
+
+  @override
+  Future<User> find(int id) async {
+    final response = await request(
+      apiUri.replace(path: '/$id'),
+      client: authProvider.client!,
+      method: HttpMethod.get,
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    return response.getBody<User>();
   }
 }

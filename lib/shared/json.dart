@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:sona/shared/validation/map_validations.dart';
 
-
 typedef FromJson<T> = T Function(dynamic json);
 typedef ToJson<T> = dynamic Function(T value);
 typedef FromJsonMap<T> = T Function(Map<String, dynamic> json);
@@ -46,8 +45,13 @@ abstract final class Json {
   /// ```
   ///
   static T deserialize<T>(String json) {
-    if (T == Map || T == List<Map>) return jsonDecode(json) as T;
-    return _JsonCodec.get<T>().fromJson(jsonDecode(json));
+    return deserializeDecoded<T>(jsonDecode(json));
+  }
+
+  static T deserializeDecoded<T>(dynamic json) {
+    final decoded = jsonDecode(json);
+    if (T == Map || T == List<Map>) return decoded as T;
+    return _JsonCodec.get<T>().fromJson(decoded);
   }
 
   /// METHOD TO REGISTER SERIALIZATION AND DESERIALIZATION FOR A TYPE
@@ -208,9 +212,11 @@ class _JsonCodec<T> {
     if (T == dynamic) {
       throw JsonCodecException('Type dynamic not supported for serialization', T);
     }
+
     if (T == List) {
       throw JsonCodecException('Type List not supported for serialization', T);
     }
+
     if (coders.any((element) => element.isType(T))) {
       throw JsonCodecException('Type $T already registered', T);
     }

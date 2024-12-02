@@ -7,6 +7,7 @@ import 'package:sona/config/dependency_injection.dart';
 
 import 'package:sona/domain/models/menstrual_cycle.dart';
 import 'package:sona/domain/services/menstrual_calendar.dart';
+import 'package:sona/shared/errors.dart';
 import 'package:sona/shared/extensions.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
@@ -261,7 +262,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
       Navigator.of(context).pop();
       showSnackBarSuccess(context, 'Datos guardados');
     } catch (e) {
-      if (mounted) showSnackBarFromError(context, error: e, errorDetailExtractor: httpErrorDetailExtractor);
+      if (mounted) showSnackBarFromError(context, error: e);
     }
   }
 
@@ -276,7 +277,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
       refresh();
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
-      if (mounted) showSnackBarFromError(context, error: e, errorDetailExtractor: httpErrorDetailExtractor);
+      if (mounted) showSnackBarFromError(context, error: e);
     }
   }
 

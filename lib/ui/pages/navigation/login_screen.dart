@@ -200,13 +200,15 @@ class _LoginScreenState extends FullState<LoginScreen> {
 
     await _loginState.fetch([email, password]);
 
+    if (!mounted) return;
+
     if (_loginState.hasError) {
       final error = _loginState.error!;
       final message = error.toString();
       if (message.contains('invalid_grant')) {
-        showAlertDialog(title: 'Error', message: 'Credenciales inválidas');
+        showAlertDialog(context, title: 'Error', message: 'Credenciales inválidas');
       } else {
-        showAlertErrorDialog(this, error: error);
+        showAlertErrorDialog(context, error: error);
       }
       return;
     }

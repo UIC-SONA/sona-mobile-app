@@ -1,28 +1,28 @@
 import 'dart:async';
-import 'dart:ui' show VoidCallback;
 
 class Debouncing {
   final Duration duration;
-  final VoidCallback callback;
+  final void Function() callback;
   Timer? _timer;
 
-  Debouncing({
-    required this.duration,
-    required this.callback,
-  });
+  Debouncing({required this.duration, required this.callback});
 
   void _call() {
     if (_timer?.isActive ?? false) _timer?.cancel();
     _timer = Timer(duration, callback);
   }
 
-  VoidCallback get listenner => _call;
+  void Function() get listenner => _call;
 
-  factory Debouncing.debounce(Duration duration, VoidCallback callback) {
+  factory Debouncing.debounce(Duration duration, void Function() callback) {
     return Debouncing(duration: duration, callback: callback);
+  }
+
+  static void Function() build(Duration duration, void Function() callback) {
+    return Debouncing.debounce(duration, callback).listenner;
   }
 }
 
-extension DebouncingExtension on VoidCallback {
-  VoidCallback debounce(Duration duration) => Debouncing.debounce(duration, this).listenner;
+extension DebouncingExtension on void Function() {
+  void Function() debounce(Duration duration) => Debouncing.build(duration, this);
 }

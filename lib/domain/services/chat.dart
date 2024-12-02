@@ -8,6 +8,4 @@ class ApiChatService implements ChatService {
   final AuthProvider authProvider;
 
   ApiChatService({required this.authProvider});
-
-
 }

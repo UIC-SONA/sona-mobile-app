@@ -7,6 +7,7 @@ import 'package:sona/config/dependency_injection.dart';
 
 import 'package:sona/domain/models/tip.dart';
 import 'package:sona/domain/services/tip.dart';
+import 'package:sona/shared/errors.dart';
 
 import 'package:sona/ui/widgets/full_state_widget.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
@@ -68,7 +69,8 @@ class _TipsScreenState extends FullState<TipsScreen> {
   Widget _buildTipsList() {
     return _activeTipsState.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error) => Center(child: Text(error.toString())),
+      initial: () => Container(),
+      error: (error) => Center(child: Text(extractError(error).message)),
       data: (tips) => RefreshIndicator(
         onRefresh: _activeTipsState.fetch,
         child: ListView.builder(
@@ -160,6 +162,7 @@ class _TipsScreenState extends FullState<TipsScreen> {
     return FutureBuilder<Uint8List>(
       future: _service.tipImage(tip.id),
       builder: (context, snapshot) {
+
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
             child: CircularProgressIndicator(),

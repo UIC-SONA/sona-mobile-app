@@ -6,7 +6,7 @@ enum Authority {
   user;
 
   static Authority fromString(String value) {
-    return Authority.values.firstWhere((e) => e.toString().equalsIgnoreCase(value));
+    return Authority.values.firstWhere((e) => e.name.equalsIgnoreCase(value));
   }
 }
 
@@ -51,18 +51,18 @@ class UserRepresentation {
 }
 
 class User {
-  final String id;
+  final int id;
   final String keycloakId;
-  final String profilePicturePath;
+  final String? profilePicturePath;
   final UserRepresentation representation;
-  final Authority authority;
+  final List<Authority> authorities;
 
   User({
     required this.id,
     required this.keycloakId,
     required this.profilePicturePath,
     required this.representation,
-    required this.authority,
+    required this.authorities,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -71,7 +71,7 @@ class User {
       keycloakId: json['keycloakId'],
       profilePicturePath: json['profilePicturePath'],
       representation: UserRepresentation.fromJson(json['representation']),
-      authority: Authority.fromString(json['authority']),
+      authorities: List.from(json['authorities']).map((e) => Authority.fromString(e)).toList(),
     );
   }
 
@@ -81,7 +81,7 @@ class User {
       'keycloakId': keycloakId,
       'profilePicturePath': profilePicturePath,
       'representation': representation.toJson(),
-      'authority': authority.toString(),
+      'authorities': authorities,
     };
   }
 }
@@ -112,5 +112,16 @@ class UserInfo {
       familyName: json['family_name'],
       email: json['email'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'sub': sub,
+      'name': name,
+      'preferred_username': preferredUsername,
+      'given_name': givenName,
+      'family_name': familyName,
+      'email': email,
+    };
   }
 }

@@ -81,15 +81,22 @@ class UsersPageView extends StatefulWidget {
 
 class _UsersPageViewState extends FullState<UsersPageView> {
   final _userService = injector.get<UserService>();
-  late final _users = fetchState(([positionalArguments, namedArguments]) => _userService.users());
+  late final _usersState = fetchState(([positionalArguments, namedArguments]) => _userService.list());
+
+  @override
+  void initState() {
+    super.initState();
+    _usersState.fetch();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return _users.when(
+    return _usersState.when(
       loading: () => const Center(child: CircularProgressIndicator()),
+      initial: () => Container(),
       error: (error) => Center(child: Text(error.toString())),
       data: (users) => RefreshIndicator(
-        onRefresh: _users.fetch,
+        onRefresh: _usersState.fetch,
         child: ListView.builder(
           itemCount: users.length,
           itemBuilder: (context, index) {
@@ -100,7 +107,7 @@ class _UsersPageViewState extends FullState<UsersPageView> {
               title: Text('${representation.firstName} ${representation.lastName}'),
               subtitle: Text(representation.username),
               leading: CircleAvatar(
-                backgroundImage: NetworkImage(user.profilePicturePath),
+                backgroundImage: user.profilePicturePath != null ? NetworkImage(user.profilePicturePath!) : null,
               ),
               onTap: () {},
             );

@@ -8,7 +8,7 @@ import 'package:sona/ui/theme/theme.dart';
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
-  await setupJsonCodecs();
+  setupJsonCodecs();
   setupDependencies();
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);

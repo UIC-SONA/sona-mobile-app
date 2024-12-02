@@ -173,12 +173,15 @@ class _SignUpScreenState extends FullState<SignUpScreen> {
       },
     );
 
+    if (!mounted) return;
+
     if (_signUpState.hasError) {
-      showAlertErrorDialog(this, error: _signUpState.error!, errorDetailExtractor: httpErrorDetailExtractor);
+      showAlertErrorDialog(context, error: _signUpState.error!);
       return;
     }
 
     showAlertDialog(
+      context,
       title: 'Registro Exitoso',
       message: _signUpState.data!.message,
       actions: {'Aceptar': () => AutoRouter.of(context).replace(const LoginRoute())},

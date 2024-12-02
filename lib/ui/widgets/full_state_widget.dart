@@ -14,31 +14,6 @@ abstract class FullState<T extends StatefulWidget> extends State<T> {
     if (mounted) setState(fn);
   }
 
-  // Muestra un cuadro de diálogo de alerta
-  Future<T2?> showAlertDialog<T2>({
-    required String title,
-    required String message,
-    Map<String, VoidCallback>? actions,
-  }) {
-    if (!mounted) return Future.value();
-    return showDialog<T2>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Center(child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold))),
-          content: Text(message, textAlign: TextAlign.center),
-          actions: [
-            for (final entry in actions?.entries ?? [MapEntry('OK', () => Navigator.of(context).pop())])
-              TextButton(
-                onPressed: entry.value,
-                child: Text(entry.key),
-              ),
-          ],
-        );
-      },
-    );
-  }
-
   FetchState<R> fetchState<R>(Fetcher<R> fetcher, {Function(Object)? onError}) {
     return FetchState<R>(fetcher: fetcher, setState: safeUpdateState, onError: onError);
   }
@@ -75,10 +50,12 @@ class BaseStateResult<R> {
     required T Function() loading,
     required T Function(Object) error,
     required T Function(R) data,
+    required T Function() initial,
   }) {
     if (_loading) return loading();
     if (_error != null) return error(_error!);
-    return data(_data as R);
+    if (_data != null) return data(_data as R);
+    return initial();
   }
 }
 

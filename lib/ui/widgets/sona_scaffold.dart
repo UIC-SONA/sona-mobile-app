@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:sona/config/dependency_injection.dart';
-import 'package:sona/domain/models/user.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/theme/backgrounds.dart';
@@ -71,8 +70,8 @@ class SonaDrawer extends StatefulWidget {
 
 class _SonaDrawerState extends FullState<SonaDrawer> {
   var _loading = false;
-  final AuthProvider _authProvider = injector.get<AuthProvider>();
-  late final FetchState<UserInfo> _userState = fetchState(([positionalArguments, namedArguments]) => _authProvider.user());
+  final _authProvider = injector.get<AuthProvider>();
+  late final _userState = fetchState(([positionalArguments, namedArguments]) => _authProvider.user());
 
   @override
   void initState() {
@@ -102,6 +101,7 @@ class _SonaDrawerState extends FullState<SonaDrawer> {
                   const SizedBox(height: 10),
                   _userState.when(
                     loading: () => const CircularProgressIndicator(),
+                    initial: () => Container(),
                     error: (error) => Text(error.toString()),
                     data: (user) => Column(
                       children: [
@@ -245,6 +245,7 @@ class SonaScaffold extends StatelessWidget {
   final Widget body;
   final Widget? floatingActionButton;
   final Widget? bottomNavigationBar;
+  final double padding;
 
   const SonaScaffold({
     super.key,
@@ -253,6 +254,7 @@ class SonaScaffold extends StatelessWidget {
     required this.body,
     this.floatingActionButton,
     this.bottomNavigationBar,
+    this.padding = 10,
   });
 
   @override
@@ -267,7 +269,7 @@ class SonaScaffold extends StatelessWidget {
         child: SafeArea(
           child: Center(
             child: Padding(
-              padding: const EdgeInsets.all(10.0),
+              padding: EdgeInsets.all(padding),
               child: body,
             ),
           ),

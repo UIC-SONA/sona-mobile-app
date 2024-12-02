@@ -20,20 +20,24 @@ abstract class AuthProvider<T extends http.Client> {
   Future<T> login(String username, String password);
 
   Future<UserInfo> user();
+
+  void addLogoutListener(void Function() listenner);
 }
-
-// Para utilizar el endpoint de introspección, necesitamos enviar un encabezado
-// de autorización HTTP, para el servidor de autorización de keycloak, este
-// encabezado debe ser codificado en base64 y tener la forma `Basic <credenciales>`.
-final introspectionAuthorization = base64Encode(utf8.encode('$identifier:$secret'));
-
-/// Clave donde se almacenan las credenciales del usuario de forma
-/// persistente y segura utilizando el paquete `flutter_secure_storage`.
-const credentialsKey = "credentials";
 
 class KeycloakAuthProvider extends AuthProvider<oauth2.Client> {
   final FlutterSecureStorage storage;
+  final List<void Function()> _logoutListeners = [];
+
   oauth2.Client? _client;
+
+  // Para utilizar el endpoint de introspección, necesitamos enviar un encabezado
+  // de autorización HTTP, para el servidor de autorización de keycloak, este
+  // encabezado debe ser codificado en base64 y tener la forma `Basic <credenciales>`.
+  final introspectionAuthorization = base64Encode(utf8.encode('$identifier:$secret'));
+
+  /// Clave donde se almacenan las credenciales del usuario de forma
+  /// persistente y segura utilizando el paquete `flutter_secure_storage`.
+  static const credentialsKey = "credentials";
 
   KeycloakAuthProvider({required this.storage}) {
     storage.read(key: credentialsKey).then((value) {
@@ -107,6 +111,9 @@ class KeycloakAuthProvider extends AuthProvider<oauth2.Client> {
     } finally {
       _client = null;
       await storage.delete(key: credentialsKey);
+      for (var listener in _logoutListeners) {
+        listener();
+      }
     }
   }
 
@@ -126,5 +133,10 @@ class KeycloakAuthProvider extends AuthProvider<oauth2.Client> {
 
   _saveCredentials(oauth2.Credentials credentials) async {
     await storage.write(key: credentialsKey, value: credentials.toJson());
+  }
+
+  @override
+  void addLogoutListener(void Function() listenner) {
+    _logoutListeners.add(listenner);
   }
 }

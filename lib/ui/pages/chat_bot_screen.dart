@@ -1,13 +1,11 @@
-import 'dart:io';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:chatview/chatview.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:sona/config/dependency_injection.dart';
-import 'package:sona/domain/models/promp_response.dart';
 import 'package:sona/domain/services/chat_bot.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
+import 'package:sona/ui/widgets/sona_chat_view.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
 import 'package:uuid/uuid.dart';
 
@@ -38,9 +36,9 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
       final history = await _service.getChatHistory();
       final initialMessageList = <Message>[];
 
-      for (PromptResponse promptResponse in history) {
-        final String prompt = promptResponse.prompt;
-        final List<String> responses = promptResponse.responses;
+      for (var promptResponse in history) {
+        final prompt = promptResponse.prompt;
+        final responses = promptResponse.responses;
 
         initialMessageList.add(
           Message(
@@ -48,20 +46,23 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
             message: prompt,
             sentBy: '1',
             createdAt: promptResponse.timestamp,
+            status: MessageStatus.read,
           ),
         );
 
-        for (String response in responses) {
+        for (var response in responses) {
           initialMessageList.add(
             Message(
               id: const Uuid().v4(),
               message: response,
               sentBy: '2',
               createdAt: promptResponse.timestamp,
+              status: MessageStatus.read,
             ),
           );
         }
       }
+
 
       _chatController = ChatController(
         currentUser: ChatUser(
@@ -83,7 +84,7 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
       _log.e(e);
       _chatViewState = ChatViewState.error;
     }
-    setState(() {});
+    refresh();
   }
 
   @override
@@ -91,15 +92,61 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
     return SonaScaffold(
       showLeading: false,
       actionButton: SonaActionButton.home(),
+      padding: 0,
       body: _chatController == null
           ? const Center(child: CircularProgressIndicator())
-          : ChatView(
+          : SonaChatView(
               chatController: _chatController!,
               chatViewState: _chatViewState,
-              appBar: const ChatViewAppBar(
-                chatTitle: 'Sona Bot',
-              ),
+              sendMessage: _sendMessage,
+              enableCameraImagePicker: false,
+              enableGalleryImagePicker: false,
+              allowRecordingVoice: false,
             ),
     );
+  }
+
+  void _sendMessage(
+    String message,
+    ReplyMessage replyMessage,
+    MessageType messageType,
+  ) async {
+    final messageSent = Message(
+      id: const Uuid().v4(),
+      createdAt: DateTime.now(),
+      message: message,
+      sentBy: _chatController!.currentUser.id,
+      replyMessage: replyMessage,
+      messageType: messageType,
+      status: MessageStatus.pending,
+    );
+    _chatController!.addMessage(messageSent);
+
+    if (_chatViewState == ChatViewState.noData) {
+      _chatViewState = ChatViewState.hasMessages;
+      refresh();
+    }
+
+    try {
+      final response = await _service.sendMessage(message);
+
+      messageSent.setStatus = MessageStatus.read;
+
+      final responses = response.responses;
+      for (var response in responses) {
+        _chatController!.addMessage(
+          Message(
+            id: const Uuid().v4(),
+            message: response,
+            sentBy: '2',
+            createdAt: DateTime.now(),
+            status: MessageStatus.read,
+          ),
+        );
+      }
+    } catch (e) {
+      _log.e(e);
+      messageSent.setStatus = MessageStatus.undelivered;
+    }
   }
 }

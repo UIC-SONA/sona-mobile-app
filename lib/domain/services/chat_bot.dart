@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:sona/domain/models/promp_response.dart';
 import 'package:sona/domain/services/auth.dart';
 import 'package:sona/shared/constants.dart';
@@ -21,8 +20,7 @@ class ApiChatBotService implements ChatBotService {
       apiUri.replace(path: '/chatbot/send-message'),
       client: authProvider.client!,
       method: HttpMethod.post,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'prompt': prompt}),
+      body: {'prompt': prompt},
     );
 
     return response.getBody<PromptResponse>();
