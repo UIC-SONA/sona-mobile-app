@@ -17,7 +17,7 @@ Future<Response> request(Uri url, {
   Map<String, String>? headers,
   Encoding? encoding,
   Client? client,
-  bool truncateLogBody = true,
+  bool truncateLogBody = false,
 }) async {
   try {
     _log.d("Send request to $url: \nMethod: $method\nHeaders: $headers\nBody: $body");

@@ -7,7 +7,6 @@ import 'package:sona/config/dependency_injection.dart';
 
 import 'package:sona/domain/models/menstrual_cycle.dart';
 import 'package:sona/domain/services/menstrual_calendar.dart';
-import 'package:sona/shared/errors.dart';
 import 'package:sona/shared/extensions.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';

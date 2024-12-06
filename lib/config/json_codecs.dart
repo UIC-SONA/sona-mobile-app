@@ -1,5 +1,6 @@
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/shared/json.dart';
+import 'package:sona/shared/schemas/message.dart';
 import 'package:sona/shared/schemas/page.dart';
 
 setupJsonCodecs() {
@@ -16,4 +17,7 @@ setupJsonCodecs() {
   Json.register<PageMap>(fromJson: PageMap.fromJson, toJson: (value) => value.toJson());
   Json.register<PageInfo>(fromJson: PageInfo.fromJson, toJson: (value) => value.toJson());
   Json.register<PageQuery>(fromJson: PageQuery.fromJson, toJson: (value) => value.toJson());
+  Json.register<ChatMessage>(fromJson: ChatMessage.fromJson, toJson: (value) => value.toJson());
+  Json.register<ChatRoom>(fromJson: ChatRoom.fromJson, toJson: (value) => value.toJson());
+  Json.register<ChatMessageSent>(fromJson: ChatMessageSent.fromJson, toJson: (value) => value.toJson());
 }

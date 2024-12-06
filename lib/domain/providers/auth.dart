@@ -4,10 +4,10 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:oauth2/oauth2.dart' as oauth2;
+import 'package:sona/domain/models/user.dart';
 import 'package:sona/shared/constants.dart';
 import 'package:sona/shared/http/http.dart';
 
-import '../models/user.dart';
 
 abstract class AuthProvider<T extends http.Client> {
   //
@@ -22,11 +22,16 @@ abstract class AuthProvider<T extends http.Client> {
   Future<UserInfo> user();
 
   void addLogoutListener(void Function() listenner);
+
+  void addLoginListener(void Function() listenner);
 }
 
 class KeycloakAuthProvider extends AuthProvider<oauth2.Client> {
   final FlutterSecureStorage storage;
+  final String credentialsKey;
+
   final List<void Function()> _logoutListeners = [];
+  final List<void Function()> _loginListeners = [];
 
   oauth2.Client? _client;
 
@@ -37,21 +42,16 @@ class KeycloakAuthProvider extends AuthProvider<oauth2.Client> {
 
   /// Clave donde se almacenan las credenciales del usuario de forma
   /// persistente y segura utilizando el paquete `flutter_secure_storage`.
-  static const credentialsKey = "credentials";
 
-  KeycloakAuthProvider({required this.storage}) {
-    storage.read(key: credentialsKey).then((value) {
-      if (value != null) {
-        final credentials = oauth2.Credentials.fromJson(value);
-        _client = oauth2.Client(
-          credentials,
-          identifier: identifier,
-          secret: secret,
-          onCredentialsRefreshed: _saveCredentials,
-        );
-      }
-    });
-  }
+  KeycloakAuthProvider({required this.storage, required this.credentialsKey, oauth2.Credentials? credentials})
+      : _client = credentials != null
+            ? oauth2.Client(
+                credentials,
+                identifier: identifier,
+                secret: secret,
+                onCredentialsRefreshed: (credentials) async => await storage.write(key: credentialsKey, value: credentials.toJson()),
+              )
+            : null;
 
   @override
   oauth2.Client? get client => _client;
@@ -98,6 +98,9 @@ class KeycloakAuthProvider extends AuthProvider<oauth2.Client> {
     );
 
     await _saveCredentials(newClient.credentials);
+    for (var listener in _loginListeners) {
+      listener();
+    }
     return _client = newClient;
   }
 
@@ -138,5 +141,10 @@ class KeycloakAuthProvider extends AuthProvider<oauth2.Client> {
   @override
   void addLogoutListener(void Function() listenner) {
     _logoutListeners.add(listenner);
+  }
+
+  @override
+  void addLoginListener(void Function() listenner) {
+    _loginListeners.add(listenner);
   }
 }

@@ -1,11 +1,14 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:injector/injector.dart';
+import 'package:sona/domain/providers/locale.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/ui/pages/routing/router.dart';
+import 'package:oauth2/oauth2.dart' as oauth2;
 
 final injector = Injector.appInstance;
+const credentialsKey = 'credentials';
 
-void setupDependencies() {
+Future<void> setupDependencies() async {
   //SECURITY
   injector.registerSingleton<FlutterSecureStorage>(
     () => const FlutterSecureStorage(
@@ -17,19 +20,27 @@ void setupDependencies() {
     ),
   );
 
+  final storage = injector.get<FlutterSecureStorage>();
+  var credentials = await storage.read(key: credentialsKey);
+
   //Providers
-  injector.registerSingleton<AuthProvider>(() => KeycloakAuthProvider(storage: injector.get<FlutterSecureStorage>()));
+  injector.registerSingleton<LocaleProvider>(() => SystemLocaleProvider());
+  injector.registerSingleton<AuthProvider>(() => KeycloakAuthProvider(storage: storage, credentialsKey: credentialsKey, credentials: credentials != null ? oauth2.Credentials.fromJson(credentials) : null));
 
-  var authProvider = injector.get<AuthProvider>();
+  final localeProvider = injector.get<LocaleProvider>();
+  final authProvider = injector.get<AuthProvider>();
 
-  //Services
-  injector.registerSingleton<ChatService>(() => ApiChatService(authProvider: authProvider));
-  injector.registerSingleton<ChatBotService>(() => ApiChatBotService(authProvider: authProvider));
-  injector.registerSingleton<TipService>(() => ApiTipService(authProvider: authProvider));
-  injector.registerSingleton<UserService>(() => ApiUserService(authProvider: authProvider));
-  injector.registerSingleton<MenstrualCalendarService>(() => ApiMenstrualCalendarService(authProvider: authProvider));
+//Services
+  injector.registerSingleton<ChatService>(() => ApiStompChatService(authProvider: authProvider, localeProvider: localeProvider));
+  injector.registerSingleton<ChatBotService>(() => ApiChatBotService(authProvider: authProvider, localeProvider: localeProvider));
+  injector.registerSingleton<TipService>(() => ApiTipService(authProvider: authProvider, localeProvider: localeProvider));
+  injector.registerSingleton<UserService>(() => ApiUserService(authProvider: authProvider, localeProvider: localeProvider));
+  injector.registerSingleton<MenstrualCalendarService>(() => ApiMenstrualCalendarService(authProvider: authProvider, localeProvider: localeProvider));
 
-  //Router
+  final chatService = injector.get<ChatService>();
+  chatService.activate();
+
+//Router
   injector.registerSingleton<AuthGuard>(() => AuthGuard(authProvider: authProvider));
   injector.registerSingleton<AppRouter>(() => AppRouter(guards: [injector.get<AuthGuard>()]));
 }

@@ -1,18 +1,22 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
+import 'package:sona/domain/models/models.dart';
+import 'package:sona/ui/pages/chat_room_screen.dart';
 import 'package:sona/ui/pages/navigation/home_screen.dart';
 import 'package:sona/ui/pages/navigation/login_screen.dart';
 import 'package:sona/ui/pages/navigation/menu_options_screen.dart';
 import 'package:sona/ui/pages/navigation/sign_up_screen.dart';
 import 'package:sona/ui/pages/navigation/services_options_screen.dart';
 import 'package:sona/ui/pages/navigation/splash_screen.dart';
-import 'package:sona/domain/services/auth.dart';
+import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/ui/pages/chat_screen.dart';
 import 'package:sona/ui/pages/chat_bot_screen.dart';
 import 'package:sona/ui/pages/menstrual_calendar_screens.dart';
 import 'package:sona/ui/pages/tips_screen.dart';
 
 part 'router.gr.dart';
+
 
 final _log = Logger();
 
@@ -37,11 +41,13 @@ class AppRouter extends RootStackRouter {
         AutoRoute(path: "/chatbot", page: ChatBotRoute.page),
         AutoRoute(path: "/tips", page: TipsRoute.page),
         AutoRoute(path: "/chat", page: ChatRoute.page),
+        AutoRoute(path: "/chat-room", page: ChatRoomRoute.page),
       ];
 
   @override
   List<AutoRouteGuard> get guards => _guards;
 }
+
 
 final List<String> unauthenticatedRoutes = [LoginRoute.name, SignUpRoute.name];
 
@@ -56,23 +62,21 @@ class AuthGuard extends AutoRouteGuard {
     this.authCacheDuration = const Duration(minutes: 5), // Por defecto, 5 minutos
   }) {
     authProvider.addLogoutListener(() => _cachedIsAuthenticated = false);
+    authProvider.addLoginListener(() => _cachedIsAuthenticated = true);
   }
 
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
     final currentRouteName = resolver.route.name;
 
-    _log.t('Navigation to $currentRouteName');
+    _log.t('Navigation to $currentRouteName, cached auth: $_cachedIsAuthenticated');
 
     if (_cachedIsAuthenticated == null || _lastAuthCheckTime == null || DateTime.now().difference(_lastAuthCheckTime!) > authCacheDuration) {
       _cachedIsAuthenticated = await authProvider.isAutheticated();
       _lastAuthCheckTime = DateTime.now();
-    } else {
-      _log.t('Using cached authentication status...');
     }
 
     final isAuthenticated = _cachedIsAuthenticated!;
-    _log.t('Authentication status: $isAuthenticated');
 
     if (currentRouteName == SplashRoute.name) {
       resolver.next(true);

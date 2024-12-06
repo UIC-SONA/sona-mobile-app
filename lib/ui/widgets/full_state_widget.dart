@@ -17,6 +17,7 @@ abstract class FullState<T extends StatefulWidget> extends State<T> {
   FetchState<R> fetchState<R>(Fetcher<R> fetcher, {Function(Object)? onError}) {
     return FetchState<R>(fetcher: fetcher, setState: safeUpdateState, onError: onError);
   }
+
 }
 
 typedef Fetcher<R> = Future<R> Function([List<dynamic>? positionalArguments, Map<Symbol, dynamic>? namedArguments]);

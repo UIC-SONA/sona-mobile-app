@@ -20,7 +20,7 @@ class ServicesOptionsScreen extends StatelessWidget {
               MenuButton(
                 label: 'Chat con Profesionales',
                 icon: Icons.chat,
-                onPressed: () => AutoRouter.of(context).pushNamed('/chat'),
+                onPressed: () => AutoRouter.of(context).push(const ChatRoute()),
               ),
               MenuButton(
                 label: 'Agendamiento de Citas',

@@ -31,6 +31,12 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
     _loadChatHistory();
   }
 
+  @override
+  void dispose() {
+    _chatController?.dispose();
+    super.dispose();
+  }
+
   void _loadChatHistory() async {
     try {
       final history = await _service.getChatHistory();
@@ -63,7 +69,6 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
         }
       }
 
-
       _chatController = ChatController(
         currentUser: ChatUser(
           id: '1',
@@ -80,8 +85,8 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
       );
 
       _chatViewState = initialMessageList.isEmpty ? ChatViewState.noData : ChatViewState.hasMessages;
-    } catch (e) {
-      _log.e(e);
+    } catch (e, stackTrace) {
+      _log.e("Error loading chat history", error: e, stackTrace: stackTrace);
       _chatViewState = ChatViewState.error;
     }
     refresh();
@@ -106,11 +111,7 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
     );
   }
 
-  void _sendMessage(
-    String message,
-    ReplyMessage replyMessage,
-    MessageType messageType,
-  ) async {
+  void _sendMessage(String message, ReplyMessage replyMessage, MessageType messageType) async {
     final messageSent = Message(
       id: const Uuid().v4(),
       createdAt: DateTime.now(),
@@ -120,6 +121,7 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
       messageType: messageType,
       status: MessageStatus.pending,
     );
+
     _chatController!.addMessage(messageSent);
 
     if (_chatViewState == ChatViewState.noData) {

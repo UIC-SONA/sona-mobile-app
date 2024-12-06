@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+import 'package:sona/shared/http/http.dart';
 
 enum HttpMethod {
   get("GET"),
@@ -114,4 +118,36 @@ enum HttpStatusCode {
     }
     throw Exception('Status code $code not found in StatusCode enum');
   }
+}
+
+abstract class QueryParametrable {
+  Map<String, dynamic /*String?|Iterable<String>*/ > toQueryParameters();
+}
+
+abstract interface class WebResource {
+  Uri get uri;
+
+  http.Client? get client;
+
+  String get path;
+
+  Map<String, String> get headers;
+}
+
+Future<http.Response> resource(
+  WebResource resource, {
+  String path = '',
+  HttpMethod method = HttpMethod.get,
+  Object? body,
+  Map<String, String>? headers,
+  Encoding? encoding,
+}) async {
+  return request(
+    resource.uri.replace(path: '/${resource.path}$path'),
+    client: resource.client,
+    method: method,
+    headers: headers,
+    body: body,
+    encoding: encoding,
+  );
 }

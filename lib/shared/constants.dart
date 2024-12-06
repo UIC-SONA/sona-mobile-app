@@ -18,3 +18,4 @@ final String secret = dotenv.env['CLIENT_SECRET']!;
 
 // URL de la API
 final Uri apiUri = Uri.parse(dotenv.env['API_URI']!);
+final String stompUri = dotenv.env['STOMP_URI']!;

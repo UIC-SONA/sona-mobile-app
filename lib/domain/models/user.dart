@@ -3,6 +3,7 @@ import 'package:sona/shared/extensions.dart';
 enum Authority {
   admin,
   administrative,
+  professional,
   user;
 
   static Authority fromString(String value) {
@@ -83,6 +84,10 @@ class User {
       'representation': representation.toJson(),
       'authorities': authorities,
     };
+  }
+
+  String toString() {
+    return 'User(id: $id, keycloakId: $keycloakId, profilePicturePath: $profilePicturePath, representation: $representation, authorities: $authorities)';
   }
 }
 

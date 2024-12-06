@@ -16,14 +16,12 @@ class HttpException implements Exception {
 
   @override
   String toString() {
-    return 'HttpException: ${_getErrorDetail()}';
+    return 'HttpException: $description \nResponse: ${_reponse(response)} \nInnerError: $innerError';
   }
 
-  Error _getErrorDetail() {
-    if (response != null) {
-      final body = response!.getBody<ProblemDetails>();
-      return Error(body.title, body.detail);
-    }
-    return Error('Error', message);
-  }
+}
+
+String? _reponse(Response? response) {
+  if (response == null) return null;
+  return response.body;
 }

@@ -2,14 +2,17 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http/http.dart';
-import 'package:sona/domain/models/message.dart';
+import 'package:sona/shared/rest_crud.dart';
+import 'package:sona/shared/crud.dart';
+import 'package:sona/shared/schemas/message.dart';
 import 'package:sona/domain/models/user.dart';
-import 'package:sona/domain/services/auth.dart';
+import 'package:sona/domain/providers/auth.dart';
+import 'package:sona/domain/providers/locale.dart';
 import 'package:sona/shared/constants.dart';
 import 'package:sona/shared/http/http.dart';
 import 'package:sona/shared/schemas/page.dart';
 
-abstract class UserService {
+abstract class UserService implements ReadOperations<User, int> {
   //
   Future<Message> signUp({
     required String username,
@@ -25,19 +28,32 @@ abstract class UserService {
 
   Future<Message> deleteProfilePicture();
 
-  Future<List<User>> list([String? search]);
+  Future<User> profile();
 
-  Future<Page<User>> page([PageQuery? query]);
+  Future<List<User>> listByRole(Authority role);
 
-  Future<User> find(int id);
+  Future<Page<User>> pageByRole(Authority role, [PageQuery? query]);
 }
 
-class ApiUserService implements UserService {
+class ApiUserService extends RestReadOperations<User, int> implements UserService {
   //
   //
   final AuthProvider authProvider;
+  final LocaleProvider localeProvider;
 
-  ApiUserService({required this.authProvider});
+  ApiUserService({required this.authProvider, required this.localeProvider});
+
+  @override
+  Uri get uri => apiUri;
+
+  @override
+  Client? get client => authProvider.client;
+
+  @override
+  Map<String, String> get headers => {'Accept-Language': localeProvider.languageCode};
+
+  @override
+  String get path => '/user';
 
   @override
   Future<Message> signUp({
@@ -48,9 +64,12 @@ class ApiUserService implements UserService {
     required String email,
   }) async {
     final response = await request(
-      apiUri.replace(path: '/user/sign-up'),
+      uri.replace(path: '$path/sign-up'),
       method: HttpMethod.post,
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+      },
       body: jsonEncode({
         'firstName': firstName,
         'lastName': lastName,
@@ -66,9 +85,10 @@ class ApiUserService implements UserService {
   @override
   Future<Uint8List> profilePicture() async {
     final response = await request(
-      apiUri.replace(path: '/user/profile-picture'),
-      client: authProvider.client!,
+      uri.replace(path: '$path/profile-picture'),
+      client: client,
       method: HttpMethod.get,
+      headers: headers,
     );
 
     return response.bodyBytes;
@@ -77,9 +97,10 @@ class ApiUserService implements UserService {
   @override
   Future<Message> uploadProfilePicture(String filePath) async {
     final StreamedResponse response = await multipartRequest(
-      apiUri.replace(path: '/user/profile-picture'),
-      client: authProvider.client!,
+      uri.replace(path: '$path/profile-picture'),
+      client: client,
       method: HttpMethod.post,
+      headers: headers,
       factory: (request) async {
         request.files.add(await MultipartFile.fromPath('file', filePath));
       },
@@ -91,47 +112,48 @@ class ApiUserService implements UserService {
   @override
   Future<Message> deleteProfilePicture() async {
     final response = await request(
-      apiUri.replace(path: '/user/profile-picture'),
-      client: authProvider.client!,
+      uri.replace(path: '$path/profile-picture'),
+      client: client,
       method: HttpMethod.delete,
+      headers: headers,
     );
 
     return response.getBody<Message>();
   }
 
   @override
-  Future<List<User>> list([String? search]) async {
+  Future<User> profile() async {
     final response = await request(
-      apiUri.replace(path: '/', queryParameters: {'search': search}),
-      client: authProvider.client!,
+      uri.replace(path: '$path/profile'),
+      client: client,
       method: HttpMethod.get,
-      headers: {'Content-Type': 'application/json'},
+      headers: headers,
+    );
+
+    return response.getBody<User>();
+  }
+
+  @override
+  Future<List<User>> listByRole(Authority role) async {
+    final response = await request(
+      uri.replace(path: '$path/role/${role.name}'),
+      client: client,
+      method: HttpMethod.get,
+      headers: headers,
     );
 
     return response.getBody<List<User>>();
   }
 
   @override
-  Future<Page<User>> page([PageQuery? query]) async {
+  Future<Page<User>> pageByRole(Authority role, [PageQuery? query]) async {
     final response = await request(
-      apiUri.replace(path: "/page", queryParameters: query?.toJson()),
-      client: authProvider.client!,
+      uri.replace(path: '$path/role/${role.name.toUpperCase()}/page', queryParameters: query?.toQueryParameters()),
+      client: client,
       method: HttpMethod.get,
-      headers: {'Content-Type': 'application/json'},
+      headers: headers,
     );
 
     return response.getBody<PageMap>().as<User>();
-  }
-
-  @override
-  Future<User> find(int id) async {
-    final response = await request(
-      apiUri.replace(path: '/$id'),
-      client: authProvider.client!,
-      method: HttpMethod.get,
-      headers: {'Content-Type': 'application/json'},
-    );
-
-    return response.getBody<User>();
   }
 }

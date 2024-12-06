@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:sona/config/dependency_injection.dart';
-import 'package:sona/domain/services/auth.dart';
+import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/theme/backgrounds.dart';
 import 'package:sona/ui/theme/colors.dart';

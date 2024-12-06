@@ -32,13 +32,13 @@ class SonaChatView extends StatelessWidget {
     );
 
     final inComingChatBubbleConfig = ChatBubble(
-      color: primaryColor,
+      color: teal,
       borderRadius: chatBubbleRadius,
       senderNameTextStyle: chatBubbleSenderNameTextStyle,
     );
 
     final outgoingChatBubbleConfig = ChatBubble(
-      color: magenta,
+      color: primaryColor,
       borderRadius: chatBubbleRadius,
       senderNameTextStyle: chatBubbleSenderNameTextStyle,
     );
@@ -49,6 +49,9 @@ class SonaChatView extends StatelessWidget {
       onSendTap: sendMessage,
       chatBackgroundConfig: const ChatBackgroundConfiguration(
         backgroundColor: Colors.transparent,
+      ),
+      chatViewStateConfig: ChatViewStateConfiguration(
+        noMessageWidgetConfig: _noMessageWidgetConfig(context),
       ),
       chatBubbleConfig: ChatBubbleConfiguration(
         inComingChatBubbleConfig: inComingChatBubbleConfig,
@@ -67,6 +70,20 @@ class SonaChatView extends StatelessWidget {
           hintText: 'Escribe un mensaje...',
           borderRadius: BorderRadius.circular(10),
           textStyle: const TextStyle(color: Colors.black, fontSize: 16),
+        ),
+      ),
+    );
+  }
+
+  ChatViewStateWidgetConfiguration _noMessageWidgetConfig(BuildContext context) {
+    return const ChatViewStateWidgetConfiguration(
+      widget: Center(
+        child: Text(
+          'No hay mensajes',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 16,
+          ),
         ),
       ),
     );

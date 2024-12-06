@@ -3,11 +3,12 @@ import 'dart:typed_data';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:sona/config/dependency_injection.dart';
 
 import 'package:sona/domain/models/tip.dart';
 import 'package:sona/domain/services/tip.dart';
-import 'package:sona/shared/errors.dart';
+import 'package:sona/ui/utils/paging.dart';
 
 import 'package:sona/ui/widgets/full_state_widget.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
@@ -22,15 +23,14 @@ class TipsScreen extends StatefulWidget {
 
 class _TipsScreenState extends FullState<TipsScreen> {
   final _service = injector.get<TipService>();
-
-  late final _activeTipsState = fetchState(([positionalArguments, namedArguments]) => _service.activeTips());
+  final _pagingController = PagingQueryController<Tip>(firstPage: 0);
 
   Tip? selectedTip;
 
   @override
   void initState() {
     super.initState();
-    _activeTipsState.fetch();
+    _pagingController.configureFetcher(_service.activesPage);
   }
 
   void _clearSelection() {
@@ -67,16 +67,12 @@ class _TipsScreenState extends FullState<TipsScreen> {
   }
 
   Widget _buildTipsList() {
-    return _activeTipsState.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      initial: () => Container(),
-      error: (error) => Center(child: Text(extractError(error).message)),
-      data: (tips) => RefreshIndicator(
-        onRefresh: _activeTipsState.fetch,
-        child: ListView.builder(
-          itemCount: tips.length,
-          itemBuilder: (context, index) {
-            final tip = tips[index];
+    return RefreshIndicator(
+      onRefresh: () => Future.sync(_pagingController.refresh),
+      child: PagedListView<int, Tip>(
+        pagingController: _pagingController,
+        builderDelegate: PagedChildBuilderDelegate<Tip>(
+          itemBuilder: (context, tip, index) {
             return Card(
               child: Padding(
                 padding: const EdgeInsets.all(10.0),
@@ -162,7 +158,6 @@ class _TipsScreenState extends FullState<TipsScreen> {
     return FutureBuilder<Uint8List>(
       future: _service.tipImage(tip.id),
       builder: (context, snapshot) {
-
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
             child: CircularProgressIndicator(),

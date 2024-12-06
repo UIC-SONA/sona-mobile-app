@@ -1,3 +1,4 @@
+import 'package:sona/shared/http/types.dart';
 import 'package:sona/shared/json.dart';
 import 'package:sona/shared/schemas/direction.dart';
 
@@ -71,7 +72,7 @@ class PageInfo {
   }
 }
 
-class PageQuery {
+class PageQuery extends QueryParametrable {
   final String? search;
   final int? page;
   final int? size;
@@ -102,6 +103,17 @@ class PageQuery {
       'page': page,
       'size': size,
       'properties': properties,
+      'direction': direction?.value,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toQueryParameters() {
+    return {
+      'search': search,
+      'page': page?.toString(),
+      'size': size?.toString(),
+      'properties': properties?.join(','),
       'direction': direction?.value,
     };
   }

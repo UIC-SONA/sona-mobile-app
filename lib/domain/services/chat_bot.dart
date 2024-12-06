@@ -1,5 +1,6 @@
 import 'package:sona/domain/models/promp_response.dart';
-import 'package:sona/domain/services/auth.dart';
+import 'package:sona/domain/providers/auth.dart';
+import 'package:sona/domain/providers/locale.dart';
 import 'package:sona/shared/constants.dart';
 import 'package:sona/shared/http/http.dart';
 
@@ -11,8 +12,9 @@ abstract class ChatBotService {
 
 class ApiChatBotService implements ChatBotService {
   final AuthProvider authProvider;
+  final LocaleProvider localeProvider;
 
-  ApiChatBotService({required this.authProvider});
+  ApiChatBotService({required this.authProvider, required this.localeProvider});
 
   @override
   Future<PromptResponse> sendMessage(String prompt) async {
@@ -20,6 +22,9 @@ class ApiChatBotService implements ChatBotService {
       apiUri.replace(path: '/chatbot/send-message'),
       client: authProvider.client!,
       method: HttpMethod.post,
+      headers: {
+        'Accept-Language': localeProvider.languageCode,
+      },
       body: {'prompt': prompt},
     );
 
@@ -32,6 +37,9 @@ class ApiChatBotService implements ChatBotService {
       apiUri.replace(path: '/chatbot/history'),
       client: authProvider.client!,
       method: HttpMethod.get,
+      headers: {
+        'Accept-Language': localeProvider.languageCode,
+      },
     );
 
     return response.getBody<List<PromptResponse>>();

@@ -29,6 +29,58 @@ class ChatBotRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [ChatRoomScreen]
+class ChatRoomRoute extends PageRouteInfo<ChatRoomRouteArgs> {
+  ChatRoomRoute({
+    Key? key,
+    required User owner,
+    required Future<ChatRoom> Function() getRoom,
+    List<PageRouteInfo>? children,
+  }) : super(
+          ChatRoomRoute.name,
+          args: ChatRoomRouteArgs(
+            key: key,
+            owner: owner,
+            getRoom: getRoom,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'ChatRoomRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<ChatRoomRouteArgs>();
+      return ChatRoomScreen(
+        key: args.key,
+        owner: args.owner,
+        getRoom: args.getRoom,
+      );
+    },
+  );
+}
+
+class ChatRoomRouteArgs {
+  const ChatRoomRouteArgs({
+    this.key,
+    required this.owner,
+    required this.getRoom,
+  });
+
+  final Key? key;
+
+  final User owner;
+
+  final Future<ChatRoom> Function() getRoom;
+
+  @override
+  String toString() {
+    return 'ChatRoomRouteArgs{key: $key, owner: $owner, getRoom: $getRoom}';
+  }
+}
+
+/// generated route for
 /// [ChatScreen]
 class ChatRoute extends PageRouteInfo<void> {
   const ChatRoute({List<PageRouteInfo>? children})

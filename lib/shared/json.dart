@@ -49,9 +49,8 @@ abstract final class Json {
   }
 
   static T deserializeDecoded<T>(dynamic json) {
-    final decoded = jsonDecode(json);
-    if (T == Map || T == List<Map>) return decoded as T;
-    return _JsonCodec.get<T>().fromJson(decoded);
+    if (T == Map || T == List<Map>) return json as T;
+    return _JsonCodec.get<T>().fromJson(json);
   }
 
   /// METHOD TO REGISTER SERIALIZATION AND DESERIALIZATION FOR A TYPE
