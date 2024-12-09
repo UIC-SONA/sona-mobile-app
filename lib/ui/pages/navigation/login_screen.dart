@@ -21,7 +21,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends FullState<LoginScreen> {
   final AuthProvider _authProvider = injector.get<AuthProvider>();
 
-  late final _loginState = fetchState(([positionalArguments, namedArguments]) => _authProvider.login(
+  late final _login = fetchState(([positionalArguments, namedArguments]) => _authProvider.login(
         positionalArguments![0],
         positionalArguments[1],
       ));
@@ -128,7 +128,7 @@ class _LoginScreenState extends FullState<LoginScreen> {
             controller: _emailOrUsernameController,
             decoration: InputDecoration(
               labelText: 'Correo o usuario',
-              enabled: !_loginState.isLoading,
+              enabled: !_login.isLoading,
               prefixIcon: const Icon(Icons.email),
             ),
           ),
@@ -136,7 +136,7 @@ class _LoginScreenState extends FullState<LoginScreen> {
           TextFormField(
             controller: _passwordController,
             obscureText: _obscurePasswordText,
-            enabled: !_loginState.isLoading,
+            enabled: !_login.isLoading,
             decoration: InputDecoration(
               labelText: 'Contraseña',
               prefixIcon: const Icon(Icons.lock),
@@ -149,8 +149,8 @@ class _LoginScreenState extends FullState<LoginScreen> {
           const SizedBox(height: 30),
           LoadingButton(
             icon: const Icon(Icons.login),
-            onPressed: _login,
-            loading: _loginState.isLoading,
+            onPressed: _loginUser,
+            loading: _login.isLoading,
             child: const Text(
               'Ingresar',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -173,7 +173,7 @@ class _LoginScreenState extends FullState<LoginScreen> {
           'Recuperar contraseña',
           onPressed: () {},
           height: 30,
-          enabled: !_loginState.isLoading,
+          enabled: !_login.isLoading,
         ),
         const SizedBox(height: 10),
         const Text(
@@ -184,26 +184,26 @@ class _LoginScreenState extends FullState<LoginScreen> {
           'Crear cuenta',
           onPressed: () => AutoRouter.of(context).push(const SignUpRoute()),
           height: 30,
-          enabled: !_loginState.isLoading,
+          enabled: !_login.isLoading,
         ),
       ],
     );
   }
 
-  Future<void> _login() async {
+  Future<void> _loginUser() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    final email = _emailOrUsernameController.text;
+    final email = _emailOrUsernameController.text.trim();
     final password = _passwordController.text;
 
-    await _loginState.fetch([email, password]);
+    await _login.fetch([email, password]);
 
     if (!mounted) return;
 
-    if (_loginState.hasError) {
-      final error = _loginState.error!;
+    if (_login.hasError) {
+      final error = _login.error!;
       final message = error.toString();
       if (message.contains('invalid_grant')) {
         showAlertDialog(context, title: 'Error', message: 'Credenciales inválidas');

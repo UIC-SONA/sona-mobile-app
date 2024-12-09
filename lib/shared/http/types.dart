@@ -121,21 +121,21 @@ enum HttpStatusCode {
 }
 
 abstract class QueryParametrable {
-  Map<String, dynamic /*String?|Iterable<String>*/ > toQueryParameters();
+  Map<String, dynamic /*String?|Iterable<String>*/> toQueryParameters();
 }
 
 abstract interface class WebResource {
+  //
   Uri get uri;
 
   http.Client? get client;
 
   String get path;
 
-  Map<String, String> get headers;
+  Map<String, String> get commonHeaders;
 }
 
-Future<http.Response> resource(
-  WebResource resource, {
+Future<http.Response> resource(WebResource resource, {
   String path = '',
   HttpMethod method = HttpMethod.get,
   Object? body,

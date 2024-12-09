@@ -29,7 +29,7 @@ class ApiTipService implements TipService, WebResource {
   http.Client? get client => authProvider.client;
 
   @override
-  Map<String, String> get headers => {
+  Map<String, String> get commonHeaders => {
         'Accept-Language': localeProvider.languageCode,
       };
 
@@ -45,7 +45,7 @@ class ApiTipService implements TipService, WebResource {
       uri.replace(path: '$path/actives'),
       client: client,
       method: HttpMethod.get,
-      headers: headers,
+      headers: commonHeaders,
     );
 
     return response.getBody<List<Tip>>();
@@ -54,10 +54,10 @@ class ApiTipService implements TipService, WebResource {
   @override
   Future<Page<Tip>> activesPage([PageQuery? query]) async {
     final response = await request(
-      uri.replace(path: '$path/page', queryParameters: query?.toQueryParameters()),
+      uri.replace(path: '$path/actives/page', queryParameters: query?.toQueryParameters()),
       client: client,
       method: HttpMethod.get,
-      headers: headers,
+      headers: commonHeaders,
     );
 
     return response.getBody<PageMap>().as<Tip>();
@@ -69,7 +69,7 @@ class ApiTipService implements TipService, WebResource {
       uri.replace(path: '$path/$tipId/image'),
       client: authProvider.client!,
       method: HttpMethod.get,
-      headers: headers,
+      headers: commonHeaders,
     );
 
     return response.bodyBytes;

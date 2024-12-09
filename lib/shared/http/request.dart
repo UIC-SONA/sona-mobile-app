@@ -9,7 +9,7 @@ import 'exceptions.dart';
 import 'types.dart';
 
 const Duration kHttpRequestTimeout = Duration(seconds: 60);
-final Logger _log = Logger(level: Level.debug);
+final Logger _log = Logger(level: Level.error);
 
 Future<Response> request(Uri url, {
   HttpMethod method = HttpMethod.get,
@@ -36,7 +36,7 @@ Future<Response> request(Uri url, {
     rethrow;
   } catch (e, s) {
     final description = "${e.runtimeType} error occurred";
-    _log.d(description, error: e, stackTrace: s);
+    _log.e(description, error: e, stackTrace: s);
     throw HttpException(description, innerError: e);
   }
 }

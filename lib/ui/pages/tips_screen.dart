@@ -159,22 +159,21 @@ class _TipsScreenState extends FullState<TipsScreen> {
       future: _service.tipImage(tip.id),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        } else if (snapshot.hasError) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
           return Text(
             'Error al cargar la imagen: ${snapshot.error}',
             style: const TextStyle(color: Colors.red),
           );
-        } else if (snapshot.hasData && snapshot.data != null) {
+        }
+        if (snapshot.hasData && snapshot.data != null) {
           return Image.memory(
             snapshot.data!,
             fit: BoxFit.cover,
           );
-        } else {
-          return const Text('No se pudo cargar la imagen.');
         }
+        return const Text('No se pudo cargar la imagen.');
       },
     );
   }

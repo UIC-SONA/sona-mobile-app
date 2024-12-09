@@ -1,5 +1,6 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:injector/injector.dart';
+import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/domain/providers/locale.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/ui/pages/routing/router.dart';
@@ -31,14 +32,14 @@ Future<void> setupDependencies() async {
   final authProvider = injector.get<AuthProvider>();
 
 //Services
+  injector.registerSingleton<UserService>(() => ApiUserService(authProvider: authProvider, localeProvider: localeProvider));
   injector.registerSingleton<ChatService>(() => ApiStompChatService(authProvider: authProvider, localeProvider: localeProvider));
   injector.registerSingleton<ChatBotService>(() => ApiChatBotService(authProvider: authProvider, localeProvider: localeProvider));
   injector.registerSingleton<TipService>(() => ApiTipService(authProvider: authProvider, localeProvider: localeProvider));
-  injector.registerSingleton<UserService>(() => ApiUserService(authProvider: authProvider, localeProvider: localeProvider));
   injector.registerSingleton<MenstrualCalendarService>(() => ApiMenstrualCalendarService(authProvider: authProvider, localeProvider: localeProvider));
 
   final chatService = injector.get<ChatService>();
-  chatService.activate();
+  chatService.open();
 
 //Router
   injector.registerSingleton<AuthGuard>(() => AuthGuard(authProvider: authProvider));

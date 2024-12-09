@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:sona/config/dependency_injection.dart';
-import 'package:sona/domain/services/services.dart';
+import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/theme/backgrounds.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
@@ -71,13 +71,7 @@ class SonaDrawer extends StatefulWidget {
 class _SonaDrawerState extends FullState<SonaDrawer> {
   var _loading = false;
   final _authProvider = injector.get<AuthProvider>();
-  late final _userState = fetchState(([positionalArguments, namedArguments]) => _authProvider.user());
-
-  @override
-  void initState() {
-    super.initState();
-    _userState.fetch();
-  }
+  late final _userState = fetchState(([positionalArguments, namedArguments]) => _authProvider.user(), autoFetch: true);
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +97,7 @@ class _SonaDrawerState extends FullState<SonaDrawer> {
                     loading: () => const CircularProgressIndicator(),
                     initial: () => Container(),
                     error: (error) => Text(error.toString()),
-                    data: (user) => Column(
+                    value: (user) => Column(
                       children: [
                         Text(
                           user.name,

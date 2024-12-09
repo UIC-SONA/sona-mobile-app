@@ -183,7 +183,7 @@ class _SignUpScreenState extends FullState<SignUpScreen> {
     showAlertDialog(
       context,
       title: 'Registro Exitoso',
-      message: _signUpState.data!.message,
+      message: _signUpState.value!.message,
       actions: {'Aceptar': () => AutoRouter.of(context).replace(const LoginRoute())},
     );
   }

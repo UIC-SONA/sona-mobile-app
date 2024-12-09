@@ -1,7 +1,4 @@
 import 'package:http/http.dart';
-import 'package:sona/domain/models/problem_details.dart';
-import 'package:sona/shared/errors.dart';
-import 'package:sona/shared/http/extensions.dart';
 
 class HttpException implements Exception {
   final String description;
@@ -18,7 +15,6 @@ class HttpException implements Exception {
   String toString() {
     return 'HttpException: $description \nResponse: ${_reponse(response)} \nInnerError: $innerError';
   }
-
 }
 
 String? _reponse(Response? response) {

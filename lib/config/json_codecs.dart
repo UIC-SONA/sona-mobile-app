@@ -18,6 +18,7 @@ setupJsonCodecs() {
   Json.register<PageInfo>(fromJson: PageInfo.fromJson, toJson: (value) => value.toJson());
   Json.register<PageQuery>(fromJson: PageQuery.fromJson, toJson: (value) => value.toJson());
   Json.register<ChatMessage>(fromJson: ChatMessage.fromJson, toJson: (value) => value.toJson());
+  Json.register<ReadBy>(fromJson: ReadBy.fromJson, toJson: (value) => value.toJson());
   Json.register<ChatRoom>(fromJson: ChatRoom.fromJson, toJson: (value) => value.toJson());
   Json.register<ChatMessageSent>(fromJson: ChatMessageSent.fromJson, toJson: (value) => value.toJson());
 }

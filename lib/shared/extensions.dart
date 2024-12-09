@@ -24,11 +24,10 @@ class ParseStringException implements Exception {
 }
 
 class FromString<T> {
-  final Type type;
-  final T? Function(String data) tryParse;
+  late final Type type;
   final T Function(String data) parse;
 
-  FromString(this.type, this.tryParse, this.parse);
+  FromString(this.parse) : type = T;
 }
 
 extension StringExtension on String {
@@ -38,33 +37,36 @@ extension StringExtension on String {
   }
 
   static List<FromString> get fromStringConverters => [
-        FromString<String>(String, (data) => data, (data) => data),
-        FromString<double>(double, double.tryParse, double.parse),
-        FromString<bool>(bool, bool.tryParse, bool.parse),
-        FromString<int>(int, int.tryParse, int.parse),
-        FromString<num>(num, num.tryParse, num.parse),
-        FromString<DateTime>(DateTime, DateTime.tryParse, DateTime.parse),
-        FromString<Uri>(Uri, Uri.tryParse, Uri.parse),
-        FromString<BigInt>(BigInt, BigInt.tryParse, BigInt.parse),
-        FromString<InternetAddress>(InternetAddress, InternetAddress.tryParse, (value) => InternetAddress(value)),
+        FromString<String>((data) => data),
+        FromString<String?>((data) => data),
+        FromString<num>(num.parse),
+        FromString<num?>(num.tryParse),
+        FromString<int>(int.parse),
+        FromString<int?>(int.tryParse),
+        FromString<double>(double.parse),
+        FromString<double?>(double.tryParse),
+        FromString<bool>(bool.parse),
+        FromString<bool?>(bool.tryParse),
+        FromString<DateTime>(DateTime.parse),
+        FromString<DateTime?>(DateTime.tryParse),
+        FromString<Uri>(Uri.parse),
+        FromString<Uri?>(Uri.tryParse),
+        FromString<BigInt>(BigInt.parse),
+        FromString<BigInt?>(BigInt.tryParse),
+        FromString<InternetAddress>((value) => InternetAddress(value)),
+        FromString<InternetAddress?>((value) => InternetAddress.tryParse(value)),
       ];
 
   static bool supportParse(Type type) => fromStringConverters.any((element) => element.type == type);
 
-  T? tryParse<T>() {
-    return _internalParse<T, T?>(() => null);
-  }
+  T parse<T>() => _internalParse<T, T>();
 
-  T parse<T>() {
-    return _internalParse<T, T>(() => throw ParseStringException(T, this));
-  }
-
-  R _internalParse<T, R>(R Function() onNoMatch) {
+  R _internalParse<T, R>() {
     final fromString = fromStringConverters.where((element) => element.type == T).firstOrNull;
     if (fromString != null) {
       return fromString.parse(this) as R;
     }
-    return onNoMatch();
+    throw ParseStringException(T, this);
   }
 
   bool equalsIgnoreCase(String other) => toLowerCase() == other.toLowerCase();
@@ -243,4 +245,13 @@ enum DateTimeFormat {
   final String pattern;
 
   const DateTimeFormat(this.pattern);
+}
+
+extension EnumExtension on Enum {
+  String get javaName => name
+      .replaceAllMapped(
+        RegExp(r'(?<=[a-z])([A-Z])'), // Detecta transiciones de minúscula a mayúscula.
+        (match) => '_${match.group(0)}', // Inserta un guión bajo antes de la mayúscula.
+      )
+      .toUpperCase();
 }

@@ -24,26 +24,65 @@ class SonaChatView extends StatelessWidget {
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
 
-    final chatBubbleRadius = BorderRadius.circular(10);
     const chatBubbleSenderNameTextStyle = TextStyle(
       color: Colors.black,
       fontSize: 12,
       fontWeight: FontWeight.bold,
     );
+    const padding = EdgeInsets.symmetric(horizontal: 10, vertical: 5);
+
+    final receiptsWidgetConfig = ReceiptsWidgetConfig(
+      lastSeenAgoBuilder: (Message message, String formattedDate) {
+        return Text(
+          'Hace $formattedDate',
+          style: const TextStyle(
+            color: Colors.grey,
+            fontSize: 12,
+          ),
+        );
+      },
+      showReceiptsIn: ShowReceiptsIn.all,
+      receiptsBuilder: (status) {
+        return switch (status) {
+          MessageStatus.pending => const Icon(Icons.access_time, size: 15, color: Colors.grey),
+          MessageStatus.read => Icon(Icons.done_all, size: 15, color: primaryColor),
+          MessageStatus.delivered => const Icon(Icons.done, size: 15, color: Colors.grey),
+          MessageStatus.undelivered => const Icon(Icons.error, size: 15, color: Colors.red),
+        };
+      },
+    );
 
     final inComingChatBubbleConfig = ChatBubble(
       color: teal,
-      borderRadius: chatBubbleRadius,
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(10),
+        topRight: Radius.circular(10),
+        bottomRight: Radius.circular(10),
+      ),
+      padding: padding,
       senderNameTextStyle: chatBubbleSenderNameTextStyle,
+      receiptsWidgetConfig: receiptsWidgetConfig,
     );
 
     final outgoingChatBubbleConfig = ChatBubble(
       color: primaryColor,
-      borderRadius: chatBubbleRadius,
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(10),
+        topRight: Radius.circular(10),
+        bottomLeft: Radius.circular(10),
+      ),
+      padding: padding,
       senderNameTextStyle: chatBubbleSenderNameTextStyle,
+      receiptsWidgetConfig: receiptsWidgetConfig,
     );
 
     return ChatView(
+      featureActiveConfig: const FeatureActiveConfig(
+        enableReactionPopup: false,
+        enableDoubleTapToLike: false,
+        enableOtherUserProfileAvatar: true,
+        enableCurrentUserProfileAvatar: true,
+      ),
       chatController: chatController,
       chatViewState: chatViewState,
       onSendTap: sendMessage,

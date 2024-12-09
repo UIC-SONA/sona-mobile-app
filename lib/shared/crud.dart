@@ -10,6 +10,8 @@ abstract interface class Paginable<T> {
 
 abstract interface class Findable<T, ID> {
   Future<T> find(ID id);
+
+  Future<List<T>> findMany(List<ID> ids);
 }
 
 abstract interface class Countable {

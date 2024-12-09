@@ -8,9 +8,10 @@ typedef ToJson<T> = dynamic Function(T value);
 typedef FromJsonMap<T> = T Function(Map<String, dynamic> json);
 typedef ToJsonMap<T> = Map<String, dynamic> Function(T value);
 
+bool typeIsNullable(Type type) => type.toString().endsWith('?');
+
 abstract final class Json {
   /// METHOD TO SERIALIZE AND DESERIALIZE A VALUE
-
   /// [serialize] takes a value and returns a String with the JSON representation of the value
   /// registered with [register] for the type [T] or the default serialization if the type is a Map or List<Map>
   ///
@@ -49,12 +50,12 @@ abstract final class Json {
   }
 
   static T deserializeDecoded<T>(dynamic json) {
+    if (typeIsNullable(T) && json == null) return json as T;
     if (T == Map || T == List<Map>) return json as T;
     return _JsonCodec.get<T>().fromJson(json);
   }
 
   /// METHOD TO REGISTER SERIALIZATION AND DESERIALIZATION FOR A TYPE
-
   /// [fromJson] is a function that takes a [Map<String, dynamic>] and returns an instance of T
   /// [toJson] is a function that takes an instance of T and returns a Map<String, dynamic>
   ///
@@ -90,7 +91,12 @@ abstract final class Json {
   ///   ```
   ///   NOTE:
   ///   If the type is a List, the type of the elements is inferred from the type of the List
-  static void register<T>({required FromJsonMap<T> fromJson, required ToJsonMap<T> toJson}) => _JsonCodec.register<T>(fromJsonMap: fromJson, toJsonMap: toJson);
+  static void register<T>({
+    required FromJsonMap<T> fromJson,
+    required ToJsonMap<T> toJson,
+  }) {
+    return _JsonCodec.register<T>(fromJsonMap: fromJson, toJsonMap: toJson);
+  }
 
   static void registerDefaultsCodecs() {
     register<Color>(
@@ -185,7 +191,7 @@ abstract final class Json {
     var result = 'Json\n';
     result += 'Registered types:\n';
     for (final codec in _JsonCodec.coders) {
-      result += ' ♠ ${codec.targetType}\n';
+      result += '♦ ${codec.targetType}\n';
     }
     return result;
   }

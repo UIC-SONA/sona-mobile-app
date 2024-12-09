@@ -46,9 +46,7 @@ T _getBodyFromString<T>(String body) {
   if (T == String) return body as T;
   if (T == dynamic) return jsonDecode(body) as T;
   if (StringExtension.supportParse(T)) {
-    return _typeIsNullable(T) ? body.tryParse<T>() as T : body.parse<T>();
+    return body.parse<T>();
   }
   return Json.deserialize<T>(body);
 }
-
-bool _typeIsNullable(Type type) => type.toString().endsWith('?');

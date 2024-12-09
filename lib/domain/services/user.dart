@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http/http.dart';
+import 'package:sona/shared/extensions.dart';
 import 'package:sona/shared/rest_crud.dart';
 import 'package:sona/shared/crud.dart';
 import 'package:sona/shared/schemas/message.dart';
@@ -33,6 +34,21 @@ abstract class UserService implements ReadOperations<User, int> {
   Future<List<User>> listByRole(Authority role);
 
   Future<Page<User>> pageByRole(Authority role, [PageQuery? query]);
+
+  static User notFound = User(
+    id: -1,
+    representation: UserRepresentation(
+      firstName: 'Usuario',
+      lastName: 'no encontrado',
+      id: '',
+      username: '',
+      email: '',
+      emailVerified: false,
+    ),
+    keycloakId: '',
+    profilePicturePath: '',
+    authorities: [],
+  );
 }
 
 class ApiUserService extends RestReadOperations<User, int> implements UserService {
@@ -50,7 +66,7 @@ class ApiUserService extends RestReadOperations<User, int> implements UserServic
   Client? get client => authProvider.client;
 
   @override
-  Map<String, String> get headers => {'Accept-Language': localeProvider.languageCode};
+  Map<String, String> get commonHeaders => {'Accept-Language': localeProvider.languageCode};
 
   @override
   String get path => '/user';
@@ -68,7 +84,7 @@ class ApiUserService extends RestReadOperations<User, int> implements UserServic
       method: HttpMethod.post,
       headers: {
         'Content-Type': 'application/json',
-        ...headers,
+        ...commonHeaders,
       },
       body: jsonEncode({
         'firstName': firstName,
@@ -88,7 +104,7 @@ class ApiUserService extends RestReadOperations<User, int> implements UserServic
       uri.replace(path: '$path/profile-picture'),
       client: client,
       method: HttpMethod.get,
-      headers: headers,
+      headers: commonHeaders,
     );
 
     return response.bodyBytes;
@@ -100,7 +116,7 @@ class ApiUserService extends RestReadOperations<User, int> implements UserServic
       uri.replace(path: '$path/profile-picture'),
       client: client,
       method: HttpMethod.post,
-      headers: headers,
+      headers: commonHeaders,
       factory: (request) async {
         request.files.add(await MultipartFile.fromPath('file', filePath));
       },
@@ -115,7 +131,7 @@ class ApiUserService extends RestReadOperations<User, int> implements UserServic
       uri.replace(path: '$path/profile-picture'),
       client: client,
       method: HttpMethod.delete,
-      headers: headers,
+      headers: commonHeaders,
     );
 
     return response.getBody<Message>();
@@ -127,7 +143,7 @@ class ApiUserService extends RestReadOperations<User, int> implements UserServic
       uri.replace(path: '$path/profile'),
       client: client,
       method: HttpMethod.get,
-      headers: headers,
+      headers: commonHeaders,
     );
 
     return response.getBody<User>();
@@ -136,10 +152,10 @@ class ApiUserService extends RestReadOperations<User, int> implements UserServic
   @override
   Future<List<User>> listByRole(Authority role) async {
     final response = await request(
-      uri.replace(path: '$path/role/${role.name}'),
+      uri.replace(path: '$path/role/${role.javaName}'),
       client: client,
       method: HttpMethod.get,
-      headers: headers,
+      headers: commonHeaders,
     );
 
     return response.getBody<List<User>>();
@@ -148,10 +164,10 @@ class ApiUserService extends RestReadOperations<User, int> implements UserServic
   @override
   Future<Page<User>> pageByRole(Authority role, [PageQuery? query]) async {
     final response = await request(
-      uri.replace(path: '$path/role/${role.name.toUpperCase()}/page', queryParameters: query?.toQueryParameters()),
+      uri.replace(path: '$path/role/${role.javaName}/page', queryParameters: query?.toQueryParameters()),
       client: client,
       method: HttpMethod.get,
-      headers: headers,
+      headers: commonHeaders,
     );
 
     return response.getBody<PageMap>().as<User>();

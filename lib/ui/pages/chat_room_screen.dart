@@ -13,13 +13,13 @@ import 'package:uuid/uuid.dart';
 
 @RoutePage()
 class ChatRoomScreen extends StatefulWidget {
-  final User owner;
-  final Future<ChatRoom> Function() getRoom;
+  final User profile;
+  final ChatRoomData roomData;
 
   const ChatRoomScreen({
     super.key,
-    required this.owner,
-    required this.getRoom,
+    required this.profile,
+    required this.roomData,
   });
 
   @override
@@ -29,31 +29,37 @@ class ChatRoomScreen extends StatefulWidget {
 Logger _log = Logger();
 
 class _ChatRoomScreenState extends FullState<ChatRoomScreen> {
-  late final _userService = injector.get<UserService>();
-  late final _chatService = injector.get<ChatService>();
-
-  final List<String> _messagesSent = [];
   final ScrollController _scrollController = ScrollController();
+  final List<String> _messagesRequests = [];
 
-  ChatRoom? _room;
-  ChatController? _chatController;
-  ChatViewState _chatViewState = ChatViewState.loading;
+  late final _chatService = injector.get<ChatService>();
+  late final _chatViewState = valueState(ChatViewState.loading);
+  late final ChatController _chatController = ChatController(
+    initialMessageList: [],
+    scrollController: _scrollController,
+    otherUsers: _mapUsers(roomData.participants),
+    currentUser: _mapUser(profile),
+  );
+
   int _chunk = 1;
   bool _isLoadingMore = false;
+
+  ChatRoomData get roomData => widget.roomData;
+
+  User get profile => widget.profile;
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _loadData();
     _scrollController.addListener(_scrollListener);
   }
 
   @override
   void dispose() {
     _scrollController.removeListener(_scrollListener);
-    if (_room != null) _chatService.unsubscribe(roomId: _room!.id);
-    _scrollController.dispose();
-    _chatController?.dispose();
+    _chatService.closeOnReceiveMessageRoom(roomId: roomData.id);
+    _chatService.closeOnReadMessageRoom(roomId: roomData.id);
     super.dispose();
   }
 
@@ -69,16 +75,16 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> {
 
     try {
       _isLoadingMore = true;
-      final previousChunk = _chunk - 1;
+      final nextChunk = _chunk - 1;
 
       final moreMessages = await _chatService.messages(
-        roomId: _room!.id,
-        chunk: previousChunk,
+        roomId: roomData.id,
+        chunk: nextChunk,
       );
 
       if (moreMessages.isNotEmpty) {
-        _chunk = previousChunk;
-        _chatController?.loadMoreData(_mapMessages(moreMessages));
+        _chunk = nextChunk;
+        _chatController.loadMoreData(_mapMessages(moreMessages));
       }
     } catch (e, stackTrace) {
       _log.e('Error loading more messages', error: e, stackTrace: stackTrace);
@@ -88,107 +94,96 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> {
     }
   }
 
-  void _load() async {
+  void _loadData() async {
     try {
-      _room = await widget.getRoom();
-      _loadChatSubscription();
       await _loadChatHistory();
+      await _markAsRead();
+      await _registerOnReceiveMessage();
+      await _registerOnReadMessage();
     } catch (e, stackTrace) {
-      _chatViewState = ChatViewState.error;
-      _log.e('Error loading chat', error: e, stackTrace: stackTrace);
-      refresh();
-    } finally {
-      refresh();
+      _chatViewState.value = ChatViewState.error;
+      _log.e('Error loading chat room', error: e, stackTrace: stackTrace);
     }
   }
 
   Future<void> _loadChatHistory() async {
-    final users = (await _getUsers(_room!.participants)).where((user) => user.id != widget.owner.id).toList();
-
-    var roomId = _room!.id;
+    var roomId = roomData.id;
     final totalChunks = await _chatService.chunkCount(roomId: roomId);
     _chunk = totalChunks == 0 ? 1 : totalChunks;
 
     final initialMessage = await _chatService.messages(roomId: roomId, chunk: _chunk);
-
-    _chatController = ChatController(
-      initialMessageList: _mapMessages(initialMessage),
-      scrollController: _scrollController,
-      otherUsers: _mapUsers(users),
-      currentUser: _mapUser(widget.owner),
-    );
-
-    _chatViewState = initialMessage.isEmpty ? ChatViewState.noData : ChatViewState.hasMessages;
-    refresh();
+    _chatController.loadMoreData(_mapMessages(initialMessage));
+    _chatViewState.value = initialMessage.isEmpty ? ChatViewState.noData : ChatViewState.hasMessages;
   }
 
-  void _loadChatSubscription() {
-    _chatService.subscribe(
-      roomId: _room!.id,
-      onMessage: (messageSent) {
+  Future<void> _markAsRead() async {
+    final otherMessages = _chatController.initialMessageList.reversed.where((element) => element.sentBy != profile.id.toString());
+    final messagesIds = <String>[];
+    for (var message in otherMessages) {
+      if (message.status == MessageStatus.read) break;
+      messagesIds.add(message.id);
+    }
+
+    if (messagesIds.isNotEmpty) {
+      await _chatService.markAsRead(roomId: roomData.id, messagesIds: messagesIds);
+    }
+  }
+
+  Future<void> _registerOnReceiveMessage() async {
+    await _chatService.onReceiveMessageRoom(
+      roomId: roomData.id,
+      onReceiveMessage: (messageSent) {
         final message = messageSent.message;
-        if (message.sentBy == widget.owner.id) {
-          if (_messagesSent.any((requestId) => requestId == messageSent.requestId)) return;
+
+        if (message.sentBy == profile.id && _messagesRequests.contains(messageSent.requestId)) {
+          _messagesRequests.remove(messageSent.requestId);
+          return;
         }
-        if (_chatController != null) {
-          _chatController!.addMessage(_mapMessage(message));
+
+        _chatController.addMessage(_mapMessage(message));
+
+        if (_chatViewState.value == ChatViewState.noData) {
+          _chatViewState.value = ChatViewState.hasMessages;
         }
       },
     );
   }
 
-  Message _mapMessage(ChatMessage message) {
-    final userId = message.sentBy;
-
-    return Message(
-      id: message.id,
-      message: message.message,
-      sentBy: userId.toString(),
-      createdAt: message.createdAt,
-      status: MessageStatus.read,
+  Future<void> _registerOnReadMessage() async {
+    await _chatService.onReadMessageRoom(
+      roomId: roomData.id,
+      onReadMessage: (readMessages) {
+        if (roomData.room.type == ChatRoomType.group) return;
+        final messages = _chatController.initialMessageList;
+        for (var message in messages) {
+          if (readMessages.messageIds.contains(message.id)) {
+            message.setStatus = MessageStatus.read;
+          }
+        }
+      },
     );
-  }
-
-  List<Message> _mapMessages(List<ChatMessage> messages) {
-    return messages.map(_mapMessage).toList();
-  }
-
-  ChatUser _mapUser(User user) {
-    return ChatUser(
-      id: user.id.toString(),
-      name: user.representation.firstName,
-      // profilePhoto: user.profilePicturePath,
-    );
-  }
-
-  List<ChatUser> _mapUsers(List<User> users) {
-    return users.map(_mapUser).toList();
-  }
-
-  Future<List<User>> _getUsers(List<int> userIds) async {
-    return await Future.wait(userIds.map(_userService.find));
   }
 
   void _sendMessage(String message, ReplyMessage replyMessage, MessageType messageType) async {
+    //
     final meessageSent = Message(
       id: const Uuid().v4(),
       createdAt: DateTime.now(),
       message: message,
-      sentBy: _chatController!.currentUser.id,
+      sentBy: _chatController.currentUser.id,
       replyMessage: replyMessage,
       messageType: messageType,
       status: MessageStatus.pending,
     );
 
-    _chatController!.addMessage(meessageSent);
-    if (_chatViewState == ChatViewState.noData) {
-      _chatViewState = ChatViewState.hasMessages;
-      refresh();
+    _chatController.addMessage(meessageSent);
+    if (_chatViewState.value == ChatViewState.noData) {
+      _chatViewState.value = ChatViewState.hasMessages;
     }
 
     try {
-      _messagesSent.add(meessageSent.id);
-      await _chatService.send(roomId: _room!.id, requestId: meessageSent.id, message: message);
+      _messagesRequests.add(meessageSent.id);
+      await _chatService.send(roomId: roomData.id, requestId: meessageSent.id, message: message);
       meessageSent.setStatus = MessageStatus.delivered;
     } catch (e, stackTrace) {
       if (mounted) showAlertErrorDialog(context, error: e);
@@ -203,16 +198,40 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> {
       showLeading: false,
       actionButton: SonaActionButton.home(),
       padding: 0,
-      body: _chatController == null
-          ? const Center(child: CircularProgressIndicator())
-          : SonaChatView(
-              chatController: _chatController!,
-              chatViewState: _chatViewState,
-              sendMessage: _sendMessage,
-              enableCameraImagePicker: false,
-              enableGalleryImagePicker: false,
-              allowRecordingVoice: false,
-            ),
+      body: SonaChatView(
+        chatController: _chatController,
+        chatViewState: _chatViewState.value!,
+        sendMessage: _sendMessage,
+        enableCameraImagePicker: true,
+        enableGalleryImagePicker: true,
+        allowRecordingVoice: false,
+      ),
     );
   }
+}
+
+Message _mapMessage(ChatMessage message) {
+  return Message(
+    id: message.id,
+    message: message.message,
+    sentBy: message.sentBy.toString(),
+    createdAt: message.createdAt,
+    status: MessageStatus.read,
+  );
+}
+
+List<Message> _mapMessages(List<ChatMessage> messages) {
+  return messages.map(_mapMessage).toList();
+}
+
+ChatUser _mapUser(User user) {
+  return ChatUser(
+    id: user.id.toString(),
+    name: user.representation.firstName,
+    profilePhoto: user.profilePicturePath,
+  );
+}
+
+List<ChatUser> _mapUsers(List<User> users) {
+  return users.map(_mapUser).toList();
 }

@@ -72,7 +72,12 @@ class AuthGuard extends AutoRouteGuard {
     _log.t('Navigation to $currentRouteName, cached auth: $_cachedIsAuthenticated');
 
     if (_cachedIsAuthenticated == null || _lastAuthCheckTime == null || DateTime.now().difference(_lastAuthCheckTime!) > authCacheDuration) {
-      _cachedIsAuthenticated = await authProvider.isAutheticated();
+      try {
+        _cachedIsAuthenticated = await authProvider.isAutheticated();
+      } catch (e) {
+        _log.e('Error checking authentication: $e');
+        _cachedIsAuthenticated = false;
+      }
       _lastAuthCheckTime = DateTime.now();
     }
 

@@ -1,4 +1,3 @@
-
 import 'package:sona/shared/extensions.dart';
 
 class ValidationException implements Exception {
@@ -11,8 +10,7 @@ class ValidationException implements Exception {
 T requiredType<T>(Map<String, dynamic> map, String key) {
   final dynamic value = map[key];
   if (value is String) {
-    final T? parsed = value.tryParse<T>();
-    if (parsed != null) return parsed;
+    return value.parse<T>();
   }
   return value is T ? value : (throw ValidationException('The value of key $key is not a $T', requiredType));
 }
@@ -29,10 +27,5 @@ T notNull<T>(Map<String, dynamic> map, String key, [T? defaultValue]) {
 T notEmpty<T>(Map<String, dynamic> map, String key) {
   final dynamic value = map[key];
   final throwable = ValidationException('The key $key is empty in map $map', notEmpty);
-  return switch (value) {
-    String val => val.isEmpty ? throw throwable : notNull<T>(map, key),
-    Iterable val => val.isEmpty ? throw throwable : notNull<T>(map, key),
-    Map val => val.isEmpty ? throw throwable : notNull<T>(map, key),
-    _ => notNull<T>(map, key)
-  };
+  return switch (value) { String val => val.isEmpty ? throw throwable : notNull<T>(map, key), Iterable val => val.isEmpty ? throw throwable : notNull<T>(map, key), Map val => val.isEmpty ? throw throwable : notNull<T>(map, key), _ => notNull<T>(map, key) };
 }

@@ -3,7 +3,8 @@ import 'package:sona/shared/extensions.dart';
 enum Authority {
   admin,
   administrative,
-  professional,
+  medicalProfessional,
+  legalProfessional,
   user;
 
   static Authority fromString(String value) {
@@ -27,6 +28,8 @@ class UserRepresentation {
     required this.email,
     required this.emailVerified,
   });
+
+  String get fullName => '$firstName $lastName';
 
   factory UserRepresentation.fromJson(Map<String, dynamic> json) {
     return UserRepresentation(
@@ -86,9 +89,19 @@ class User {
     };
   }
 
+  @override
   String toString() {
     return 'User(id: $id, keycloakId: $keycloakId, profilePicturePath: $profilePicturePath, representation: $representation, authorities: $authorities)';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is User && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
 }
 
 class UserInfo {

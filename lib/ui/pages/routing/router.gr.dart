@@ -34,14 +34,14 @@ class ChatRoomRoute extends PageRouteInfo<ChatRoomRouteArgs> {
   ChatRoomRoute({
     Key? key,
     required User owner,
-    required Future<ChatRoom> Function() getRoom,
+    required ChatRoomData room,
     List<PageRouteInfo>? children,
   }) : super(
           ChatRoomRoute.name,
           args: ChatRoomRouteArgs(
             key: key,
             owner: owner,
-            getRoom: getRoom,
+            room: room,
           ),
           initialChildren: children,
         );
@@ -54,8 +54,8 @@ class ChatRoomRoute extends PageRouteInfo<ChatRoomRouteArgs> {
       final args = data.argsAs<ChatRoomRouteArgs>();
       return ChatRoomScreen(
         key: args.key,
-        owner: args.owner,
-        getRoom: args.getRoom,
+        profile: args.owner,
+        roomData: args.room,
       );
     },
   );
@@ -65,18 +65,18 @@ class ChatRoomRouteArgs {
   const ChatRoomRouteArgs({
     this.key,
     required this.owner,
-    required this.getRoom,
+    required this.room,
   });
 
   final Key? key;
 
   final User owner;
 
-  final Future<ChatRoom> Function() getRoom;
+  final ChatRoomData room;
 
   @override
   String toString() {
-    return 'ChatRoomRouteArgs{key: $key, owner: $owner, getRoom: $getRoom}';
+    return 'ChatRoomRouteArgs{key: $key, owner: $owner, room: $room}';
   }
 }
 
