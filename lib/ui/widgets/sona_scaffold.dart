@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/providers/auth.dart';
+import 'package:sona/domain/services/services.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/theme/backgrounds.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
@@ -70,12 +71,19 @@ class SonaDrawer extends StatefulWidget {
 
 class _SonaDrawerState extends FullState<SonaDrawer> {
   var _loading = false;
+  final _userService = injector.get<UserService>();
   final _authProvider = injector.get<AuthProvider>();
-  late final _userState = fetchState(([positionalArguments, namedArguments]) => _authProvider.user(), autoFetch: true);
+
+  @override
+  void initState() {
+    super.initState();
+    _userService.refreshCurrentUser().whenComplete(refresh);
+  }
 
   @override
   Widget build(BuildContext context) {
-    var primaryColor = Theme.of(context).primaryColor;
+    final primaryColor = Theme.of(context).primaryColor;
+    final user = _userService.currentUser.representation;
 
     return Drawer(
       child: ListView(
@@ -93,22 +101,17 @@ class _SonaDrawerState extends FullState<SonaDrawer> {
                     child: Icon(Icons.person_3_rounded, size: 50, color: primaryColor),
                   ),
                   const SizedBox(height: 10),
-                  _userState.when(
-                    loading: () => const CircularProgressIndicator(),
-                    initial: () => Container(),
-                    error: (error) => Text(error.toString()),
-                    value: (user) => Column(
-                      children: [
-                        Text(
-                          user.name,
-                          style: const TextStyle(color: Colors.white, fontSize: 20),
-                        ),
-                        Text(
-                          user.email,
-                          style: const TextStyle(color: Colors.white, fontSize: 16),
-                        ),
-                      ],
-                    ),
+                  Column(
+                    children: [
+                      Text(
+                        user.fullName,
+                        style: const TextStyle(color: Colors.white, fontSize: 20),
+                      ),
+                      Text(
+                        user.email,
+                        style: const TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ],
                   ),
                 ],
               ),

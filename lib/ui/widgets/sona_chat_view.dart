@@ -77,20 +77,31 @@ class SonaChatView extends StatelessWidget {
     );
 
     return ChatView(
+      chatController: chatController,
+      chatViewState: chatViewState,
       featureActiveConfig: const FeatureActiveConfig(
         enableReactionPopup: false,
         enableDoubleTapToLike: false,
         enableOtherUserProfileAvatar: true,
         enableCurrentUserProfileAvatar: true,
       ),
-      chatController: chatController,
-      chatViewState: chatViewState,
       onSendTap: sendMessage,
       chatBackgroundConfig: const ChatBackgroundConfiguration(
         backgroundColor: Colors.transparent,
       ),
       chatViewStateConfig: ChatViewStateConfiguration(
         noMessageWidgetConfig: _noMessageWidgetConfig(context),
+        errorWidgetConfig: const ChatViewStateWidgetConfiguration(
+          widget: Center(
+            child: Text(
+              'Error al cargar mensajes',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ),
       ),
       chatBubbleConfig: ChatBubbleConfiguration(
         inComingChatBubbleConfig: inComingChatBubbleConfig,

@@ -11,8 +11,6 @@ class PagingQueryController<T> extends PagingController<int, T> {
   List<String>? properties;
   Direction? direction;
 
-  PageRequestListener? fetcherPageRequestListener;
-
   PagingQueryController({
     required int firstPage,
     String? search,
@@ -23,12 +21,8 @@ class PagingQueryController<T> extends PagingController<int, T> {
         super(firstPageKey: firstPage);
 
   void configureFetcher(Future<Page<T>> Function(PageQuery query) fetcher) {
-    setFetcher(fetcher);
-    addPageRequestListener((int pageKey) async => fetcherPageRequestListener?.call(pageKey));
-  }
-
-  void setFetcher(Future<Page<T>> Function(PageQuery query) fetcher) {
-    fetcherPageRequestListener = (pageKey) async {
+    addPageRequestListener((pageKey) async {
+      _log.i('Fetching page $pageKey');
       final pageNumber = pageKey ~/ size;
       try {
         final page = await fetcher(PageQuery(
@@ -38,10 +32,12 @@ class PagingQueryController<T> extends PagingController<int, T> {
           properties: properties,
           direction: direction,
         ));
+
+        _log.i('Date fetched for page $pageNumber, data: $page');
         final content = page.content;
         final length = content.length;
 
-        final isLastPage = length < size;
+        final isLastPage = page.page.totalPages == pageNumber + 1;
         if (isLastPage) {
           appendLastPage(content);
         } else {
@@ -52,7 +48,7 @@ class PagingQueryController<T> extends PagingController<int, T> {
         _log.e('Error fetching page $pageNumber', error: error, stackTrace: stackTrace);
         this.error = error;
       }
-    };
+    });
   }
 
   void sort(List<String> properties, Direction direction) {

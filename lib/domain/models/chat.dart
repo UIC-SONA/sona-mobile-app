@@ -110,6 +110,11 @@ class ReadBy {
       'readAt': readAt.toIso8601String(),
     };
   }
+
+  @override
+  String toString() {
+    return 'ReadBy{participantId: $participantId, readAt: $readAt}';
+  }
 }
 
 class ChatRoom {
@@ -205,6 +210,11 @@ class ReadMessages {
       'readBy': readBy.toJson(),
       'messageIds': messageIds,
     };
+  }
+
+  @override
+  String toString() {
+    return 'ReadMessages{roomId: $roomId, readBy: $readBy, messageIds: $messageIds}';
   }
 }
 

@@ -3,12 +3,13 @@ import 'package:sona/shared/extensions.dart';
 enum Authority {
   admin,
   administrative,
+  professional,
   medicalProfessional,
   legalProfessional,
   user;
 
   static Authority fromString(String value) {
-    return Authority.values.firstWhere((e) => e.name.equalsIgnoreCase(value));
+    return Authority.values.firstWhere((e) => e.javaName == value);
   }
 }
 

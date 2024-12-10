@@ -22,19 +22,27 @@ class ChatBotScreen extends StatefulWidget {
 class _ChatBotScreenState extends FullState<ChatBotScreen> {
   final _service = injector.get<ChatBotService>();
 
-  ChatController? _chatController;
+  final ChatController _chatController = ChatController(
+    initialMessageList: [],
+    scrollController: ScrollController(),
+    otherUsers: [
+      ChatUser(
+        id: '2',
+        name: 'Sona Bot',
+      ),
+    ],
+    currentUser: ChatUser(
+      id: '1',
+      name: 'Tú',
+    ),
+  );
+
   ChatViewState _chatViewState = ChatViewState.loading;
 
   @override
   void initState() {
     super.initState();
     _loadChatHistory();
-  }
-
-  @override
-  void dispose() {
-    _chatController?.dispose();
-    super.dispose();
   }
 
   void _loadChatHistory() async {
@@ -46,44 +54,26 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
         final prompt = promptResponse.prompt;
         final responses = promptResponse.responses;
 
-        initialMessageList.add(
-          Message(
-            id: const Uuid().v4(),
-            message: prompt,
-            sentBy: '1',
-            createdAt: promptResponse.timestamp,
-            status: MessageStatus.read,
-          ),
-        );
+        initialMessageList.add(Message(
+          id: const Uuid().v4(),
+          message: prompt,
+          sentBy: '1',
+          createdAt: promptResponse.timestamp,
+          status: MessageStatus.read,
+        ));
 
         for (var response in responses) {
-          initialMessageList.add(
-            Message(
-              id: const Uuid().v4(),
-              message: response,
-              sentBy: '2',
-              createdAt: promptResponse.timestamp,
-              status: MessageStatus.read,
-            ),
-          );
+          initialMessageList.add(Message(
+            id: const Uuid().v4(),
+            message: response,
+            sentBy: '2',
+            createdAt: promptResponse.timestamp,
+            status: MessageStatus.read,
+          ));
         }
       }
 
-      _chatController = ChatController(
-        currentUser: ChatUser(
-          id: '1',
-          name: 'Tú',
-        ),
-        otherUsers: [
-          ChatUser(
-            id: '2',
-            name: 'Sona Bot',
-          ),
-        ],
-        initialMessageList: initialMessageList,
-        scrollController: ScrollController(),
-      );
-
+      _chatController.loadMoreData(initialMessageList);
       _chatViewState = initialMessageList.isEmpty ? ChatViewState.noData : ChatViewState.hasMessages;
     } catch (e, stackTrace) {
       _log.e("Error loading chat history", error: e, stackTrace: stackTrace);
@@ -98,16 +88,14 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
       showLeading: false,
       actionButton: SonaActionButton.home(),
       padding: 0,
-      body: _chatController == null
-          ? const Center(child: CircularProgressIndicator())
-          : SonaChatView(
-              chatController: _chatController!,
-              chatViewState: _chatViewState,
-              sendMessage: _sendMessage,
-              enableCameraImagePicker: false,
-              enableGalleryImagePicker: false,
-              allowRecordingVoice: false,
-            ),
+      body: SonaChatView(
+        chatController: _chatController,
+        chatViewState: _chatViewState,
+        sendMessage: _sendMessage,
+        enableCameraImagePicker: false,
+        enableGalleryImagePicker: false,
+        allowRecordingVoice: false,
+      ),
     );
   }
 
@@ -116,13 +104,13 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
       id: const Uuid().v4(),
       createdAt: DateTime.now(),
       message: message,
-      sentBy: _chatController!.currentUser.id,
+      sentBy: _chatController.currentUser.id,
       replyMessage: replyMessage,
       messageType: messageType,
       status: MessageStatus.pending,
     );
 
-    _chatController!.addMessage(messageSent);
+    _chatController.addMessage(messageSent);
 
     if (_chatViewState == ChatViewState.noData) {
       _chatViewState = ChatViewState.hasMessages;
@@ -136,15 +124,13 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
 
       final responses = response.responses;
       for (var response in responses) {
-        _chatController!.addMessage(
-          Message(
-            id: const Uuid().v4(),
-            message: response,
-            sentBy: '2',
-            createdAt: DateTime.now(),
-            status: MessageStatus.read,
-          ),
-        );
+        _chatController.addMessage(Message(
+          id: const Uuid().v4(),
+          message: response,
+          sentBy: '2',
+          createdAt: DateTime.now(),
+          status: MessageStatus.read,
+        ));
       }
     } catch (e) {
       _log.e(e);

@@ -10,6 +10,25 @@ class Page<T> {
     required this.content,
     required this.page,
   });
+
+  factory Page.fromJson(Map<String, dynamic> json) {
+    return Page(
+      content: Json.deserializeDecoded<List<T>>(json['content']),
+      page: PageInfo.fromJson(json['page']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'content': content,
+      'page': page.toJson(),
+    };
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
 }
 
 class PageMap extends Page<Map<String, dynamic>> {
@@ -37,6 +56,11 @@ class PageMap extends Page<Map<String, dynamic>> {
       content: Json.deserializeDecoded<List<T>>(content),
       page: page,
     );
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
   }
 }
 

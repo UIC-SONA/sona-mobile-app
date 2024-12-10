@@ -189,7 +189,7 @@ class ServicesOptionsRoute extends PageRouteInfo<void> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const ServicesOptionsScreen();
+      return ServicesOptionsScreen();
     },
   );
 }

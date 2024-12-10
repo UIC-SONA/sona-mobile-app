@@ -70,13 +70,18 @@ class _MenuButtonState extends FullState<MenuButton> {
         duration: const Duration(milliseconds: 100), // Duración de la animación
         child: ElevatedButton(
           style: ButtonStyle(
-            shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-              const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(20)),
-                side: BorderSide(color: Colors.white, width: 2),
+              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(20)),
+                  side: BorderSide(color: Colors.white, width: 2),
+                ),
               ),
-            ),
-          ),
+              backgroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.disabled)) {
+                  return Colors.grey;
+                }
+                return null;
+              })),
           onPressed: widget.onPressed,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

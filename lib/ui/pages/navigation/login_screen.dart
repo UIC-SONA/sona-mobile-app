@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/providers/auth.dart';
+import 'package:sona/domain/services/services.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/theme/backgrounds.dart';
 import 'package:sona/ui/theme/colors.dart';
@@ -20,6 +21,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends FullState<LoginScreen> {
   final AuthProvider _authProvider = injector.get<AuthProvider>();
+  final UserService _userService = injector.get<UserService>();
 
   late final _login = fetchState(([positionalArguments, namedArguments]) => _authProvider.login(
         positionalArguments![0],
@@ -213,6 +215,7 @@ class _LoginScreenState extends FullState<LoginScreen> {
       return;
     }
 
+    await _userService.refreshCurrentUser();
     if (mounted) {
       AutoRouter.of(context).replaceAll([const HomeRoute()]);
     }

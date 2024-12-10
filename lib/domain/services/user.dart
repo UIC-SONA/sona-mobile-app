@@ -13,7 +13,11 @@ import 'package:sona/shared/constants.dart';
 import 'package:sona/shared/http/http.dart';
 import 'package:sona/shared/schemas/page.dart';
 
-abstract class UserService implements ReadOperations<User, int> {
+mixin UserService implements ReadOperations<User, int> {
+  User? _currentUser;
+
+  User get currentUser => _currentUser ?? notFound;
+
   //
   Future<Message> signUp({
     required String username,
@@ -35,6 +39,10 @@ abstract class UserService implements ReadOperations<User, int> {
 
   Future<Page<User>> pageByRole(Authority role, [PageQuery? query]);
 
+  Future<void> refreshCurrentUser() async {
+    _currentUser = await profile();
+  }
+
   static User notFound = User(
     id: -1,
     representation: UserRepresentation(
@@ -51,7 +59,7 @@ abstract class UserService implements ReadOperations<User, int> {
   );
 }
 
-class ApiUserService extends RestReadOperations<User, int> implements UserService {
+class ApiUserService extends RestReadOperations<User, int> with UserService {
   //
   //
   final AuthProvider authProvider;

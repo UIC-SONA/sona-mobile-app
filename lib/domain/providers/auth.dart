@@ -13,7 +13,7 @@ abstract class AuthProvider<T extends http.Client> {
   //
   T? get client;
 
-  Future<bool> isAutheticated();
+  Future<bool> isAuthenticated();
 
   Future<void> logout();
 
@@ -57,7 +57,7 @@ class KeycloakAuthProvider extends AuthProvider<oauth2.Client> {
   oauth2.Client? get client => _client;
 
   @override
-  Future<bool> isAutheticated() async {
+  Future<bool> isAuthenticated() async {
     if (_client == null) return false;
     try {
       final credentials = _client!.credentials;

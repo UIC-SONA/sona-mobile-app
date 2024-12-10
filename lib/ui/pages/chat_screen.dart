@@ -26,27 +26,25 @@ class _ChatScreenState extends FullState<ChatScreen> {
   final _userService = injector.get<UserService>();
   final _controller = PageController();
 
-  late final _profile = fetchState(([positionalArguments, namedArguments]) => _userService.profile(), autoFetch: true);
   late final _currentPage = valueState(0);
 
   @override
   Widget build(BuildContext context) {
+    final profile = _userService.currentUser;
+
     return SonaScaffold(
       actionButton: SonaActionButton.home(),
-      body: _profile.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        initial: () => const SizedBox(),
-        error: (error) => Center(child: Text(extractError(error).message)),
-        value: (profile) => PageView(
-          controller: _controller,
-          onPageChanged: (index) => _currentPage.value = index,
-          children: [
-            ChatsPageView(profile: profile, controller: _controller),
-            UsersPageView(profile: profile),
-          ],
-        ),
-      ),
-      bottomNavigationBar: _profile.isLoading
+      body: profile.authorities.contains(Authority.professional)
+          ? ChatsPageView(profile: profile, controller: _controller)
+          : PageView(
+              controller: _controller,
+              onPageChanged: (index) => _currentPage.value = index,
+              children: [
+                ChatsPageView(profile: profile, controller: _controller),
+                UsersPageView(profile: profile),
+              ],
+            ),
+      bottomNavigationBar: profile.authorities.contains(Authority.professional)
           ? null
           : BottomNavigationBar(
               currentIndex: _currentPage.value!,
@@ -68,9 +66,9 @@ class _ChatScreenState extends FullState<ChatScreen> {
 }
 
 class _ChatRoomDataNotifier extends ChangeNotifier {
-  final Map<String, ChatRoomData> _rooms = {};
+  final Map<String, ChatRoomData> _roomsData = {};
 
-  List<ChatRoomData> get rooms => _rooms.values.toList()
+  List<ChatRoomData> get roomsData => _roomsData.values.toList()
     ..sort((a, b) {
       final createdAtA = a.lastMessage?.createdAt;
       final createdAtB = b.lastMessage?.createdAt;
@@ -80,30 +78,30 @@ class _ChatRoomDataNotifier extends ChangeNotifier {
 
   void addRooms(List<ChatRoomData> rooms) {
     for (var room in rooms) {
-      _rooms[room.id] = room;
+      _roomsData[room.id] = room;
     }
     notifyListeners();
   }
 
   void addRoom(ChatRoomData room) {
-    if (!_rooms.containsKey(room.id)) {
-      _rooms[room.id] = room;
+    if (!_roomsData.containsKey(room.id)) {
+      _roomsData[room.id] = room;
       notifyListeners();
     }
   }
 
   void updateRoomLastMessage(String roomId, ChatMessage message) {
-    if (_rooms.containsKey(roomId)) {
-      final updatedRoom = _rooms[roomId]!.copyWith(lastMessage: message);
-      _rooms[roomId] = updatedRoom;
+    if (_roomsData.containsKey(roomId)) {
+      final updatedRoom = _roomsData[roomId]!.copyWith(lastMessage: message);
+      _roomsData[roomId] = updatedRoom;
       notifyListeners();
     }
   }
 
-  bool exists(String roomId) => _rooms.containsKey(roomId);
+  bool exists(String roomId) => _roomsData.containsKey(roomId);
 
   void clearRooms() {
-    _rooms.clear();
+    _roomsData.clear();
     notifyListeners();
   }
 }
@@ -127,11 +125,14 @@ abstract class _ChatRoomHelperState<T extends StatefulWidget> extends FullState<
   @override
   bool get wantKeepAlive => true;
 
-  ChatService get _chatService;
+  @protected
+  ChatService get chatService;
 
-  UserService get _userService;
+  @protected
+  UserService get userService;
 
-  User get _profile;
+  @protected
+  User get profile;
 
   void cacheUser(User user) {
     _cacheUsers[user.id] = user;
@@ -141,11 +142,11 @@ abstract class _ChatRoomHelperState<T extends StatefulWidget> extends FullState<
     //
     final participants = <User>[];
     for (final userId in room.participants) {
-      if (userId == _profile.id) continue;
+      if (userId == profile.id) continue;
       participants.add(await getUser(userId));
     }
 
-    final lastMessage = await _chatService.lastMessage(roomId: room.id);
+    final lastMessage = await chatService.lastMessage(roomId: room.id);
     return ChatRoomData(
       room: room,
       participants: participants,
@@ -154,36 +155,42 @@ abstract class _ChatRoomHelperState<T extends StatefulWidget> extends FullState<
   }
 
   Future<User> getUser(int userId) async {
-    return _cacheUsers[userId] ??= await onNotFound<User>(fetch: () => _userService.find(userId), onNotFound: () => UserService.notFound);
+    return _cacheUsers[userId] ??= await onNotFound<User>(
+      fetch: () => userService.find(userId),
+      onNotFound: () => UserService.notFound,
+    );
   }
 }
 
-class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> {
+class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> with ChatMessageListenner<ChatService> {
   //
-  @override
   late final _chatService = injector.get<ChatService>();
-
-  @override
   late final _userService = injector.get<UserService>();
-
   late final _room = fetchState(([positionalArguments, namedArguments]) => _chatService.rooms());
   late final _loading = loadingState(false);
 
   final _chatRoomNotifier = _ChatRoomDataNotifier();
 
   @override
-  User get _profile => widget.profile;
+  User get profile => widget.profile;
+
+  @override
+  ChatService get chatService => _chatService;
+
+  @override
+  UserService get userService => _userService;
 
   @override
   void initState() {
     super.initState();
     _chatRoomNotifier.addListener(refresh);
     loadData();
+    initMessageListeners();
   }
 
   @override
   void dispose() {
-    _chatService.closeReceiveMessageInbox();
+    disposeMessageListeners();
     _chatRoomNotifier.dispose();
     super.dispose();
   }
@@ -195,7 +202,7 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> {
       await _room.fetch();
       final rooms = _room.value!;
 
-      final usersIds = rooms.expand((room) => room.participants).toSet().where((userId) => userId != _profile.id).toList();
+      final usersIds = rooms.expand((room) => room.participants).toSet().where((userId) => userId != profile.id).toList();
 
       final users = await _userService.findMany(usersIds);
       if (users.length != usersIds.length) _log.w("Not all users were found");
@@ -205,35 +212,49 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> {
       final roomStates = await Future.wait(rooms.map(createRoomData));
       _chatRoomNotifier.clearRooms();
       _chatRoomNotifier.addRooms(roomStates);
-      _chatService.onReceiveMessageInbox(onReceiveMessage: _suscribeCallback, profile: _profile);
     });
   }
 
-  void _suscribeCallback(ChatMessageSent messageSent) async {
+  @override
+  void onReceiveMessage(ChatMessageSent messageSent) async {
     if (!mounted) return;
-
     final message = messageSent.message;
     final roomId = messageSent.roomId;
 
-    try {
-      if (_chatRoomNotifier.exists(roomId)) {
-        _chatRoomNotifier.updateRoomLastMessage(roomId, message);
-        return;
-      }
-
-      final room = await _chatService.room(roomId: messageSent.roomId);
-      final roomState = await createRoomData(room);
-      if (!mounted) return;
-      _chatRoomNotifier.addRoom(roomState);
-    } catch (e, stackTrace) {
-      _log.e('Error processing message: $e', error: e, stackTrace: stackTrace);
+    if (_chatRoomNotifier.exists(roomId)) {
+      _chatRoomNotifier.updateRoomLastMessage(roomId, message);
+      return;
     }
+
+    final room = await _chatService.room(roomId: messageSent.roomId);
+    final roomState = await createRoomData(room);
+    _chatRoomNotifier.addRoom(roomState);
   }
 
-  Future<void> _onRefresh() async {
-    _loading.start();
-    await _chatService.closeReceiveMessageInbox();
-    await loadData();
+  @override
+  void onReadMessage(ReadMessages readMessages) async {
+    if (!mounted) return;
+    final roomId = readMessages.roomId;
+    final messageIds = readMessages.messageIds;
+    final readBy = readMessages.readBy;
+
+    if (_chatRoomNotifier.exists(roomId)) {
+      final room = _chatRoomNotifier.roomsData.firstWhere((room) => room.id == roomId);
+      final messages = room.lastMessage;
+
+      if (messages != null) {
+        final set = messageIds.toSet();
+        if (!set.contains(messages.id)) return;
+
+        if (messages.readBy.any((readBy) => readBy.participantId == readBy.participantId)) return;
+        messages.readBy.add(readBy);
+        _chatRoomNotifier.updateRoomLastMessage(roomId, messages);
+      }
+    }
+
+    final room = await _chatService.room(roomId: roomId);
+    final roomState = await createRoomData(room);
+    _chatRoomNotifier.addRoom(roomState);
   }
 
   @override
@@ -249,18 +270,18 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> {
   }
 
   Widget _buildContent(BuildContext context) {
-    final rooms = _chatRoomNotifier.rooms;
+    final roomsData = _chatRoomNotifier.roomsData;
 
-    if (rooms.isEmpty) {
+    if (roomsData.isEmpty) {
       return _buildNoMessages();
     }
 
     return RefreshIndicator(
-      onRefresh: _onRefresh,
+      onRefresh: loadData,
       child: ListView.builder(
-        itemCount: rooms.length,
+        itemCount: roomsData.length,
         itemBuilder: (context, index) {
-          final room = rooms[index];
+          final roomData = roomsData[index];
 
           return Column(
             children: [
@@ -271,16 +292,17 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> {
                 onPressed: () {
                   AutoRouter.of(context).push(
                     ChatRoomRoute(
-                      owner: _profile,
-                      room: room,
+                      owner: profile,
+                      room: roomData,
                     ),
                   );
                 },
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  title: _buildTitle(room, _profile),
-                  subtitle: _buildSubtitle(room, _profile),
-                  leading: _buildLeading(room, _profile),
+                  title: _buildTitle(roomData, profile),
+                  subtitle: _buildSubtitle(roomData, profile),
+                  leading: _buildLeading(roomData, profile),
+                  trailing: _buildTrailing(roomData, profile),
                 ),
               ),
             ],
@@ -319,18 +341,20 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> {
             ),
           ),
           const SizedBox(height: 20),
-          FilledButton.icon(
-            onPressed: () {
-              widget.controller.animateToPage(
-                1,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
-            },
-            icon: const Icon(Icons.people),
-            label: const Text('¡Comienza una conversación!'),
-            iconAlignment: IconAlignment.start,
-          ),
+          profile.authorities.contains(Authority.professional)
+              ? const Text('¡Espere a que alguien inicie una conversación con usted!')
+              : FilledButton.icon(
+                  onPressed: () {
+                    widget.controller.animateToPage(
+                      1,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  },
+                  icon: const Icon(Icons.people),
+                  label: const Text('¡Comienza una conversación!'),
+                  iconAlignment: IconAlignment.start,
+                ),
         ],
       ),
     );
@@ -367,6 +391,20 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> {
     final participant = state.participants.firstWhere((user) => user.id != profile.id);
     return _buildAvatar(participant);
   }
+
+  Widget _buildTrailing(ChatRoomData roomData, User profile) {
+    final lastMessage = roomData.lastMessage;
+    if (lastMessage == null) return const SizedBox();
+    if (lastMessage.sentBy == profile.id) return const Icon(Icons.chevron_right, color: Colors.grey);
+
+    final readBy = lastMessage.readBy.map((readBy) => readBy.participantId).toList();
+
+    final isRead = readBy.contains(profile.id);
+    return Icon(
+      isRead ? Icons.chevron_right : Icons.info,
+      color: isRead ? Colors.grey : Theme.of(context).primaryColor,
+    );
+  }
 }
 
 class UsersPageView extends StatefulWidget {
@@ -379,20 +417,21 @@ class UsersPageView extends StatefulWidget {
 }
 
 class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
-  //
-  @override
   final _chatService = injector.get<ChatService>();
-
-  @override
   final _userService = injector.get<UserService>();
-
   final _pagingController = PagingQueryController<User>(firstPage: 0);
   final _searchController = TextEditingController();
 
-  Authority? _role;
+  Authority _role = Authority.professional;
 
   @override
-  User get _profile => widget.profile;
+  ChatService get chatService => _chatService;
+
+  @override
+  UserService get userService => _userService;
+
+  @override
+  User get profile => widget.profile;
 
   @override
   void initState() {
@@ -402,7 +441,7 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
   }
 
   Future<Page<User>> _fetchPage([PageQuery? query]) async {
-    return _role != null ? _userService.pageByRole(_role!, query) : _userService.page(query);
+    return _userService.pageByRole(_role, query);
   }
 
   @override
@@ -435,8 +474,29 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
         pagingController: _pagingController,
         builderDelegate: PagedChildBuilderDelegate<User>(
           noItemsFoundIndicatorBuilder: (context) => const Center(child: Text('No se encontraron usuarios')),
+          firstPageErrorIndicatorBuilder: (context) {
+            final error = extractError(_pagingController.error);
+            final title = error.title;
+            final message = error.message;
+
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(title),
+                  const SizedBox(height: 10),
+                  Text(message),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: _pagingController.refresh,
+                    child: const Text('Reintentar'),
+                  ),
+                ],
+              ),
+            );
+          },
           itemBuilder: (context, user, index) {
-            if (user.id == _profile.id) return const SizedBox();
+            if (user.id == profile.id) return const SizedBox();
             final representation = user.representation;
             return TextButton(
               style: ButtonStyle(
@@ -473,7 +533,7 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
       Navigator.of(context).pop();
       AutoRouter.of(context).push(
         ChatRoomRoute(
-          owner: _profile,
+          owner: profile,
           room: roomData,
         ),
       );
@@ -495,15 +555,15 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              ListTile(
-                title: const Text('Todos'),
-                leading: const Icon(Icons.group),
-                onTap: () {
-                  _role = null;
-                  _pagingController.refresh();
-                  Navigator.pop(context);
-                },
-              ),
+              // ListTile(
+              //   title: const Text('Todos'),
+              //   leading: const Icon(Icons.group),
+              //   onTap: () {
+              //     _role = null;
+              //     _pagingController.refresh();
+              //     Navigator.pop(context);
+              //   },
+              // ),
               ...rolesData.entries.map((entry) {
                 final role = entry.key;
                 final data = entry.value;
@@ -534,12 +594,16 @@ Widget _buildAvatar(User user) {
 }
 
 final Map<Authority, dynamic> rolesData = {
-  Authority.admin: {
-    'name': 'Administrador',
-    'icon': Icons.admin_panel_settings,
-  },
-  Authority.administrative: {
-    'name': 'Administrativo',
+  // Authority.admin: {
+  //   'name': 'Administrador',
+  //   'icon': Icons.admin_panel_settings,
+  // },
+  // Authority.administrative: {
+  //   'name': 'Administrativo',
+  //   'icon': Icons.business,
+  // },
+  Authority.professional: {
+    'name': 'Todos los profesionales',
     'icon': Icons.business,
   },
   Authority.medicalProfessional: {
@@ -550,8 +614,8 @@ final Map<Authority, dynamic> rolesData = {
     'name': 'Profesional legal',
     'icon': Icons.gavel,
   },
-  Authority.user: {
-    'name': 'Usuario',
-    'icon': Icons.person,
-  },
+  // Authority.user: {
+  //   'name': 'Usuario',
+  //   'icon': Icons.person,
+  // },
 };

@@ -1,9 +1,11 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/domain/providers/locale.dart';
+import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/constants.dart';
 import 'package:sona/shared/http/http.dart';
 import 'package:http/http.dart' as http;
@@ -13,6 +15,14 @@ typedef OnReceiveMessage = void Function(ChatMessageSent message);
 typedef OnReadMessage = void Function(ReadMessages messagesIds);
 
 abstract class ChatService {
+  //
+  final List<OnReceiveMessage> _onReceiveMessageListeners = [];
+  final List<OnReadMessage> _onReadMessageListeners = [];
+
+  Future<void> init();
+
+  Future<void> close();
+
   //
   Future<ChatMessageSent> send({
     required String roomId,
@@ -54,73 +64,75 @@ abstract class ChatService {
     required String roomId,
   });
 
-  Future<void> onReceiveMessageRoom({
-    required String roomId,
-    required OnReceiveMessage onReceiveMessage,
-  });
-
-  Future<void> closeOnReceiveMessageRoom({
-    required String roomId,
-  });
-
-  Future<void> onReceiveMessageInbox({
-    required User profile,
-    required OnReceiveMessage onReceiveMessage,
-  });
-
-  Future<void> closeReceiveMessageInbox();
-
   Future<void> markAsRead({
     required String roomId,
     required List<String> messagesIds,
   });
 
-  Future<void> onReadMessageRoom({
-    required String roomId,
-    required OnReadMessage onReadMessage,
-  });
+  void addOnReceiveMessageListener(OnReceiveMessage listener) => _onReceiveMessageListeners.add(listener);
 
-  Future<void> closeOnReadMessageRoom({
-    required String roomId,
-  });
+  void addOnReadMessageListener(OnReadMessage listener) => _onReadMessageListeners.add(listener);
 
-  Future<void> onReadMessageInbox({
-    required User profile,
-    required OnReadMessage onReadMessage,
-  });
+  void removeOnReceiveMessageListener(OnReceiveMessage listener) => _onReceiveMessageListeners.remove(listener);
 
-  Future<void> closeOnReadMessageInbox();
+  void removeOnReadMessageListener(OnReadMessage listener) => _onReadMessageListeners.remove(listener);
+}
 
-  void close();
+mixin ChatMessageListenner<T extends ChatService> {
+//
+  @protected
+  T get chatService;
 
-  void open();
+  @protected
+  String? get filterRoomId => null;
+
+  OnReceiveMessage? registerOnReceiveMessage;
+  OnReadMessage? registerOnReadMessage;
+
+  bool _hasInit = false;
+
+  void initMessageListeners() {
+    if (_hasInit) throw StateError('Listeners already initialized');
+    _hasInit = true;
+    if (filterRoomId == null) {
+      registerOnReceiveMessage = onReceiveMessage;
+      registerOnReadMessage = onReadMessage;
+    } else {
+      registerOnReceiveMessage = (messageSent) => messageSent.roomId == filterRoomId ? onReceiveMessage(messageSent) : null;
+      registerOnReadMessage = (readMessages) => readMessages.roomId == filterRoomId ? onReadMessage(readMessages) : null;
+    }
+
+    chatService.addOnReceiveMessageListener(registerOnReceiveMessage!);
+    chatService.addOnReadMessageListener(registerOnReadMessage!);
+  }
+
+  void disposeMessageListeners() {
+    if (registerOnReceiveMessage != null) chatService.removeOnReceiveMessageListener(registerOnReceiveMessage!);
+    if (registerOnReadMessage != null) chatService.removeOnReadMessageListener(registerOnReadMessage!);
+  }
+
+  void onReceiveMessage(ChatMessageSent messageSent);
+
+  void onReadMessage(ReadMessages readMessages);
 }
 
 Logger _log = Logger();
 
-class ApiStompChatService implements ChatService, WebResource {
-  final Map<String, StompUnsubscribe> _roomReceivesMessagesSubscriptions = {};
-  final Map<String, StompUnsubscribe> _roomReadMessagesSubscriptions = {};
-
-  StompUnsubscribe? _inboxReceiveMessagesSubscription;
-  StompUnsubscribe? _inboxReadMessagesSubscription;
-
+class ApiStompChatService extends ChatService implements WebResource {
+  //
   final AuthProvider authProvider;
   final LocaleProvider localeProvider;
+  final UserService userService;
 
-  final StompClient stompClient = StompClient(
-    config: StompConfig(
-      url: stompUri,
-      onDisconnect: (frame) => _log.i('STOMP disconnected: ${frame.body}'),
-      onStompError: (frame) => _log.e('STOMP error: ${frame.body}'),
-      onWebSocketError: (error) => _log.e('WebSocket error: $error'),
-    ),
-  );
+  StompClient? stompClient;
 
   ApiStompChatService({
     required this.authProvider,
     required this.localeProvider,
-  });
+    required this.userService,
+  }) {
+    init();
+  }
 
   @override
   http.Client? get client => authProvider.client;
@@ -133,6 +145,44 @@ class ApiStompChatService implements ChatService, WebResource {
 
   @override
   String get path => '/chat';
+
+  @override
+  Future<void> init() async {
+    if (stompClient != null) close();
+    if (!(await authProvider.isAuthenticated())) return;
+    final userId = userService.currentUser.id;
+    //
+    stompClient = StompClient(
+      config: StompConfig(
+        url: stompUri,
+        onDisconnect: (frame) => _log.i('STOMP disconnected: ${frame.body}'),
+        onStompError: (frame) => _log.e('STOMP error: ${frame.body}'),
+        onWebSocketError: (error) => _log.e('WebSocket error: $error'),
+        onConnect: (frame) {
+          _subscribeOnReadMessage(stompClient!, '/topic/chat.inbox.$userId.read', (readMessages) {
+            _log.i('Read messages: $readMessages');
+            for (final listener in _onReadMessageListeners) {
+              listener(readMessages);
+            }
+          });
+          _subscribeOnReceiveMessage(stompClient!, '/topic/chat.inbox.$userId', (messageSent) {
+            _log.i('Received message: $messageSent');
+            for (final listener in _onReceiveMessageListeners) {
+              listener(messageSent);
+            }
+          });
+        },
+      ),
+    );
+
+    stompClient!.activate();
+  }
+
+  @override
+  Future<void> close() async {
+    stompClient?.deactivate();
+    stompClient = null;
+  }
 
   @override
   Future<ChatMessageSent> send({
@@ -269,95 +319,17 @@ class ApiStompChatService implements ChatService, WebResource {
   }
 
   @override
-  Future<void> onReceiveMessageRoom({
-    required String roomId,
-    required OnReceiveMessage onReceiveMessage,
-  }) async {
-    stompClient.activate();
-
-    if (_roomReceivesMessagesSubscriptions.containsKey(roomId)) return;
-    final destination = '/topic/chat.room.$roomId';
-    _roomReceivesMessagesSubscriptions[roomId] = _subscribeOnReceiveMessage(stompClient, destination, onReceiveMessage);
-  }
-
-  @override
-  Future<void> closeOnReceiveMessageRoom({required String roomId}) async {
-    final unsubscribeFn = _roomReceivesMessagesSubscriptions.remove(roomId);
-    unsubscribeFn?.call();
-  }
-
-  @override
-  Future<void> onReceiveMessageInbox({
-    required User profile,
-    required OnReceiveMessage onReceiveMessage,
-  }) async {
-    stompClient.activate();
-    if (_inboxReceiveMessagesSubscription != null) return;
-    final destination = '/topic/chat.inbox.${profile.id}';
-    _inboxReceiveMessagesSubscription = _subscribeOnReceiveMessage(stompClient, destination, onReceiveMessage);
-  }
-
-  @override
-  Future<void> closeReceiveMessageInbox() async {
-    _inboxReceiveMessagesSubscription?.call();
-    _inboxReceiveMessagesSubscription = null;
-    _log.i('Unsubscribed from inbox');
-  }
-
-  @override
   Future<void> markAsRead({
     required String roomId,
     required List<String> messagesIds,
   }) async {
     await request(
-      uri.replace(path: '$path/message/$messagesIds/read'),
+      uri.replace(path: '$path/room/$roomId/read', queryParameters: {'messagesIds': messagesIds.join(',')}),
       client: client,
-      method: HttpMethod.post,
+      method: HttpMethod.put,
       headers: commonHeaders,
     );
   }
-
-  @override
-  Future<void> onReadMessageRoom({
-    required String roomId,
-    required OnReadMessage onReadMessage,
-  }) async {
-    stompClient.activate();
-
-    if (_roomReadMessagesSubscriptions.containsKey(roomId)) return;
-    final destination = '/topic/chat.room.$roomId.read';
-    _roomReadMessagesSubscriptions[roomId] = _subscribeOnReadMessage(stompClient, destination, onReadMessage);
-  }
-
-  @override
-  Future<void> closeOnReadMessageRoom({required String roomId}) async {
-    final unsubscribeFn = _roomReadMessagesSubscriptions.remove(roomId);
-    unsubscribeFn?.call();
-  }
-
-  @override
-  Future<void> onReadMessageInbox({
-    required User profile,
-    required OnReadMessage onReadMessage,
-  }) async {
-    stompClient.activate();
-    if (_inboxReadMessagesSubscription != null) return;
-    final destination = '/topic/chat.inbox.${profile.id}.read';
-    _inboxReadMessagesSubscription = _subscribeOnReadMessage(stompClient, destination, onReadMessage);
-  }
-
-  @override
-  Future<void> closeOnReadMessageInbox() async {
-    _inboxReadMessagesSubscription?.call();
-    _inboxReadMessagesSubscription = null;
-    _log.i('Unsubscribed from inbox');
-  }
-
-  @override
-  void close() => stompClient.deactivate();
-
-  @override
-  void open() => stompClient.activate();
 }
 
 StompUnsubscribe _subscribeOnReceiveMessage(StompClient client, String destination, OnReceiveMessage onReceiveMessage) {

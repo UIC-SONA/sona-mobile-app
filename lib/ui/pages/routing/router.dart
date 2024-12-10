@@ -17,7 +17,6 @@ import 'package:sona/ui/pages/tips_screen.dart';
 
 part 'router.gr.dart';
 
-
 final _log = Logger();
 
 @AutoRouterConfig()
@@ -48,7 +47,6 @@ class AppRouter extends RootStackRouter {
   List<AutoRouteGuard> get guards => _guards;
 }
 
-
 final List<String> unauthenticatedRoutes = [LoginRoute.name, SignUpRoute.name];
 
 class AuthGuard extends AutoRouteGuard {
@@ -73,7 +71,7 @@ class AuthGuard extends AutoRouteGuard {
 
     if (_cachedIsAuthenticated == null || _lastAuthCheckTime == null || DateTime.now().difference(_lastAuthCheckTime!) > authCacheDuration) {
       try {
-        _cachedIsAuthenticated = await authProvider.isAutheticated();
+        _cachedIsAuthenticated = await authProvider.isAuthenticated();
       } catch (e) {
         _log.e('Error checking authentication: $e');
         _cachedIsAuthenticated = false;

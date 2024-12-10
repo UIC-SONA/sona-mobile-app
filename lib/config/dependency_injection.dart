@@ -33,13 +33,16 @@ Future<void> setupDependencies() async {
 
 //Services
   injector.registerSingleton<UserService>(() => ApiUserService(authProvider: authProvider, localeProvider: localeProvider));
-  injector.registerSingleton<ChatService>(() => ApiStompChatService(authProvider: authProvider, localeProvider: localeProvider));
+  final userService = injector.get<UserService>();
+
+  if (await authProvider.isAuthenticated()) {
+    await userService.refreshCurrentUser();
+  }
+
+  injector.registerSingleton<ChatService>(() => ApiStompChatService(authProvider: authProvider, localeProvider: localeProvider, userService: userService));
   injector.registerSingleton<ChatBotService>(() => ApiChatBotService(authProvider: authProvider, localeProvider: localeProvider));
   injector.registerSingleton<TipService>(() => ApiTipService(authProvider: authProvider, localeProvider: localeProvider));
   injector.registerSingleton<MenstrualCalendarService>(() => ApiMenstrualCalendarService(authProvider: authProvider, localeProvider: localeProvider));
-
-  final chatService = injector.get<ChatService>();
-  chatService.open();
 
 //Router
   injector.registerSingleton<AuthGuard>(() => AuthGuard(authProvider: authProvider));
