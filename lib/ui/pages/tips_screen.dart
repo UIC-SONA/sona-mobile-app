@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -11,6 +9,7 @@ import 'package:sona/domain/services/tip.dart';
 import 'package:sona/ui/utils/paging.dart';
 
 import 'package:sona/ui/widgets/full_state_widget.dart';
+import 'package:sona/ui/widgets/image_builder.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
 
 @RoutePage()
@@ -22,7 +21,7 @@ class TipsScreen extends StatefulWidget {
 }
 
 class _TipsScreenState extends FullState<TipsScreen> {
-  final _service = injector.get<TipService>();
+  final _tipsService = injector.get<TipService>();
   final _pagingController = PagingQueryController<Tip>(firstPage: 0);
 
   Tip? selectedTip;
@@ -30,7 +29,7 @@ class _TipsScreenState extends FullState<TipsScreen> {
   @override
   void initState() {
     super.initState();
-    _pagingController.configureFetcher(_service.activesPage);
+    _pagingController.configureFetcher(_tipsService.activesPage);
   }
 
   void _clearSelection() {
@@ -72,6 +71,7 @@ class _TipsScreenState extends FullState<TipsScreen> {
       child: PagedListView<int, Tip>(
         pagingController: _pagingController,
         builderDelegate: PagedChildBuilderDelegate<Tip>(
+          noItemsFoundIndicatorBuilder: (context) => const Center(child: Text('No se encontraron tips.')),
           itemBuilder: (context, tip, index) {
             return Card(
               child: Padding(
@@ -137,7 +137,11 @@ class _TipsScreenState extends FullState<TipsScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  _buildImage(tip),
+                  Center(
+                    child: ImageBuilder(
+                      provider: _tipsService.tipImage(tip.id),
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   Wrap(
                     spacing: 6.0,
@@ -154,27 +158,27 @@ class _TipsScreenState extends FullState<TipsScreen> {
     );
   }
 
-  Widget _buildImage(Tip tip) {
-    return FutureBuilder<Uint8List>(
-      future: _service.tipImage(tip.id),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Text(
-            'Error al cargar la imagen: ${snapshot.error}',
-            style: const TextStyle(color: Colors.red),
-          );
-        }
-        if (snapshot.hasData && snapshot.data != null) {
-          return Image.memory(
-            snapshot.data!,
-            fit: BoxFit.cover,
-          );
-        }
-        return const Text('No se pudo cargar la imagen.');
-      },
-    );
-  }
+// Widget _buildImage(Tip tip) {
+//   return FutureBuilder<Uint8List>(
+//     future: _service.tipImage(tip.id),
+//     builder: (context, snapshot) {
+//       if (snapshot.connectionState == ConnectionState.waiting) {
+//         return const Center(child: CircularProgressIndicator());
+//       }
+//       if (snapshot.hasError) {
+//         return Text(
+//           'Error al cargar la imagen: ${snapshot.error}',
+//           style: const TextStyle(color: Colors.red),
+//         );
+//       }
+//       if (snapshot.hasData && snapshot.data != null) {
+//         return Image.memory(
+//           snapshot.data!,
+//           fit: BoxFit.cover,
+//         );
+//       }
+//       return const Text('No se pudo cargar la imagen.');
+//     },
+//   );
+// }
 }

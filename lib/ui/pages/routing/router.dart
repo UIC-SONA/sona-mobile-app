@@ -14,6 +14,9 @@ import 'package:sona/ui/pages/chat_screen.dart';
 import 'package:sona/ui/pages/chat_bot_screen.dart';
 import 'package:sona/ui/pages/menstrual_calendar_screens.dart';
 import 'package:sona/ui/pages/tips_screen.dart';
+import 'package:sona/ui/pages/forum_screen.dart';
+import 'package:sona/ui/pages/forum_new_post_screen.dart';
+import 'package:sona/ui/pages/forum_post_screen.dart';
 
 part 'router.gr.dart';
 
@@ -29,7 +32,8 @@ class AppRouter extends RootStackRouter {
   }) : _guards = guards ?? [];
 
   @override
-  List<AutoRoute> get routes => [
+  List<AutoRoute> get routes =>
+      [
         AutoRoute(path: "/", page: SplashRoute.page, initial: true),
         AutoRoute(path: "/login", page: LoginRoute.page),
         AutoRoute(path: "/home", page: HomeRoute.page),
@@ -41,6 +45,9 @@ class AppRouter extends RootStackRouter {
         AutoRoute(path: "/tips", page: TipsRoute.page),
         AutoRoute(path: "/chat", page: ChatRoute.page),
         AutoRoute(path: "/chat-room", page: ChatRoomRoute.page),
+        AutoRoute(path: "/forum", page: ForumRoute.page),
+        AutoRoute(path: "/forum/new-post", page: ForumNewPostRoute.page),
+        AutoRoute(path: "/forum/post", page: ForumPostRoute.page),
       ];
 
   @override

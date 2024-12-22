@@ -20,7 +20,7 @@ class ChatBotScreen extends StatefulWidget {
 }
 
 class _ChatBotScreenState extends FullState<ChatBotScreen> {
-  final _service = injector.get<ChatBotService>();
+  final _chatBotService = injector.get<ChatBotService>();
 
   final ChatController _chatController = ChatController(
     initialMessageList: [],
@@ -47,7 +47,7 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
 
   void _loadChatHistory() async {
     try {
-      final history = await _service.getChatHistory();
+      final history = await _chatBotService.getChatHistory();
       final initialMessageList = <Message>[];
 
       for (var promptResponse in history) {
@@ -118,7 +118,7 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
     }
 
     try {
-      final response = await _service.sendMessage(message);
+      final response = await _chatBotService.sendMessage(message);
 
       messageSent.setStatus = MessageStatus.read;
 

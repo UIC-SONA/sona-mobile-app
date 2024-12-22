@@ -33,15 +33,15 @@ class ChatBotRoute extends PageRouteInfo<void> {
 class ChatRoomRoute extends PageRouteInfo<ChatRoomRouteArgs> {
   ChatRoomRoute({
     Key? key,
-    required User owner,
-    required ChatRoomData room,
+    required User profile,
+    required ChatRoomData roomData,
     List<PageRouteInfo>? children,
   }) : super(
           ChatRoomRoute.name,
           args: ChatRoomRouteArgs(
             key: key,
-            owner: owner,
-            room: room,
+            profile: profile,
+            roomData: roomData,
           ),
           initialChildren: children,
         );
@@ -54,8 +54,8 @@ class ChatRoomRoute extends PageRouteInfo<ChatRoomRouteArgs> {
       final args = data.argsAs<ChatRoomRouteArgs>();
       return ChatRoomScreen(
         key: args.key,
-        profile: args.owner,
-        roomData: args.room,
+        profile: args.profile,
+        roomData: args.roomData,
       );
     },
   );
@@ -64,19 +64,19 @@ class ChatRoomRoute extends PageRouteInfo<ChatRoomRouteArgs> {
 class ChatRoomRouteArgs {
   const ChatRoomRouteArgs({
     this.key,
-    required this.owner,
-    required this.room,
+    required this.profile,
+    required this.roomData,
   });
 
   final Key? key;
 
-  final User owner;
+  final User profile;
 
-  final ChatRoomData room;
+  final ChatRoomData roomData;
 
   @override
   String toString() {
-    return 'ChatRoomRouteArgs{key: $key, owner: $owner, room: $room}';
+    return 'ChatRoomRouteArgs{key: $key, profile: $profile, roomData: $roomData}';
   }
 }
 
@@ -95,6 +95,90 @@ class ChatRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const ChatScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [ForumNewPostScreen]
+class ForumNewPostRoute extends PageRouteInfo<void> {
+  const ForumNewPostRoute({List<PageRouteInfo>? children})
+      : super(
+          ForumNewPostRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'ForumNewPostRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const ForumNewPostScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [ForumPostScreen]
+class ForumPostRoute extends PageRouteInfo<ForumPostRouteArgs> {
+  ForumPostRoute({
+    Key? key,
+    required ValueNotifier<Post> notifier,
+    List<PageRouteInfo>? children,
+  }) : super(
+          ForumPostRoute.name,
+          args: ForumPostRouteArgs(
+            key: key,
+            notifier: notifier,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'ForumPostRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<ForumPostRouteArgs>();
+      return ForumPostScreen(
+        key: args.key,
+        notifier: args.notifier,
+      );
+    },
+  );
+}
+
+class ForumPostRouteArgs {
+  const ForumPostRouteArgs({
+    this.key,
+    required this.notifier,
+  });
+
+  final Key? key;
+
+  final ValueNotifier<Post> notifier;
+
+  @override
+  String toString() {
+    return 'ForumPostRouteArgs{key: $key, notifier: $notifier}';
+  }
+}
+
+/// generated route for
+/// [ForumScreen]
+class ForumRoute extends PageRouteInfo<void> {
+  const ForumRoute({List<PageRouteInfo>? children})
+      : super(
+          ForumRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'ForumRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const ForumScreen();
     },
   );
 }
@@ -177,10 +261,13 @@ class MenuOptionsRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [ServicesOptionsScreen]
-class ServicesOptionsRoute extends PageRouteInfo<void> {
-  const ServicesOptionsRoute({List<PageRouteInfo>? children})
-      : super(
+class ServicesOptionsRoute extends PageRouteInfo<ServicesOptionsRouteArgs> {
+  ServicesOptionsRoute({
+    Key? key,
+    List<PageRouteInfo>? children,
+  }) : super(
           ServicesOptionsRoute.name,
+          args: ServicesOptionsRouteArgs(key: key),
           initialChildren: children,
         );
 
@@ -189,9 +276,22 @@ class ServicesOptionsRoute extends PageRouteInfo<void> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return ServicesOptionsScreen();
+      final args = data.argsAs<ServicesOptionsRouteArgs>(
+          orElse: () => const ServicesOptionsRouteArgs());
+      return ServicesOptionsScreen(key: args.key);
     },
   );
+}
+
+class ServicesOptionsRouteArgs {
+  const ServicesOptionsRouteArgs({this.key});
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'ServicesOptionsRouteArgs{key: $key}';
+  }
 }
 
 /// generated route for

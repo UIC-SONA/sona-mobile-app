@@ -525,6 +525,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.2"
+  http_image_provider:
+    dependency: "direct main"
+    description:
+      name: http_image_provider
+      sha256: bb5ee95d82b488d0d6dae69c662f8d04731d2aa5b4d59805aa586c3b3a9ce0ee
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   http_multi_server:
     dependency: transitive
     description:

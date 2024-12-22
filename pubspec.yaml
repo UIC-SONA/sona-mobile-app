@@ -56,6 +56,7 @@ dependencies:
   chatview: ^2.3.0
   infinite_scroll_pagination: ^4.1.0
   stomp_dart_client: ^2.1.0
+  http_image_provider: ^1.0.0
 
 dev_dependencies:
   flutter_test:

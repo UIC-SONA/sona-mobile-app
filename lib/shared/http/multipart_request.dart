@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:http/http.dart';
 import 'package:logger/logger.dart';
+import 'package:sona/shared/http/exceptions.dart';
+import 'package:sona/shared/http/extensions.dart';
 import 'package:sona/shared/http/types.dart';
 
 final Logger _log = Logger(level: Level.debug);
@@ -36,7 +39,12 @@ Future<StreamedResponse> multipartRequest(
   if (headers != null) request.headers.addAll(headers);
   if (factory != null) await factory(request);
 
-  return client == null ? request.send() : request.sendWithClient(client);
+  final response = await (client == null ? request.send() : request.sendWithClient(client));
+  if (response.error) {
+    throw HttpException(response.status.message, response: await Response.fromStream(response));
+  }
+
+  return response;
 }
 
 abstract class MultipartRequestAccessor {
@@ -127,7 +135,7 @@ class _MultipartRequest extends BaseRequest implements MultipartRequestAccessor 
   Stream<List<int>> _finalize(String boundary) async* {
     const line = [13, 10]; // \r\n
     final separator = utf8.encode('--$boundary\r\n');
-    final close = utf8.encode('--$boundary--\r\n');
+    final Uint8List close = utf8.encode('--$boundary--\r\n');
 
     Stream<List<int>> getStream<T>(Iterable<T> list, Stream<List<int>> Function(T) stream) async* {
       for (T item in list) {
@@ -138,8 +146,10 @@ class _MultipartRequest extends BaseRequest implements MultipartRequestAccessor 
     }
 
     yield* getStream(_fields.entries, (field) async* {
-      yield utf8.encode(_headerForField(field.key, field.value));
-      yield utf8.encode(field.value);
+      final header = utf8.encode(_headerForField(field.key, field.value));
+      yield header;
+      final value = utf8.encode(field.value);
+      yield value;
     });
 
     yield* getStream(_files, (file) async* {
@@ -175,7 +185,7 @@ class _MultipartRequest extends BaseRequest implements MultipartRequestAccessor 
   }
 
   String _headerFor(String field, {String? contentType, String? filename, Map<String, String>? headers}) {
-    var header = 'content-disposition: form-data; name="${_browserEncode(field)}; ${filename != null ? 'filename="${_browserEncode(filename)}"' : ''}"';
+    var header = 'content-disposition: form-data; name="${_browserEncode(field)}"${filename != null ? '; filename="${_browserEncode(filename)}"' : ''}';
     if (contentType != null) header = '$header\r\ncontent-type: $contentType';
     headers?.forEach((key, value) => header = '$header\r\n$key: $value');
     return '$header\r\n\r\n';

@@ -11,12 +11,14 @@ import 'package:sona/ui/widgets/full_state_widget.dart';
 class SonaAppBar extends StatelessWidget implements PreferredSizeWidget {
   //
   final Widget actionButton;
+  final Widget? title;
   final bool showLeading;
 
   const SonaAppBar({
     super.key,
     required this.actionButton,
     required this.showLeading,
+    this.title,
   });
 
   @override
@@ -27,6 +29,7 @@ class SonaAppBar extends StatelessWidget implements PreferredSizeWidget {
           ? Builder(
               builder: (context) {
                 return IconButton(
+                  padding: const EdgeInsets.all(0),
                   onPressed: Scaffold.of(context).openDrawer,
                   icon: const Icon(Icons.menu),
                 );
@@ -34,20 +37,21 @@ class SonaAppBar extends StatelessWidget implements PreferredSizeWidget {
             )
           : null,
       actions: [actionButton],
-      title: Row(
-        children: [
-          SvgPicture.asset(
-            height: 45,
-            'assets/images/logo.svg',
-            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+      title: title ??
+          Row(
+            children: [
+              SvgPicture.asset(
+                height: 45,
+                'assets/images/logo.svg',
+                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              ),
+              const SizedBox(width: 5),
+              const Text(
+                'Sona',
+                style: TextStyle(fontSize: 45, fontWeight: FontWeight.w500),
+              ),
+            ],
           ),
-          const SizedBox(width: 10),
-          const Text(
-            'Sona',
-            style: TextStyle(fontSize: 45, fontWeight: FontWeight.w500),
-          ),
-        ],
-      ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(4.0),
         child: Container(
@@ -70,9 +74,10 @@ class SonaDrawer extends StatefulWidget {
 }
 
 class _SonaDrawerState extends FullState<SonaDrawer> {
-  var _loading = false;
   final _userService = injector.get<UserService>();
   final _authProvider = injector.get<AuthProvider>();
+  late final _logoutState = fetchState(([positionalArguments, namedArguments]) => _logout());
+  late final _anonymizeState = fetchState(([positionalArguments, namedArguments]) => _anonymize(positionalArguments![0]));
 
   @override
   void initState() {
@@ -83,7 +88,8 @@ class _SonaDrawerState extends FullState<SonaDrawer> {
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
-    final user = _userService.currentUser.representation;
+    final user = _userService.currentUser;
+    final representation = user.representation;
 
     return Drawer(
       child: ListView(
@@ -104,11 +110,11 @@ class _SonaDrawerState extends FullState<SonaDrawer> {
                   Column(
                     children: [
                       Text(
-                        user.fullName,
+                        representation.fullName,
                         style: const TextStyle(color: Colors.white, fontSize: 20),
                       ),
                       Text(
-                        user.email,
+                        representation.email,
                         style: const TextStyle(color: Colors.white, fontSize: 16),
                       ),
                     ],
@@ -118,9 +124,11 @@ class _SonaDrawerState extends FullState<SonaDrawer> {
             ),
           ),
           ListTile(
-            title: const Text('Modo anónimo'),
-            leading: Switch(value: false, onChanged: (value) {}),
-            onTap: () {},
+            title: _anonymizeState.isLoading ? const Text('Cambiando...') : const Text('Modo anónimo'),
+            leading: Switch(
+              value: user.anonymous,
+              onChanged: _anonymizeState.isLoading ? null : (value) => _anonymizeState.fetch([value]),
+            ),
           ),
           ListTile(
             title: const Text('Mi perfil'),
@@ -144,8 +152,8 @@ class _SonaDrawerState extends FullState<SonaDrawer> {
           ),
           ListTile(
             title: const Text('Cerrar sesión'),
-            leading: _loading ? const CircularProgressIndicator() : const Icon(Icons.logout),
-            onTap: _logout,
+            leading: _logoutState.isLoading ? const CircularProgressIndicator() : const Icon(Icons.logout),
+            onTap: _logoutState.fetch,
           ),
         ],
       ),
@@ -153,18 +161,14 @@ class _SonaDrawerState extends FullState<SonaDrawer> {
   }
 
   Future<void> _logout() async {
-    _loading = true;
-    refresh();
     await _showLoadingDialog();
-    try {
-      await _authProvider.logout();
-      if (mounted) AutoRouter.of(context).replaceAll([const LoginRoute()]);
-    } catch (e) {
-      if (mounted) AutoRouter.of(context).back();
-    } finally {
-      _loading = false;
-      refresh();
-    }
+    await _authProvider.logout();
+    if (mounted) AutoRouter.of(context).replaceAll([const LoginRoute()]);
+  }
+
+  Future<void> _anonymize(bool value) async {
+    await _userService.anonymize(value);
+    await _userService.refreshCurrentUser();
   }
 
   Future<void> _showLoadingDialog() async {
@@ -239,6 +243,7 @@ class SonaScaffold extends StatelessWidget {
   //
   final Widget actionButton;
   final bool showLeading;
+  final Widget? appBarTittle;
   final Widget body;
   final Widget? floatingActionButton;
   final Widget? bottomNavigationBar;
@@ -251,7 +256,8 @@ class SonaScaffold extends StatelessWidget {
     required this.body,
     this.floatingActionButton,
     this.bottomNavigationBar,
-    this.padding = 10,
+    this.padding = 5,
+    this.appBarTittle,
   });
 
   @override
@@ -260,6 +266,7 @@ class SonaScaffold extends StatelessWidget {
       appBar: SonaAppBar(
         actionButton: actionButton,
         showLeading: showLeading,
+        title: appBarTittle,
       ),
       drawer: showLeading ? const SonaDrawer() : null,
       body: Background(

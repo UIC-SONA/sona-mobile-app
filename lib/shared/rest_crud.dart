@@ -6,9 +6,9 @@ import 'package:sona/shared/http/types.dart';
 import 'package:sona/shared/json.dart';
 import 'package:sona/shared/schemas/page.dart';
 
-Future<List<T>> _list<T>(Uri uri, String path, Map<String, String> headers, http.Client? client, [String? search]) async {
+Future<List<T>> _list<T>(Uri uri, String path, Map<String, String> headers, http.Client? client, [Query? query]) async {
   final response = await request(
-    uri.replace(path: path, queryParameters: {'search': search}),
+    uri.replace(path: path, queryParameters: query?.toQueryParameters()),
     client: client,
     method: HttpMethod.get,
     headers: {
@@ -119,10 +119,10 @@ Future<void> _delete<ID>(Uri uri, String path, Map<String, String> headers, http
 
 abstract class RestListable<T> implements WebResource, Listable<T> {
   @override
-  Future<List<T>> list([String? search]) async => _list<T>(uri, path, commonHeaders, client, search);
+  Future<List<T>> list([Query? query]) async => _list<T>(uri, path, commonHeaders, client, query);
 }
 
-abstract class RestPaginable<T> implements WebResource, Paginable<T> {
+abstract class RestPaginable<T> implements WebResource, Pageable<T> {
   @override
   Future<Page<T>> page([PageQuery? query]) async => _page<T>(uri, path, commonHeaders, client, query);
 }
@@ -168,7 +168,7 @@ abstract class RestReadOperations<T, ID> implements WebResource, ReadOperations<
   Future<List<T>> findMany(List<ID> ids) async => _findMany<T, ID>(uri, path, commonHeaders, client, ids);
 
   @override
-  Future<List<T>> list([String? search]) async => _list<T>(uri, path, commonHeaders, client, search);
+  Future<List<T>> list([Query? query]) async => _list<T>(uri, path, commonHeaders, client, query);
 
   @override
   Future<Page<T>> page([PageQuery? query]) async => _page<T>(uri, path, commonHeaders, client, query);
@@ -199,7 +199,7 @@ abstract class RestCrudOperations<T, D, ID> implements WebResource, CrudOperatio
   Future<List<T>> findMany(List<ID> ids) async => _findMany<T, ID>(uri, path, commonHeaders, client, ids);
 
   @override
-  Future<List<T>> list([String? search]) async => _list<T>(uri, path, commonHeaders, client, search);
+  Future<List<T>> list([Query? query]) async => _list<T>(uri, path, commonHeaders, client, query);
 
   @override
   Future<Page<T>> page([PageQuery? query]) async => _page<T>(uri, path, commonHeaders, client, query);

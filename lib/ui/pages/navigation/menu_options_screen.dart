@@ -19,17 +19,17 @@ class MenuOptionsScreen extends StatelessWidget {
               MenuButton(
                 label: 'Servicios',
                 icon: Icons.medical_services,
-                onPressed: () => AutoRouter.of(context).push(const ServicesOptionsRoute()),
+                onPressed: () => AutoRouter.of(context).push(ServicesOptionsRoute()),
               ),
               MenuButton(
                 label: 'Tips',
                 icon: Icons.lightbulb,
                 onPressed: () => AutoRouter.of(context).push(const TipsRoute()),
               ),
-              const MenuButton(
+              MenuButton(
                 label: 'Foro',
                 icon: Icons.forum,
-                onPressed: null,
+                onPressed: () => AutoRouter.of(context).push(const ForumRoute()),
               ),
             ],
           ),

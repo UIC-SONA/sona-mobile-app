@@ -61,6 +61,7 @@ class User {
   final String? profilePicturePath;
   final UserRepresentation representation;
   final List<Authority> authorities;
+  final bool anonymous;
 
   User({
     required this.id,
@@ -68,6 +69,7 @@ class User {
     required this.profilePicturePath,
     required this.representation,
     required this.authorities,
+    required this.anonymous,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -77,6 +79,7 @@ class User {
       profilePicturePath: json['profilePicturePath'],
       representation: UserRepresentation.fromJson(json['representation']),
       authorities: List.from(json['authorities']).map((e) => Authority.fromString(e)).toList(),
+      anonymous: json['anonymous'],
     );
   }
 
@@ -87,6 +90,7 @@ class User {
       'profilePicturePath': profilePicturePath,
       'representation': representation.toJson(),
       'authorities': authorities,
+      'anonymous': anonymous,
     };
   }
 

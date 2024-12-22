@@ -38,7 +38,7 @@ Future<FF?> showAlertDialog<FF>(BuildContext context, {required String title, re
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Center(child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold))),
+        title: Center(child: Text(title, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold))),
         content: Text(message, textAlign: TextAlign.center),
         actions: [
           for (final entry in actions?.entries ?? [MapEntry('OK', () => Navigator.of(context).pop())])

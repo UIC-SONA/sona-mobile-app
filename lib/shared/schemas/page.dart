@@ -1,6 +1,4 @@
-import 'package:sona/shared/http/types.dart';
 import 'package:sona/shared/json.dart';
-import 'package:sona/shared/schemas/direction.dart';
 
 class Page<T> {
   final List<T> content;
@@ -25,6 +23,13 @@ class Page<T> {
     };
   }
 
+  Page<R> map<R>(R Function(T) f) {
+    return Page<R>(
+      content: content.map(f).toList(),
+      page: page,
+    );
+  }
+
   @override
   String toString() {
     return toJson().toString();
@@ -42,13 +47,6 @@ class PageMap extends Page<Map<String, dynamic>> {
       content: List<Map<String, dynamic>>.from(json['content']),
       page: PageInfo.fromJson(json['page']),
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'content': content,
-      'page': page.toJson(),
-    };
   }
 
   Page<T> as<T>() {
@@ -92,53 +90,6 @@ class PageInfo {
       'number': number,
       'totalPages': totalPages,
       'totalElements': totalElements,
-    };
-  }
-}
-
-class PageQuery extends QueryParametrable {
-  final String? search;
-  final int? page;
-  final int? size;
-  final List<String>? properties;
-  final Direction? direction;
-
-  PageQuery({
-    this.search,
-    this.page,
-    this.size,
-    this.properties,
-    this.direction,
-  });
-
-  factory PageQuery.fromJson(Map<String, dynamic> json) {
-    return PageQuery(
-      search: json['search'],
-      page: json['page'],
-      size: json['size'],
-      properties: List<String>.from(json['properties']),
-      direction: Direction.fromString(json['direction']),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'search': search,
-      'page': page,
-      'size': size,
-      'properties': properties,
-      'direction': direction?.value,
-    };
-  }
-
-  @override
-  Map<String, dynamic> toQueryParameters() {
-    return {
-      'search': search,
-      'page': page?.toString(),
-      'size': size?.toString(),
-      'properties': properties?.join(','),
-      'direction': direction?.value,
     };
   }
 }

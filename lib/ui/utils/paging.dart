@@ -1,9 +1,10 @@
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:logger/logger.dart';
+import 'package:sona/shared/crud.dart';
 import 'package:sona/shared/schemas/direction.dart';
 import 'package:sona/shared/schemas/page.dart';
 
-final _log = Logger();
+final _log = Logger(level: Level.debug);
 
 class PagingQueryController<T> extends PagingController<int, T> {
   String? _search;

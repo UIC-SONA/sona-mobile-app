@@ -311,10 +311,7 @@ class FetchStateResult<R> extends StateResult<R> {
     super.initialData,
   });
 
-  Future<void> fetch([
-    List<dynamic>? positionalArguments,
-    Map<Symbol, dynamic>? namedArguments,
-  ]) async {
+  Future<void> fetch([List<dynamic>? positionalArguments, Map<Symbol, dynamic>? namedArguments]) async {
     if (_isFetching) return;
 
     _reset();
@@ -355,5 +352,10 @@ class FetchStateResult<R> extends StateResult<R> {
   void dispose() {
     _debounceTimer?.cancel();
     super.dispose();
+  }
+
+  @override
+  String toString() {
+    return 'FetchStateResult{value: $_value, error: $_error, loading: $_loading}';
   }
 }

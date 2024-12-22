@@ -168,7 +168,7 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
 
   void _sendMessage(String message, ReplyMessage replyMessage, MessageType messageType) async {
     final requestId = const Uuid().v4();
-    final messageSent = ExtededMessage(
+    final newMessage = ExtededMessage(
       id: requestId,
       createdAt: DateTime.now(),
       message: message,
@@ -177,22 +177,23 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
       messageType: messageType,
       status: MessageStatus.pending,
     );
-    _chatController.addMessage(messageSent);
+    _chatController.addMessage(newMessage);
     _setChatViewStateHasMessages();
 
     try {
       _messagesRequests.add(requestId);
-      final response = await _chatService.send(
-        roomId: roomData.id,
-        requestId: requestId,
-        message: message,
-      );
+      final messageSent = await switch (messageType) {
+        MessageType.text => _chatService.send(roomId: roomData.id, message: message, requestId: requestId),
+        MessageType.image => _chatService.sendImage(roomId: roomData.id, imagePath: message, requestId: requestId),
+        MessageType.voice => _chatService.sendVoice(roomId: roomData.id, audioPath: message, requestId: requestId),
+        MessageType.custom => throw UnimplementedError(),
+      };
 
-      messageSent.forceId = response.message.id;
-      messageSent.setStatus = MessageStatus.delivered;
+      newMessage.forceId = messageSent.message.id;
+      newMessage.setStatus = MessageStatus.delivered;
     } catch (e) {
       if (mounted) showAlertErrorDialog(context, error: e);
-      messageSent.setStatus = MessageStatus.undelivered;
+      newMessage.setStatus = MessageStatus.undelivered;
     }
   }
 
@@ -225,7 +226,7 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
       message: message.message,
       sentBy: message.sentBy.toString(),
       createdAt: message.createdAt,
-      status: _solveMessageStatus(message.readBy),
+      status: solveMessageStatus(roomData.room, message, profile.id),
     );
   }
 
@@ -239,13 +240,6 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
       name: user.representation.firstName,
       profilePhoto: user.profilePicturePath,
     );
-  }
-
-  MessageStatus _solveMessageStatus(List<ReadBy> readBy) {
-    return switch (roomData.room.type) {
-      ChatRoomType.group => MessageStatus.delivered,
-      ChatRoomType.private => readBy.isEmpty ? MessageStatus.delivered : MessageStatus.read,
-    };
   }
 
   List<ChatUser> _mapUsers(List<User> users) {
@@ -272,4 +266,12 @@ class ExtededMessage extends Message {
     super.voiceMessageDuration,
     MessageStatus status = MessageStatus.pending,
   });
+}
+
+MessageStatus solveMessageStatus(ChatRoom room, ChatMessage message, int userId) {
+  final participants = room.participants.where((participant) => participant != userId).toList();
+  final readBy = message.readBy.map((readBy) => readBy.participantId).toSet();
+  if (readBy.length != participants.length) return MessageStatus.delivered;
+  if (readBy.containsAll(participants)) return MessageStatus.read;
+  return MessageStatus.delivered;
 }

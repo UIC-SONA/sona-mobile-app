@@ -1,9 +1,11 @@
-import 'dart:typed_data';
 
+import 'package:flutter/material.dart' hide Page;
 import 'package:http/http.dart' as http;
+import 'package:http_image_provider/http_image_provider.dart';
 import 'package:sona/domain/models/tip.dart';
 import 'package:sona/domain/providers/locale.dart';
 import 'package:sona/shared/constants.dart';
+import 'package:sona/shared/crud.dart';
 import 'package:sona/shared/http/http.dart';
 import 'package:sona/shared/schemas/page.dart';
 
@@ -15,7 +17,7 @@ abstract class TipService {
 
   Future<Page<Tip>> activesPage([PageQuery? query]);
 
-  Future<Uint8List> tipImage(String tipId);
+  ImageProvider<Object> tipImage(String tipId);
 }
 
 class ApiTipService implements TipService, WebResource {
@@ -64,14 +66,11 @@ class ApiTipService implements TipService, WebResource {
   }
 
   @override
-  Future<Uint8List> tipImage(String tipId) async {
-    final response = await request(
+  ImageProvider<Object> tipImage(String tipId) {
+    return HttpImageProvider(
       uri.replace(path: '$path/$tipId/image'),
-      client: authProvider.client!,
-      method: HttpMethod.get,
       headers: commonHeaders,
+      client: client,
     );
-
-    return response.bodyBytes;
   }
 }

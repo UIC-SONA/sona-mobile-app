@@ -12,4 +12,9 @@ class Message {
       'message': message,
     };
   }
+
+  @override
+  String toString() {
+    return 'Message{message: $message}';
+  }
 }

@@ -1,45 +1,65 @@
-import 'dart:typed_data';
-
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
-import 'package:sona/shared/http/http.dart';
 
-mixin CachedUser {
+mixin UserServiceWidgetHelper {
   @protected
   UserService get userService;
 
-  final _cachedUsers = <int, dynamic>{};
-
-  @protected
-  Future<Uint8List> getProfilePicture(int userId) async {
-    if (_cachedUsers.containsKey(userId)) {
-      final profilePicture = _cachedUsers[userId]["profilePicture"];
-      if (profilePicture != null) return profilePicture;
-    } else {
-      _cachedUsers[userId] = {};
-    }
-
-    final profilePicture = await onNotFound(
-      fetch: () => userService.profilePicture(userId: userId),
-      onNotFound: () => Uint8List(0),
-    );
-
-    _cachedUsers[userId]["profilePicture"] = profilePicture;
-    return profilePicture;
-  }
+  static final _cachedUsers = <int, User>{};
 
   @protected
   Future<User> getUser(int userId) async {
     if (_cachedUsers.containsKey(userId)) {
-      final user = _cachedUsers[userId]["user"];
+      final user = _cachedUsers[userId];
       if (user != null) return user;
-    } else {
-      _cachedUsers[userId] = {};
     }
 
     final user = await userService.find(userId);
-    _cachedUsers[userId]["user"] = user;
+    _cachedUsers[userId] = user;
     return user;
+  }
+
+  Widget buildProfilePicture(int userId) {
+    return Image(
+      image: userService.profilePicture(userId: userId),
+      width: 40.0,
+      height: 40.0,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        if (error is NetworkImageLoadException) {
+          if (error.statusCode == 404) {
+            return const Icon(Icons.person);
+          }
+        }
+        return const Icon(Icons.error);
+      },
+    );
+  }
+
+  @protected
+  void clearCache() {
+    _cachedUsers.clear();
+  }
+
+  Widget buildUserName(int userId) {
+    return FutureBuilder(
+      future: getUser(userId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Icon(Icons.person, color: Colors.black);
+        }
+        if (snapshot.hasError) {
+          return const Icon(Icons.error, color: Colors.black);
+        }
+        final user = snapshot.data as User;
+        return Text(
+          user.representation.username,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        );
+      },
+    );
   }
 }

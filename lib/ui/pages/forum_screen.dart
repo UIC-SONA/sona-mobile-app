@@ -1,180 +1,101 @@
-import 'dart:typed_data';
-
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter/material.dart' hide Page;
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:sona/config/dependency_injection.dart';
+import 'package:sona/domain/models/models.dart';
 
-import 'package:sona/domain/models/tip.dart';
-import 'package:sona/domain/services/tip.dart';
+import 'package:sona/domain/services/services.dart';
+import 'package:sona/shared/crud.dart';
+import 'package:sona/shared/schemas/direction.dart';
+import 'package:sona/shared/schemas/page.dart';
+import 'package:sona/ui/pages/routing/router.dart';
+import 'package:sona/ui/utils/cached_user_screen.dart';
 import 'package:sona/ui/utils/paging.dart';
 
 import 'package:sona/ui/widgets/full_state_widget.dart';
+import 'package:sona/ui/widgets/post_card.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
 
 @RoutePage()
-class TipsScreen extends StatefulWidget {
-  const TipsScreen({super.key});
+class ForumScreen extends StatefulWidget {
+  const ForumScreen({super.key});
 
   @override
-  State<TipsScreen> createState() => _TipsScreenState();
+  State<ForumScreen> createState() => _ForumScreenState();
 }
 
-class _TipsScreenState extends FullState<TipsScreen> {
-  final _service = injector.get<TipService>();
-  final _pagingController = PagingQueryController<Tip>(firstPage: 0);
+class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHelper {
+  final _postService = injector.get<PostService>();
+  final _userService = injector.get<UserService>();
+  final _pagingController = PagingQueryController<ValueNotifier<Post>>(firstPage: 0);
 
-  Tip? selectedTip;
+  @override
+  UserService get userService => _userService;
 
   @override
   void initState() {
     super.initState();
-    _pagingController.configureFetcher(_service.activesPage);
+    _pagingController.configureFetcher(_fetcher);
   }
 
-  void _clearSelection() {
-    selectedTip = null;
-    refresh();
+  Future<Page<ValueNotifier<Post>>> _fetcher(PageQuery query) async {
+    final page = await _postService.page(query.copyWith(properties: ['createdAt'], direction: Direction.desc));
+    return page.map((post) => ValueNotifier(post));
   }
 
-  void _selectTip(Tip tip) {
-    selectedTip = tip;
-    refresh();
+  void _openPostScreen(ValueNotifier<Post> postNotifier) async {
+    context.router.push(ForumPostRoute(notifier: postNotifier));
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: selectedTip == null,
-      onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) _clearSelection();
-      },
-      child: SonaScaffold(
-        actionButton: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 20),
-          child: const Text(
-            'Tips',
-            style: TextStyle(
-              fontSize: 35,
-              fontWeight: FontWeight.bold,
-            ),
+    return SonaScaffold(
+      actionButton: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        child: const Text(
+          'Foro',
+          style: TextStyle(
+            fontSize: 35,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        body: selectedTip == null ? _buildTipsList() : _buildTipDetails(selectedTip!),
+      ),
+      body: _buildForumPost(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await context.router.push(const ForumNewPostRoute());
+          _pagingController.refresh();
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
 
-  Widget _buildTipsList() {
+  Widget _buildForumPost() {
     return RefreshIndicator(
-      onRefresh: () => Future.sync(_pagingController.refresh),
-      child: PagedListView<int, Tip>(
+      onRefresh: () {
+        return Future.sync(_pagingController.refresh);
+      },
+      child: PagedListView<int, ValueNotifier<Post>>(
         pagingController: _pagingController,
-        builderDelegate: PagedChildBuilderDelegate<Tip>(
-          itemBuilder: (context, tip, index) {
-            return Card(
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(0),
-                        title: Text(
-                          tip.title,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        subtitle: Text(tip.summary),
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () => _selectTip(tip),
-                      child: const Text('Ver más'),
-                    ),
-                  ],
-                ),
+        builderDelegate: PagedChildBuilderDelegate<ValueNotifier<Post>>(
+          noItemsFoundIndicatorBuilder: (context) {
+            return const Center(
+              child: Text('No hay publicaciones'),
+            );
+          },
+          itemBuilder: (context, notifier, index) {
+            return GestureDetector(
+              child: PostCard(
+                notifier: notifier,
+                showImages: false,
+                truncateContent: true,
               ),
+              onTap: () => _openPostScreen(notifier),
             );
           },
         ),
       ),
-    );
-  }
-
-  Widget _buildTipDetails(Tip tip) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Column(
-                      children: [
-                        Text(
-                          tip.title,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        MarkdownBody(
-                          data: tip.description,
-                          styleSheet: MarkdownStyleSheet(
-                            p: const TextStyle(fontSize: 16),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  _buildImage(tip),
-                  const SizedBox(height: 20),
-                  Wrap(
-                    spacing: 6.0,
-                    children: [
-                      for (final tag in tip.tags) Chip(label: Text(tag)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildImage(Tip tip) {
-    return FutureBuilder<Uint8List>(
-      future: _service.tipImage(tip.id),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Text(
-            'Error al cargar la imagen: ${snapshot.error}',
-            style: const TextStyle(color: Colors.red),
-          );
-        }
-        if (snapshot.hasData && snapshot.data != null) {
-          return Image.memory(
-            snapshot.data!,
-            fit: BoxFit.cover,
-          );
-        }
-        return const Text('No se pudo cargar la imagen.');
-      },
     );
   }
 }

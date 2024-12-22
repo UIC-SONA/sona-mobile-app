@@ -1,7 +1,8 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
+import 'package:flutter/material.dart' hide Page;
 import 'package:http/http.dart';
+import 'package:http_image_provider/http_image_provider.dart';
 import 'package:sona/shared/extensions.dart';
 import 'package:sona/shared/rest_crud.dart';
 import 'package:sona/shared/crud.dart';
@@ -27,13 +28,15 @@ mixin UserService implements ReadOperations<User, int> {
     required String email,
   });
 
-  Future<Uint8List> profilePicture();
+  ImageProvider<Object> profilePicture({int? userId});
 
   Future<Message> uploadProfilePicture(String filePath);
 
   Future<Message> deleteProfilePicture();
 
   Future<User> profile();
+
+  Future<Message> anonymize(bool anonymize);
 
   Future<List<User>> listByRole(Authority role);
 
@@ -56,11 +59,11 @@ mixin UserService implements ReadOperations<User, int> {
     keycloakId: '',
     profilePicturePath: '',
     authorities: [],
+    anonymous: false,
   );
 }
 
 class ApiUserService extends RestReadOperations<User, int> with UserService {
-  //
   //
   final AuthProvider authProvider;
   final LocaleProvider localeProvider;
@@ -107,15 +110,12 @@ class ApiUserService extends RestReadOperations<User, int> with UserService {
   }
 
   @override
-  Future<Uint8List> profilePicture() async {
-    final response = await request(
-      uri.replace(path: '$path/profile-picture'),
-      client: client,
-      method: HttpMethod.get,
+  ImageProvider<Object> profilePicture({int? userId}) {
+    return HttpImageProvider(
+      uri.replace(path: userId != null ? '$path/$userId/profile-picture' : '$path/profile-picture'),
       headers: commonHeaders,
+      client: client,
     );
-
-    return response.bodyBytes;
   }
 
   @override
@@ -141,7 +141,6 @@ class ApiUserService extends RestReadOperations<User, int> with UserService {
       method: HttpMethod.delete,
       headers: commonHeaders,
     );
-
     return response.getBody<Message>();
   }
 
@@ -155,6 +154,19 @@ class ApiUserService extends RestReadOperations<User, int> with UserService {
     );
 
     return response.getBody<User>();
+  }
+
+  @override
+  Future<Message> anonymize(bool anonymize) async {
+    final response = await request(
+      uri.replace(path: '$path/anonymize'),
+      client: client,
+      method: HttpMethod.post,
+      headers: commonHeaders,
+      body: {'anonymize': anonymize.toString()},
+    );
+
+    return response.getBody<Message>();
   }
 
   @override

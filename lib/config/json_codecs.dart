@@ -16,9 +16,10 @@ setupJsonCodecs() {
   Json.register<PromptResponse>(fromJson: PromptResponse.fromJson, toJson: (value) => value.toJson());
   Json.register<PageMap>(fromJson: PageMap.fromJson, toJson: (value) => value.toJson());
   Json.register<PageInfo>(fromJson: PageInfo.fromJson, toJson: (value) => value.toJson());
-  Json.register<PageQuery>(fromJson: PageQuery.fromJson, toJson: (value) => value.toJson());
   Json.register<ChatMessage>(fromJson: ChatMessage.fromJson, toJson: (value) => value.toJson());
   Json.register<ReadBy>(fromJson: ReadBy.fromJson, toJson: (value) => value.toJson());
   Json.register<ChatRoom>(fromJson: ChatRoom.fromJson, toJson: (value) => value.toJson());
   Json.register<ChatMessageSent>(fromJson: ChatMessageSent.fromJson, toJson: (value) => value.toJson());
+  Json.register<Post>(fromJson: Post.fromJson, toJson: (value) => value.toJson());
+  Json.register<Comment>(fromJson: Comment.fromJson, toJson: (value) => value.toJson());
 }

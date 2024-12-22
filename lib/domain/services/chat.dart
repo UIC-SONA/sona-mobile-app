@@ -33,15 +33,13 @@ abstract class ChatService {
   Future<ChatMessageSent> sendImage({
     required String roomId,
     required String requestId,
-    required List<int> image,
-    required String filename,
+    required String imagePath,
   });
 
   Future<ChatMessageSent> sendVoice({
     required String roomId,
     required String requestId,
-    required List<int> voice,
-    required String filename,
+    required String audioPath,
   });
 
   Future<List<ChatRoom>> rooms();
@@ -69,13 +67,13 @@ abstract class ChatService {
     required List<String> messagesIds,
   });
 
-  void addOnReceiveMessageListener(OnReceiveMessage listener) => _onReceiveMessageListeners.add(listener);
+  void _addOnReceiveMessageListener(OnReceiveMessage listener) => _onReceiveMessageListeners.add(listener);
 
-  void addOnReadMessageListener(OnReadMessage listener) => _onReadMessageListeners.add(listener);
+  void _addOnReadMessageListener(OnReadMessage listener) => _onReadMessageListeners.add(listener);
 
-  void removeOnReceiveMessageListener(OnReceiveMessage listener) => _onReceiveMessageListeners.remove(listener);
+  void _removeOnReceiveMessageListener(OnReceiveMessage listener) => _onReceiveMessageListeners.remove(listener);
 
-  void removeOnReadMessageListener(OnReadMessage listener) => _onReadMessageListeners.remove(listener);
+  void _removeOnReadMessageListener(OnReadMessage listener) => _onReadMessageListeners.remove(listener);
 }
 
 mixin ChatMessageListenner<T extends ChatService> {
@@ -91,6 +89,7 @@ mixin ChatMessageListenner<T extends ChatService> {
 
   bool _hasInit = false;
 
+  @protected
   void initMessageListeners() {
     if (_hasInit) throw StateError('Listeners already initialized');
     _hasInit = true;
@@ -102,13 +101,14 @@ mixin ChatMessageListenner<T extends ChatService> {
       registerOnReadMessage = (readMessages) => readMessages.roomId == filterRoomId ? onReadMessage(readMessages) : null;
     }
 
-    chatService.addOnReceiveMessageListener(registerOnReceiveMessage!);
-    chatService.addOnReadMessageListener(registerOnReadMessage!);
+    chatService._addOnReceiveMessageListener(registerOnReceiveMessage!);
+    chatService._addOnReadMessageListener(registerOnReadMessage!);
   }
 
+  @protected
   void disposeMessageListeners() {
-    if (registerOnReceiveMessage != null) chatService.removeOnReceiveMessageListener(registerOnReceiveMessage!);
-    if (registerOnReadMessage != null) chatService.removeOnReadMessageListener(registerOnReadMessage!);
+    if (registerOnReceiveMessage != null) chatService._removeOnReceiveMessageListener(registerOnReceiveMessage!);
+    if (registerOnReadMessage != null) chatService._removeOnReadMessageListener(registerOnReadMessage!);
   }
 
   void onReceiveMessage(ChatMessageSent messageSent);
@@ -208,8 +208,7 @@ class ApiStompChatService extends ChatService implements WebResource {
   Future<ChatMessageSent> sendImage({
     required String roomId,
     required String requestId,
-    required List<int> image,
-    required String filename,
+    required String imagePath,
   }) async {
     final response = await multipartRequest(
       uri.replace(path: '$path/send/$roomId/image', queryParameters: {'requestId': requestId}),
@@ -217,7 +216,7 @@ class ApiStompChatService extends ChatService implements WebResource {
       client: client,
       headers: commonHeaders,
       factory: (request) async {
-        request.files.add(http.MultipartFile.fromBytes('image', image, filename: filename));
+        request.files.add(await http.MultipartFile.fromPath('image', imagePath));
       },
     );
 
@@ -228,8 +227,7 @@ class ApiStompChatService extends ChatService implements WebResource {
   Future<ChatMessageSent> sendVoice({
     required String roomId,
     required String requestId,
-    required List<int> voice,
-    required String filename,
+    required String audioPath,
   }) async {
     final response = await multipartRequest(
       uri.replace(path: '$path/send/$roomId/voice', queryParameters: {'requestId': requestId}),
@@ -237,7 +235,7 @@ class ApiStompChatService extends ChatService implements WebResource {
       client: client,
       headers: commonHeaders,
       factory: (request) async {
-        request.files.add(http.MultipartFile.fromBytes('voice', voice, filename: filename));
+        request.files.add(await http.MultipartFile.fromPath('audio', audioPath));
       },
     );
 

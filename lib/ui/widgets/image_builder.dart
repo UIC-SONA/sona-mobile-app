@@ -1,21 +1,14 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 
 import 'full_state_widget.dart';
 
-typedef BytesResolver = Future<Uint8List> Function();
-
-final Logger _log = Logger();
-
 class ImageBuilder extends StatefulWidget {
-  final BytesResolver? resolver;
   final String? src;
   final Uint8List? image;
   final String? asset;
-  final Widget errorIndicator;
-  final Widget loadingIndicator;
+  final ImageProvider? provider;
   final ImageFrameBuilder? frameBuilder;
   final ImageLoadingBuilder? loadingBuilder;
   final ImageErrorWidgetBuilder? errorBuilder;
@@ -37,12 +30,10 @@ class ImageBuilder extends StatefulWidget {
 
   ImageBuilder({
     super.key,
-    this.resolver,
     this.src,
     this.image,
     this.asset,
-    this.errorIndicator = const Icon(Icons.error),
-    this.loadingIndicator = const CircularProgressIndicator(),
+    this.provider,
     final ImageFrameBuilder? frameBuilder,
     final ImageLoadingBuilder? loadingBuilder,
     final ImageErrorWidgetBuilder? errorBuilder,
@@ -61,30 +52,29 @@ class ImageBuilder extends StatefulWidget {
     this.gaplessPlayback = false,
     this.isAntiAlias = false,
     this.filterQuality = FilterQuality.low,
-  })  : errorBuilder = errorBuilder ?? _defaultImageErrorWidgetBuilder(errorIndicator),
-        loadingBuilder = loadingBuilder ?? _defaultImageLoadingBuilder(loadingIndicator),
+  })  : errorBuilder = errorBuilder ?? _defaultImageErrorWidgetBuilder(),
+        loadingBuilder = loadingBuilder ?? _defaultImageLoadingBuilder(),
         frameBuilder = frameBuilder ?? _defaultImageFrameBuilder() {
-    if (resolver == null && src == null && image == null && asset == null) {
-      throw ArgumentError('At least one of resolver, imageUrl, image or asset must be provided');
+    if (src == null && image == null && asset == null && provider == null) {
+      throw ArgumentError('At least one of resolver, imageUrl, image, asset or provider must be provided');
     }
 
-    final posible = [resolver, src, image, asset].where((element) => element != null).length;
+    final posible = [src, image, asset, provider].where((element) => element != null).length;
     if (posible != 1) {
       throw ArgumentError('Only one of resolver, imageUrl, image or asset must be provided');
     }
   }
 
-  static ImageErrorWidgetBuilder _defaultImageErrorWidgetBuilder(Widget errorIndicator) {
+  static ImageErrorWidgetBuilder _defaultImageErrorWidgetBuilder() {
     return (BuildContext context, Object error, StackTrace? stackTrace) {
-      _log.e("Error on load image", error: error, stackTrace: stackTrace);
-      return errorIndicator;
+      return const Icon(Icons.error);
     };
   }
 
-  static ImageLoadingBuilder _defaultImageLoadingBuilder(Widget loadingIndicator) {
+  static ImageLoadingBuilder _defaultImageLoadingBuilder() {
     return (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
       if (loadingProgress == null) return child;
-      return loadingIndicator;
+      return const CircularProgressIndicator();
     };
   }
 
@@ -105,33 +95,18 @@ class ImageBuilder extends StatefulWidget {
 }
 
 class _ImageState extends FullState<ImageBuilder> {
-  Uint8List? image;
-  bool error = false;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.resolver?.call().then((image) {
-      this.image = image;
-    }).catchError((Object? e, StackTrace? s) {
-      error = true;
-      _log.e("Error on load image", error: e, stackTrace: s);
-    }).whenComplete(refresh);
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (error) return widget.errorIndicator;
-    if (widget.image != null) return _memory(widget.image);
+    if (widget.image != null) return _memory();
     if (widget.src != null) return _network();
     if (widget.asset != null) return _asset();
-    if (widget.resolver != null) return _resolved();
-    return widget.errorIndicator;
+    if (widget.provider != null) return _provider();
+    return const SizedBox();
   }
 
-  Widget _memory(Uint8List? image) {
+  Widget _memory() {
     return Image.memory(
-      image!,
+      widget.image!,
       frameBuilder: widget.frameBuilder,
       errorBuilder: widget.errorBuilder,
       semanticLabel: widget.semanticLabel,
@@ -175,16 +150,35 @@ class _ImageState extends FullState<ImageBuilder> {
     );
   }
 
-  Widget _resolved() {
-    return image != null ? _memory(image) : widget.loadingIndicator;
-  }
-
   Widget _network() {
     return Image.network(
       widget.src!,
       loadingBuilder: widget.loadingBuilder,
       errorBuilder: widget.errorBuilder,
       frameBuilder: widget.frameBuilder,
+      semanticLabel: widget.semanticLabel,
+      excludeFromSemantics: widget.excludeFromSemantics,
+      width: widget.width,
+      height: widget.height,
+      color: widget.color,
+      opacity: widget.opacity,
+      colorBlendMode: widget.colorBlendMode,
+      fit: widget.fit,
+      alignment: widget.alignment,
+      repeat: widget.repeat,
+      centerSlice: widget.centerSlice,
+      matchTextDirection: widget.matchTextDirection,
+      gaplessPlayback: widget.gaplessPlayback,
+      isAntiAlias: widget.isAntiAlias,
+      filterQuality: widget.filterQuality,
+    );
+  }
+
+  Widget _provider() {
+    return Image(
+      image: widget.provider!,
+      frameBuilder: widget.frameBuilder,
+      errorBuilder: widget.errorBuilder,
       semanticLabel: widget.semanticLabel,
       excludeFromSemantics: widget.excludeFromSemantics,
       width: widget.width,

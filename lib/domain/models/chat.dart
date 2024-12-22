@@ -118,12 +118,10 @@ class ReadBy {
 }
 
 class ChatRoom {
+  //
   final String id;
-
   final String name;
-
   final ChatRoomType type;
-
   final List<int> participants;
 
   ChatRoom({

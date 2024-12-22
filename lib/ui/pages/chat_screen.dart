@@ -7,7 +7,6 @@ import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/errors.dart';
 import 'package:sona/shared/http/http.dart';
-import 'package:sona/shared/schemas/page.dart';
 import 'package:sona/shared/utils/deboucing.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/utils/paging.dart';
@@ -292,8 +291,8 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> with ChatM
                 onPressed: () {
                   AutoRouter.of(context).push(
                     ChatRoomRoute(
-                      owner: profile,
-                      room: roomData,
+                      profile: profile,
+                      roomData: roomData,
                     ),
                   );
                 },
@@ -397,17 +396,15 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> with ChatM
     if (lastMessage == null) return const SizedBox();
     if (lastMessage.sentBy == profile.id) return const Icon(Icons.chevron_right, color: Colors.grey);
 
-    final readBy = lastMessage.readBy.map((readBy) => readBy.participantId).toList();
-
+    final readBy = lastMessage.readBy.map((readBy) => readBy.participantId).toSet();
     final isRead = readBy.contains(profile.id);
-    return Icon(
-      isRead ? Icons.chevron_right : Icons.info,
-      color: isRead ? Colors.grey : Theme.of(context).primaryColor,
-    );
+
+    return isRead ? const Icon(Icons.chevron_right, color: Colors.grey) : Icon(Icons.info, color: Theme.of(context).primaryColor);
   }
 }
 
 class UsersPageView extends StatefulWidget {
+  //
   final User profile;
 
   const UsersPageView({super.key, required this.profile});
@@ -417,6 +414,7 @@ class UsersPageView extends StatefulWidget {
 }
 
 class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
+  //
   final _chatService = injector.get<ChatService>();
   final _userService = injector.get<UserService>();
   final _pagingController = PagingQueryController<User>(firstPage: 0);
@@ -436,12 +434,8 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
   @override
   void initState() {
     super.initState();
-    _pagingController.configureFetcher(_fetchPage);
+    _pagingController.configureFetcher((query) => _userService.pageByRole(_role, query));
     _searchController.addListener(Debouncing.build(const Duration(milliseconds: 500), () => _pagingController.search(_searchController.text)));
-  }
-
-  Future<Page<User>> _fetchPage([PageQuery? query]) async {
-    return _userService.pageByRole(_role, query);
   }
 
   @override
@@ -533,8 +527,8 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
       Navigator.of(context).pop();
       AutoRouter.of(context).push(
         ChatRoomRoute(
-          owner: profile,
-          room: roomData,
+          profile: profile,
+          roomData: roomData,
         ),
       );
     } catch (error) {
@@ -555,15 +549,7 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              // ListTile(
-              //   title: const Text('Todos'),
-              //   leading: const Icon(Icons.group),
-              //   onTap: () {
-              //     _role = null;
-              //     _pagingController.refresh();
-              //     Navigator.pop(context);
-              //   },
-              // ),
+              _buildFilterAll(),
               ...rolesData.entries.map((entry) {
                 final role = entry.key;
                 final data = entry.value;
@@ -582,6 +568,19 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
         );
       },
     );
+  }
+
+  Widget _buildFilterAll() {
+    // return ListTile(
+    //   title: const Text('Todos'),
+    //   leading: const Icon(Icons.group),
+    //   onTap: () {
+    //     _role = null;
+    //     _pagingController.refresh();
+    //     Navigator.pop(context);
+    //   },
+    // );
+    return const SizedBox();
   }
 }
 
