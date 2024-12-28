@@ -13,7 +13,7 @@ import 'package:sona/ui/utils/cached_user_screen.dart';
 import 'package:sona/ui/utils/paging.dart';
 
 import 'package:sona/ui/widgets/full_state_widget.dart';
-import 'package:sona/ui/widgets/post_card.dart';
+import 'package:sona/ui/widgets/forum_card.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
 
 @RoutePage()
@@ -25,9 +25,9 @@ class ForumScreen extends StatefulWidget {
 }
 
 class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHelper {
-  final _postService = injector.get<PostService>();
+  final _postService = injector.get<ForumService>();
   final _userService = injector.get<UserService>();
-  final _pagingController = PagingQueryController<ValueNotifier<Post>>(firstPage: 0);
+  final _pagingController = PagingQueryController<Forum>(firstPage: 0);
 
   @override
   UserService get userService => _userService;
@@ -38,13 +38,19 @@ class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHel
     _pagingController.configureFetcher(_fetcher);
   }
 
-  Future<Page<ValueNotifier<Post>>> _fetcher(PageQuery query) async {
-    final page = await _postService.page(query.copyWith(properties: ['createdAt'], direction: Direction.desc));
-    return page.map((post) => ValueNotifier(post));
+  Future<Page<Forum>> _fetcher(PageQuery query) async {
+    return await _postService.page(query.copyWith(properties: ['createdAt'], direction: Direction.desc));
   }
 
-  void _openPostScreen(ValueNotifier<Post> postNotifier) async {
-    context.router.push(ForumPostRoute(notifier: postNotifier));
+  void _openCommentsScreen(ValueNotifier<Forum> forum) async {
+    context.router.push<Forum>(
+      ForumCommentsRoute(
+        forum: forum.value,
+        onPop: (result) {
+          forum.value = result;
+        },
+      ),
+    );
   }
 
   @override
@@ -60,7 +66,7 @@ class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHel
           ),
         ),
       ),
-      body: _buildForumPost(),
+      body: _buildForum(),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await context.router.push(const ForumNewPostRoute());
@@ -71,27 +77,24 @@ class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHel
     );
   }
 
-  Widget _buildForumPost() {
+  Widget _buildForum() {
     return RefreshIndicator(
       onRefresh: () {
         return Future.sync(_pagingController.refresh);
       },
-      child: PagedListView<int, ValueNotifier<Post>>(
+      child: PagedListView<int, Forum>(
         pagingController: _pagingController,
-        builderDelegate: PagedChildBuilderDelegate<ValueNotifier<Post>>(
+        builderDelegate: PagedChildBuilderDelegate<Forum>(
           noItemsFoundIndicatorBuilder: (context) {
             return const Center(
               child: Text('No hay publicaciones'),
             );
           },
-          itemBuilder: (context, notifier, index) {
-            return GestureDetector(
-              child: PostCard(
-                notifier: notifier,
-                showImages: false,
-                truncateContent: true,
-              ),
-              onTap: () => _openPostScreen(notifier),
+          itemBuilder: (context, post, index) {
+            final notifier = ValueNotifier(post);
+            return PostCard(
+              notifier: notifier,
+              onComment: () => _openCommentsScreen(notifier),
             );
           },
         ),

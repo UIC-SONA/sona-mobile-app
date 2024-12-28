@@ -9,7 +9,7 @@ import 'package:sona/ui/widgets/sona_scaffold.dart';
 
 @RoutePage()
 class ServicesOptionsScreen extends StatelessWidget {
-  late final UserService _userService = injector.get<UserService>();
+  late final _userService = injector.get<UserService>();
 
   ServicesOptionsScreen({super.key});
 

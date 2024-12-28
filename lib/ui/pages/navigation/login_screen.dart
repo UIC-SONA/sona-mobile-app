@@ -20,8 +20,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends FullState<LoginScreen> {
-  final AuthProvider _authProvider = injector.get<AuthProvider>();
-  final UserService _userService = injector.get<UserService>();
+  final _authProvider = injector.get<AuthProvider>();
 
   late final _login = fetchState(([positionalArguments, namedArguments]) => _authProvider.login(
         positionalArguments![0],
@@ -215,10 +214,15 @@ class _LoginScreenState extends FullState<LoginScreen> {
       return;
     }
 
-    await _userService.refreshCurrentUser();
+    await _onLoginSuccess();
     if (mounted) {
       AutoRouter.of(context).replaceAll([const HomeRoute()]);
     }
+  }
+
+  Future<void> _onLoginSuccess() async {
+    await injector.get<UserService>().refreshCurrentUser();
+    await injector.get<MenstrualCycleService>().init();
   }
 
   void _togglePasswordVisibility() {

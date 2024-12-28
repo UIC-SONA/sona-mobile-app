@@ -1,26 +1,23 @@
-class Post extends ByAuthor<int> {
+class Forum extends ByAuthor<int> {
   final String id;
   final String content;
-  final List<String> images;
   final List<Comment> comments;
   final List<int> likedBy;
   final DateTime createdAt;
 
-  Post({
+  Forum({
     required this.id,
     required this.content,
-    required this.images,
     required this.comments,
     required this.likedBy,
     required this.createdAt,
     required int? author,
   }) : super(author);
 
-  factory Post.fromJson(Map<String, dynamic> json) {
-    return Post(
+  factory Forum.fromJson(Map<String, dynamic> json) {
+    return Forum(
       id: json['id'],
       content: json['content'],
-      images: List<String>.from(json['images']),
       comments: List<Comment>.from(json['comments'].map((x) => Comment.fromJson(x))),
       likedBy: List<int>.from(json['likedBy']),
       createdAt: DateTime.parse(json['createdAt']),
@@ -32,7 +29,6 @@ class Post extends ByAuthor<int> {
     return {
       'id': id,
       'content': content,
-      'images': images,
       'comments': comments.map((x) => x.toJson()).toList(),
       'likedBy': likedBy,
       'createdAt': createdAt.toIso8601String(),
@@ -42,7 +38,7 @@ class Post extends ByAuthor<int> {
 
   @override
   String toString() {
-    return 'Post{id: $id, content: $content, images: $images, comments: $comments, likedBy: $likedBy, createdAt: $createdAt}';
+    return 'Forum{id: $id, content: $content, comments: $comments, likedBy: $likedBy, createdAt: $createdAt}';
   }
 }
 
@@ -50,11 +46,13 @@ class Comment extends ByAuthor<int> {
   final String id;
   final String content;
   final DateTime createdAt;
+  final List<int> likedBy;
 
   Comment({
     required this.id,
     required this.content,
     required this.createdAt,
+    required this.likedBy,
     required int? author,
   }) : super(author);
 
@@ -63,6 +61,7 @@ class Comment extends ByAuthor<int> {
       id: json['id'],
       content: json['content'],
       createdAt: DateTime.parse(json['createdAt']),
+      likedBy: List<int>.from(json['likedBy']),
       author: json['author'],
     );
   }

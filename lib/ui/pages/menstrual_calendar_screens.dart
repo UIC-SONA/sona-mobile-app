@@ -1,17 +1,14 @@
-import 'dart:convert';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:intl/intl.dart' show DateFormat;
+import 'package:menstrual_cycle_widget/menstrual_cycle_widget.dart';
 import 'package:sona/config/dependency_injection.dart';
+import 'package:sona/domain/services/services.dart';
+import 'package:sona/ui/widgets/menstrual_cycle/calendar_cell.dart';
+import 'package:sona/ui/widgets/menstrual_cycle/menstrual_cycle_calender_view.dart';
 
-import 'package:sona/domain/models/menstrual_cycle.dart';
-import 'package:sona/domain/services/menstrual_calendar.dart';
-import 'package:sona/shared/extensions.dart';
-import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
-import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 @RoutePage()
 class MenstrualCalendarScreen extends StatefulWidget {
@@ -22,26 +19,22 @@ class MenstrualCalendarScreen extends StatefulWidget {
 }
 
 class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
-  //
-  final _service = injector.get<MenstrualCalendarService>();
-  final _storage = injector.get<FlutterSecureStorage>();
+  final _menstrualCycleService = injector.get<MenstrualCycleService>();
 
-  MenstrualCycle? _menstrualCycle;
+  final instance = MenstrualCycleWidget.instance!;
+  final _calendarRefresher = CalendarRefersher();
+  var menstrualCycleDuration = 28;
+  var periodDuration = 5;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
+  var _selectedDate = DateTime.now();
+  DayType? _selectedDateDayType;
 
-  Future<void> _loadData() async {
-    final cycle = await _storage.read(key: 'cycle');
-    if (cycle != null) {
-      _menstrualCycle = MenstrualCycle.fromJson(jsonDecode(cycle));
-      refresh();
-    } else {
-      await _showDialogsSetData();
-    }
+  updateMenstrualData() async {
+    await _menstrualCycleService.saveCycleDetails(
+      periodDuration: periodDuration,
+      cycleLength: menstrualCycleDuration,
+    );
+    _calendarRefresher.refresh?.call();
   }
 
   @override
@@ -50,200 +43,164 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
 
     return SonaScaffold(
       actionButton: SonaActionButton.options(),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(height: 30),
-          const Text(
-            'Mi Calendario Menstrual',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 20),
-          if (_menstrualCycle != null)
-            Expanded(
-              child: SfCalendar(
-                headerStyle: CalendarHeaderStyle(
-                  backgroundColor: primaryColor,
-                  textStyle: const TextStyle(color: Colors.white, fontSize: 20),
-                ),
-                view: CalendarView.month,
-                dataSource: MeetingDataSource(_getDataSource()),
-                monthViewSettings: const MonthViewSettings(showAgenda: true),
-              ),
-            ),
-        ],
-      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showSettingsDialog,
+        onPressed: _settingsPeriod,
         child: const Icon(Icons.settings),
       ),
-    );
-  }
-
-  Future<void> _showDialogsSetData() async {
-    final periodDuration = await _showIntInputDialog('¿Cuántos días dura tu periodo?', 'El periodo de sangrado en promedio dura de 3 a 7 días');
-    if (periodDuration == null) {
-      if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
-      return;
-    }
-
-    final cycleDuration = await _showIntInputDialog('¿Cuántos días dura tu ciclo?', 'El ciclo menstrual en promedio dura de 23 a 35 días');
-    if (cycleDuration == null) {
-      if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
-      return;
-    }
-
-    final lastPeriodDate = await _showDateInputDialog('¿Cuándo fue la fecha de inicio de tu último periodo?');
-    if (lastPeriodDate == null) {
-      if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
-      return;
-    }
-
-    _menstrualCycle = MenstrualCycle(periodDuration: periodDuration, cycleDuration: cycleDuration, lastPeriodDate: lastPeriodDate);
-
-    await _storage.write(
-      key: 'cycle',
-      value: jsonEncode(_menstrualCycle!.toJson()),
-    );
-
-    refresh();
-  }
-
-  Future<int?> _showIntInputDialog(String title, String caption) async {
-    int? value;
-    bool isValid = false;
-
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: Text(title, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold)),
-              content: ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 200),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Text(caption, textAlign: TextAlign.center),
-                    TextField(
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(hintText: "Días"),
-                      onChanged: (text) {
-                        setState(() {
-                          value = int.tryParse(text);
-                          isValid = value != null && value! > 0;
-                        });
-                      },
-                    ),
-                  ],
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center(
+                child: MyMenstrualCycleCalenderView(
+                  refresher: _calendarRefresher,
+                  themeColor: primaryColor,
+                  logPeriodText: "EDITAR",
+                  daySelectedColor: Colors.greenAccent,
+                  hideInfoView: false,
+                  onDataChanged: () {
+                    _menstrualCycleService.savePeriodDates();
+                  },
+                  onDateSelected: (date, dayType) {
+                    setState(() {
+                      _selectedDate = date;
+                      _selectedDateDayType = dayType;
+                    });
+                  },
                 ),
               ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: isValid ? () => Navigator.of(context).pop() : null,
-                  child: const Text('Aceptar'),
-                ),
-              ],
-            );
-          },
-        );
-      },
+            ),
+          ),
+          _buildDetailsSection(),
+        ],
+      ),
     );
-    return value;
   }
 
-  Future<DateTime?> _showDateInputDialog(String title) async {
-    DateTime? selectedDate;
-
-    await showDialog(
-      context: context,
-      barrierDismissible: false, // Hace el diálogo bloqueante
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: Text(title),
-              content: ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 200),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(selectedDate != null ? 'Fecha seleccionada: ${selectedDate!.format(DateTimeFormat.date)}' : 'Selecciona una fecha'),
-                    ElevatedButton(
-                      onPressed: () async {
-                        final date = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime.now(),
-                        );
-                        if (date != null) setState(() => selectedDate = date);
-                      },
-                      child: Text(selectedDate != null ? 'Cambiar fecha' : 'Seleccionar fecha'),
-                    ),
-                  ],
-                ),
-              ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: selectedDate != null ? () => Navigator.of(context).pop() : null,
-                  child: const Text('Aceptar'), // Deshabilita el botón si no se ha seleccionado una fecha válida
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-
-    return selectedDate;
-  }
-
-  Future<void> _showSettingsDialog() async {
-    bool isLoading = false;
-    String loadingAction = '';
-
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            Future<void> runAction(Future<void> Function() action, String actionName) async {
-              setState(() {
-                isLoading = true;
-                loadingAction = actionName;
-              });
-
-              await action();
-
-              setState(() {
-                isLoading = false;
-                loadingAction = '';
-              });
+  Widget _buildDetailsSection() {
+    final formattedDate = DateFormat('MMMM d, y', Localizations.localeOf(context).languageCode).format(_selectedDate);
+    final capitalizedDate = formattedDate[0].toUpperCase() + formattedDate.substring(1);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              capitalizedDate,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            switch (_selectedDateDayType) {
+              DayType.ovulationPrediction => const Text('Alta probabilidad de quedarse embarazada'),
+              DayType.periodPrediction || DayType.period => const Text('Probabilidad media de quedarse embarazada'),
+              null => const Text('Baja probabilidad de quedarse embarazada'),
             }
+          ],
+        ),
+      ),
+    );
+  }
 
-            return AlertDialog(
-              title: const Text('Configuración'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
+  void _settingsPeriod() async {
+    showModalBottomSheet(
+      context: context,
+      builder: (builder) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Container(
+              height: 150.0,
+              margin: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 20),
+              color: Colors.transparent,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ListTile(
-                    leading: isLoading && loadingAction == 'save' ? const CircularProgressIndicator() : const Icon(Icons.cloud_upload),
-                    title: const Text('Guardar datos'),
-                    onTap: isLoading ? null : () => runAction(_saveCycle, 'save'),
+                  const Text(
+                    "Actualizar configuración de periodo",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  ListTile(
-                    leading: isLoading && loadingAction == 'load' ? const CircularProgressIndicator() : const Icon(Icons.cloud_download),
-                    title: const Text('Obtener datos guardados'),
-                    onTap: isLoading ? null : () => runAction(_loadCycle, 'load'),
+                  const SizedBox(
+                    height: 15,
                   ),
-                  ListTile(
-                    leading: isLoading && loadingAction == 'reset' ? const CircularProgressIndicator() : const Icon(Icons.restart_alt),
-                    title: const Text('Reiniciar calendario'),
-                    onTap: isLoading ? null : () => runAction(_resetCycleLocal, 'reset'),
+                  Row(
+                    children: [
+                      const Text("Duración del ciclo menstrual"),
+                      const SizedBox(width: 10),
+                      SizedBox(
+                        height: 30,
+                        width: 70,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            // Border color
+                            borderRadius: BorderRadius.circular(12),
+                            // Rounded corners
+                            color: Colors.white, // Background color
+                          ),
+                          child: DropdownButton<int>(
+                            value: menstrualCycleDuration,
+                            items: List<int>.generate(31, (index) => (15 + index)).map((value) {
+                              return DropdownMenuItem<int>(
+                                value: value,
+                                child: Text(value.toString()),
+                              );
+                            }).toList(),
+                            onChanged: (newValue) async {
+                              if (newValue == null) return;
+                              setState(() {
+                                menstrualCycleDuration = newValue;
+                              });
+                              updateMenstrualData();
+                            },
+                            underline: const SizedBox(),
+                            isExpanded: true,
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    children: [
+                      const Text("Duración del periodo menstrual"),
+                      const SizedBox(width: 10),
+                      SizedBox(
+                        height: 30,
+                        width: 70,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.white, // Background color
+                          ),
+                          child: DropdownButton<int>(
+                            value: periodDuration,
+                            items: List<int>.generate(8, (index) => (2 + index)).map((value) {
+                              return DropdownMenuItem<int>(
+                                value: value,
+                                child: Text(value.toString()),
+                              );
+                            }).toList(),
+                            onChanged: (newValue) async {
+                              if (newValue == null) return;
+                              setState(() {
+                                periodDuration = newValue;
+                              });
+                              updateMenstrualData();
+                            },
+                            underline: const SizedBox(),
+                            isExpanded: true,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -253,101 +210,4 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
       },
     );
   }
-
-  Future<void> _saveCycle() async {
-    try {
-      await _service.saveCycle(_menstrualCycle!);
-      if (!mounted) return;
-      Navigator.of(context).pop();
-      showSnackBarSuccess(context, 'Datos guardados');
-    } catch (e) {
-      if (mounted) showSnackBarFromError(context, error: e);
-    }
-  }
-
-  Future<void> _loadCycle() async {
-    try {
-      final cycle = await _service.getCycle();
-      _menstrualCycle = cycle;
-      await _storage.write(
-        key: 'cycle',
-        value: jsonEncode(cycle.toJson()),
-      );
-      refresh();
-      if (mounted) Navigator.of(context).pop();
-    } catch (e) {
-      if (mounted) showSnackBarFromError(context, error: e);
-    }
-  }
-
-  Future<void> _resetCycleLocal() async {
-    await _storage.delete(key: 'cycle');
-    _menstrualCycle = null;
-    refresh();
-    if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
-  }
-
-  List<Meeting> _getDataSource() {
-    final primaryColor = Theme.of(context).primaryColor;
-    final List<Meeting> meetings = <Meeting>[];
-
-    final periodDuration = _menstrualCycle!.periodDuration;
-    final cycleDuration = _menstrualCycle!.cycleDuration;
-    final lastPeriodDate = _menstrualCycle!.lastPeriodDate;
-
-    DateTime startTime = lastPeriodDate;
-    for (int i = 0; i < 12; i++) {
-      // Calcula el final del periodo actual
-      DateTime endTime = startTime.add(Duration(days: periodDuration));
-      meetings.add(Meeting('Periodo', startTime, endTime, primaryColor, false));
-
-      // Calcula la fecha de inicio del siguiente ciclo
-      DateTime nextCycleStart = startTime.add(Duration(days: cycleDuration));
-
-      // Calcula la ovulación como 14 días antes del siguiente ciclo
-      DateTime ovulationDate = nextCycleStart.subtract(const Duration(days: 14));
-      meetings.add(Meeting('Ovulación', ovulationDate, ovulationDate.add(const Duration(hours: 24)), Colors.pink, false));
-
-      // Actualiza el inicio del ciclo actual al inicio del siguiente ciclo
-      startTime = nextCycleStart;
-    }
-
-    return meetings;
-  }
-}
-
-class MeetingDataSource extends CalendarDataSource {
-  MeetingDataSource(List<Meeting> source) {
-    appointments = source;
-  }
-
-  @override
-  DateTime getStartTime(int index) => _getMeetingData(index).from;
-
-  @override
-  DateTime getEndTime(int index) => _getMeetingData(index).to;
-
-  @override
-  String getSubject(int index) => _getMeetingData(index).eventName;
-
-  @override
-  Color getColor(int index) => _getMeetingData(index).background;
-
-  @override
-  bool isAllDay(int index) => _getMeetingData(index).isAllDay;
-
-  Meeting _getMeetingData(int index) {
-    final dynamic meeting = appointments![index];
-    return meeting is Meeting ? meeting : Meeting('', DateTime.now(), DateTime.now(), Colors.transparent, false);
-  }
-}
-
-class Meeting {
-  Meeting(this.eventName, this.from, this.to, this.background, this.isAllDay);
-
-  String eventName;
-  DateTime from;
-  DateTime to;
-  Color background;
-  bool isAllDay;
 }

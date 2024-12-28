@@ -1,0 +1,253 @@
+import 'package:auto_route/annotations.dart';
+import 'package:sona/config/dependency_injection.dart';
+import 'package:sona/domain/models/models.dart';
+
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:sona/domain/services/services.dart';
+import 'package:sona/shared/utils/time_formatters.dart';
+import 'package:sona/ui/utils/cached_user_screen.dart';
+import 'package:sona/ui/utils/dialogs.dart';
+import 'package:sona/ui/widgets/full_state_widget.dart';
+import 'package:sona/ui/widgets/sona_scaffold.dart';
+
+@RoutePage()
+class ForumCommentsScreen extends StatefulWidget {
+  final Forum forum;
+  final void Function(Forum) onPop;
+
+  const ForumCommentsScreen({
+    super.key,
+    required this.forum,
+    required this.onPop,
+  });
+
+  @override
+  State<ForumCommentsScreen> createState() => _ForumCommentsScreenState();
+}
+
+class _ForumCommentsScreenState extends FullState<ForumCommentsScreen> with UserServiceWidgetHelper {
+  final _forumService = injector.get<ForumService>();
+  final _userService = injector.get<UserService>();
+  final _commentController = TextEditingController();
+
+  late Forum forum;
+  bool _sendingComment = false;
+
+  @override
+  void initState() {
+    super.initState();
+    forum = widget.forum;
+  }
+
+  @override
+  dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  UserService get userService => _userService;
+
+  Future<void> _submitComment() async {
+    if (_commentController.text.trim().isEmpty) return;
+
+    try {
+      Future<void> createComment(bool anonymous) async {
+        _sendingComment = true;
+        refresh();
+        await _forumService.createComment(
+          postId: forum.id,
+          content: _commentController.text,
+          anonymous: anonymous,
+        );
+      }
+
+      if (_userService.currentUser.anonymous) {
+        await createComment(true);
+      } else {
+        final anonymous = await showAlertDialog<bool>(
+          context,
+          title: 'Comentario anónimo',
+          message: 'Actualmente tienes el modo anonimo desactivado, ¿Deseas comentar de forma anónima?',
+          actions: {
+            'Sí': () => Navigator.of(context).pop(true),
+            'No': () => Navigator.of(context).pop(false),
+          },
+        );
+        if (anonymous == null) return;
+        await createComment(anonymous);
+      }
+      forum = await _forumService.find(forum.id);
+      _commentController.clear();
+    } catch (e) {
+      if (!mounted) return;
+      showAlertErrorDialog(context, error: e);
+    } finally {
+      _sendingComment = false;
+      refresh();
+    }
+  }
+
+  void _toggleLike(bool isLiked, Comment comment) async {
+    final id = comment.id;
+     await (isLiked ? _forumService.unlikeComment(forum.id, id) : _forumService.likeComment(forum.id, id));
+    forum = await _forumService.find(forum.id);
+    refresh();
+  }
+
+  void _reportComment(Comment comment) async {
+    final confirmed = await showAlertDialog<bool>(
+      context,
+      title: 'Reportar comentario',
+      message: '¿Estás seguro de que deseas reportar este comentario?',
+      actions: {
+        'Cancelar': () => Navigator.of(context).pop(false),
+        'Reportar': () => Navigator.of(context).pop(true),
+      },
+    );
+    if (confirmed == true) {
+      await _forumService.reportComment(forum.id, comment.id);
+      if (!mounted) return;
+      showSnackBar(context, content: const Text('Comentario reportado'));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = _userService.currentUser;
+
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) {
+          widget.onPop(forum);
+        }
+      },
+      child: SonaScaffold(
+        actionButton: SonaActionButton.home(),
+        body: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: buildComments(forum.comments),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                border: Border(top: BorderSide(color: Colors.grey[300]!)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end, // Alinea los elementos al final
+                children: [
+                  CircleAvatar(child: buildProfilePicture(user.id)),
+                  const SizedBox(width: 12),
+                  // Expanded para que el TextField tome el espacio disponible
+                  Expanded(
+                    child: TextField(
+                      enabled: !_sendingComment,
+                      controller: _commentController,
+                      decoration: InputDecoration(
+                          hintText: 'Agregar un comentario...',
+                          suffixIcon: IconButton(
+                            onPressed: _submitComment,
+                            icon: const Icon(Icons.send),
+                          )),
+                      maxLines: 3,
+                      minLines: 1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Widget> buildComments(List<Comment> comments) {
+    final primaryColor = Theme.of(context).primaryColor;
+
+    return comments.reversed.map((comment) {
+      final isLiked = comment.likedBy.contains(_userService.currentUser.id);
+
+      return Padding(
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              child: comment.author != null ? buildProfilePicture(comment.author!) : const Icon(Icons.person),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Card(
+                    margin: const EdgeInsets.all(0),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              comment.author != null
+                                  ? buildUserName(comment.author!)
+                                  : const Text(
+                                      'Anónimo',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(comment.content),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        formatDate(comment.createdAt),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: () => _toggleLike(isLiked, comment),
+                            iconSize: 20,
+                            padding: const EdgeInsets.all(0),
+                            icon: isLiked ? Icon(Icons.thumb_up, color: primaryColor) : const Icon(Icons.thumb_up_outlined),
+                          ),
+                          Text(comment.likedBy.length.toString()),
+                        ],
+                      ),
+                      IconButton(
+                        onPressed: () => _reportComment(comment),
+                        iconSize: 20,
+                        padding: const EdgeInsets.all(0),
+                        icon: const Icon(Icons.flag_outlined),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+            const Divider(),
+          ],
+        ),
+      );
+    }).toList();
+  }
+}

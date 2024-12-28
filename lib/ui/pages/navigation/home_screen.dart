@@ -36,10 +36,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: Icons.calendar_today,
                         onPressed: () => AutoRouter.of(context).push(const MenstrualCalendarRoute()),
                       ),
-                      const MenuButton(
-                        label: 'Información Didáctica',
+                      MenuButton(
+                        label: 'Contenido Didáctico',
                         icon: Icons.menu_book,
-                        onPressed: null,
+                        onPressed: () => AutoRouter.of(context).push(const DidacticContentRoute()),
                       ),
                     ],
                   ),

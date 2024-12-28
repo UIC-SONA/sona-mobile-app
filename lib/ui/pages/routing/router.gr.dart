@@ -100,6 +100,77 @@ class ChatRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DidacticContentScreen]
+class DidacticContentRoute extends PageRouteInfo<void> {
+  const DidacticContentRoute({List<PageRouteInfo>? children})
+      : super(
+          DidacticContentRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'DidacticContentRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DidacticContentScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [ForumCommentsScreen]
+class ForumCommentsRoute extends PageRouteInfo<ForumCommentsRouteArgs> {
+  ForumCommentsRoute({
+    Key? key,
+    required Forum forum,
+    required void Function(Forum) onPop,
+    List<PageRouteInfo>? children,
+  }) : super(
+          ForumCommentsRoute.name,
+          args: ForumCommentsRouteArgs(
+            key: key,
+            forum: forum,
+            onPop: onPop,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'ForumCommentsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<ForumCommentsRouteArgs>();
+      return ForumCommentsScreen(
+        key: args.key,
+        forum: args.forum,
+        onPop: args.onPop,
+      );
+    },
+  );
+}
+
+class ForumCommentsRouteArgs {
+  const ForumCommentsRouteArgs({
+    this.key,
+    required this.forum,
+    required this.onPop,
+  });
+
+  final Key? key;
+
+  final Forum forum;
+
+  final void Function(Forum) onPop;
+
+  @override
+  String toString() {
+    return 'ForumCommentsRouteArgs{key: $key, forum: $forum, onPop: $onPop}';
+  }
+}
+
+/// generated route for
 /// [ForumNewPostScreen]
 class ForumNewPostRoute extends PageRouteInfo<void> {
   const ForumNewPostRoute({List<PageRouteInfo>? children})
@@ -116,52 +187,6 @@ class ForumNewPostRoute extends PageRouteInfo<void> {
       return const ForumNewPostScreen();
     },
   );
-}
-
-/// generated route for
-/// [ForumPostScreen]
-class ForumPostRoute extends PageRouteInfo<ForumPostRouteArgs> {
-  ForumPostRoute({
-    Key? key,
-    required ValueNotifier<Post> notifier,
-    List<PageRouteInfo>? children,
-  }) : super(
-          ForumPostRoute.name,
-          args: ForumPostRouteArgs(
-            key: key,
-            notifier: notifier,
-          ),
-          initialChildren: children,
-        );
-
-  static const String name = 'ForumPostRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<ForumPostRouteArgs>();
-      return ForumPostScreen(
-        key: args.key,
-        notifier: args.notifier,
-      );
-    },
-  );
-}
-
-class ForumPostRouteArgs {
-  const ForumPostRouteArgs({
-    this.key,
-    required this.notifier,
-  });
-
-  final Key? key;
-
-  final ValueNotifier<Post> notifier;
-
-  @override
-  String toString() {
-    return 'ForumPostRouteArgs{key: $key, notifier: $notifier}';
-  }
 }
 
 /// generated route for

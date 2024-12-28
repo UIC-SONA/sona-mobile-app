@@ -5,7 +5,9 @@ import 'package:logger/logger.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
+import 'package:sona/shared/crud.dart';
 import 'package:sona/shared/errors.dart';
+import 'package:sona/shared/extensions.dart';
 import 'package:sona/shared/http/http.dart';
 import 'package:sona/shared/utils/deboucing.dart';
 import 'package:sona/ui/pages/routing/router.dart';
@@ -434,7 +436,19 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
   @override
   void initState() {
     super.initState();
-    _pagingController.configureFetcher((query) => _userService.pageByRole(_role, query));
+    _pagingController.configureFetcher(
+      (query) => _userService.page(
+        query.copyWith(
+          filters: [
+            Filter(
+              property: 'role',
+              operator: FilterOperator.eq,
+              value: _role.javaName,
+            ),
+          ],
+        ),
+      ),
+    );
     _searchController.addListener(Debouncing.build(const Duration(milliseconds: 500), () => _pagingController.search(_searchController.text)));
   }
 

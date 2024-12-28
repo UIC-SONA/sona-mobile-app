@@ -1,11 +1,5 @@
-import 'package:sona/shared/extensions.dart';
-import 'package:sona/shared/http/http.dart';
-import 'package:sona/shared/schemas/page.dart';
-import 'package:sona/shared/schemas/direction.dart';
-
-abstract interface class Listable<T> {
-  Future<List<T>> list([Query? query]);
-}
+import 'schemas/page.dart';
+import 'schemas/direction.dart';
 
 abstract interface class Pageable<T> {
   Future<Page<T>> page([PageQuery? query]);
@@ -37,7 +31,7 @@ abstract interface class Deletable<ID> {
   Future<void> delete(ID id);
 }
 
-abstract interface class ReadOperations<T, ID> implements Findable<T, ID>, Listable<T>, Pageable<T>, Countable, Existable<ID> {}
+abstract interface class ReadOperations<T, ID> implements Findable<T, ID>, Pageable<T>, Countable, Existable<ID> {}
 
 abstract interface class WriteOperations<T, D, ID> implements Creatable<T, D>, Updatable<T, D, ID>, Deletable<ID> {}
 
@@ -81,67 +75,34 @@ class Filter {
   }
 }
 
-class Query extends QueryParametrable {
+class PageQuery {
   final String? search;
   final List<String>? properties;
   final Direction? direction;
   final List<Filter>? filters;
-
-  Query({
-    this.search,
-    this.properties,
-    this.direction,
-    this.filters,
-  });
-
-  @override
-  Map<String, dynamic> toQueryParameters() {
-    return {
-      'search': search,
-      'properties': properties?.join(','),
-      'direction': direction?.javaName,
-      'filter': filters?.map((e) => e.toQueryParameter()).join(',') ?? '',
-    };
-  }
-
-  Query copyWith({
-    String? search,
-    List<String>? properties,
-    Direction? direction,
-    List<Filter>? filters,
-  }) {
-    return Query(
-      search: search ?? this.search,
-      properties: properties ?? this.properties,
-      direction: direction ?? this.direction,
-      filters: filters ?? this.filters,
-    );
-  }
-}
-
-class PageQuery extends Query {
   final int? page;
   final int? size;
 
   PageQuery({
-    super.search,
+    this.search,
+    this.properties,
+    this.direction,
+    this.filters,
     this.page,
     this.size,
-    super.properties,
-    super.direction,
-    super.filters,
   });
 
-  @override
   Map<String, dynamic> toQueryParameters() {
     return {
+      'search': search,
+      'properties': properties?.join(','),
+      'direction': direction?.value,
+      'filters': filters?.map((e) => e.toQueryParameter()).join(','),
       'page': page?.toString(),
       'size': size?.toString(),
-      ...super.toQueryParameters(),
     };
   }
 
-  @override
   PageQuery copyWith({
     String? search,
     List<String>? properties,

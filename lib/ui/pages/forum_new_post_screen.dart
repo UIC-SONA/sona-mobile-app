@@ -1,13 +1,7 @@
-import 'dart:io';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:http_image_provider/http_image_provider.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:sona/config/dependency_injection.dart';
-import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/domain/services/services.dart';
-import 'package:sona/shared/constants.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
@@ -23,15 +17,12 @@ class ForumNewPostScreen extends StatefulWidget {
 }
 
 class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> {
-  final _postService = injector.get<PostService>();
+  final _postService = injector.get<ForumService>();
   final _userService = injector.get<UserService>();
-  final _authProvider = injector.get<AuthProvider>();
 
   bool? _anonymous;
-  final List<String> _imagePaths = [];
 
   final _controller = TextEditingController();
-  final _imagePicker = ImagePicker();
 
   bool get anonymous {
     if (_anonymous == null) {
@@ -58,13 +49,10 @@ class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> {
                         controller: _controller,
                         enabled: true,
                       ),
-                      // Images grid
-                      _buildImagesGrid(),
                     ],
                   ),
                 ),
               ),
-              // Bottom space for buttons
               const SizedBox(height: 80),
             ],
           ),
@@ -75,38 +63,22 @@ class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> {
               width: MediaQuery.of(context).size.width,
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.image),
-                        onPressed: _onSelectImagesGallery,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.camera_alt),
-                        onPressed: _onSelectImageCamera,
-                      ),
-                    ],
+                  ElevatedButton(
+                    onPressed: _confirmAnonymousOrVisible,
+                    style: ButtonStyle(
+                      padding: WidgetStateProperty.all(const EdgeInsets.all(10)),
+                    ),
+                    child: Text(anonymous ? 'Usuario' : 'Anónimo'),
                   ),
-                  Row(
-                    children: [
-                      ElevatedButton(
-                        onPressed: _confirmAnonymousOrVisible,
-                        style: ButtonStyle(
-                          padding: WidgetStateProperty.all(const EdgeInsets.all(10)),
-                        ),
-                        child: Text(anonymous ? 'Usuario' : 'Anónimo'),
-                      ),
-                      const SizedBox(width: 10),
-                      ElevatedButton(
-                        onPressed: _createPost,
-                        style: ButtonStyle(
-                          padding: WidgetStateProperty.all(const EdgeInsets.all(10)),
-                        ),
-                        child: const Text('Publicar'),
-                      ),
-                    ],
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed: _createPost,
+                    style: ButtonStyle(
+                      padding: WidgetStateProperty.all(const EdgeInsets.all(10)),
+                    ),
+                    child: const Text('Publicar'),
                   ),
                 ],
               ),
@@ -127,10 +99,7 @@ class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> {
             CircleAvatar(
               radius: 20,
               child: ImageBuilder(
-                provider: HttpImageProvider(
-                  apiUri.replace(path: '/user/${_userService.currentUser.id}/profile-picture'),
-                  client: _authProvider.client,
-                ),
+                provider: _userService.profilePicture(),
                 errorBuilder: (context, error, stackTrace) => const Icon(Icons.person),
               ),
             ),
@@ -146,66 +115,6 @@ class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> {
     );
   }
 
-  Widget _buildImagesGrid() {
-    if (_imagePaths.isEmpty) return const SizedBox();
-
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
-        ),
-        itemCount: _imagePaths.length,
-        itemBuilder: (context, index) {
-          return Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey[300]!),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: ImageBuilder(
-                    provider: FileImage(File(_imagePaths[index])),
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => const SizedBox(),
-                  ),
-                ),
-              ),
-              Positioned(
-                right: 4,
-                top: 4,
-                child: GestureDetector(
-                  onTap: () {
-                    _imagePaths.removeAt(index);
-                    refresh();
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.black54,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.close,
-                      size: 16,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
   Future<void> _createPost() async {
     if (_controller.text.isEmpty) {
       showSnackBarError(context, 'El contenido no puede estar vacío');
@@ -214,7 +123,7 @@ class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> {
 
     _showLoadingDialog();
     try {
-      var dto = PostDto(anonymous: anonymous, content: _controller.text, imagePaths: _imagePaths);
+      var dto = ForumDto(anonymous: anonymous, content: _controller.text);
       await _postService.create(dto);
       if (!mounted) return;
       AutoRouter.of(context).popUntil((route) => route.settings.name == ForumRoute.name);
@@ -248,32 +157,6 @@ class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> {
         );
       },
     );
-  }
-
-  void _onSelectImagesGallery() async {
-    try {
-      final List<XFile> image = await _imagePicker.pickMultiImage(limit: 10);
-      if (image.isNotEmpty) {
-        _imagePaths.addAll(image.map((e) => e.path));
-        refresh();
-      }
-    } catch (e) {
-      if (!mounted) return;
-      showSnackBarError(context, 'Error al seleccionar la imagen');
-    }
-  }
-
-  void _onSelectImageCamera() async {
-    try {
-      final XFile? image = await _imagePicker.pickImage(source: ImageSource.camera);
-      if (image != null) {
-        _imagePaths.add(image.path);
-        refresh();
-      }
-    } catch (e) {
-      if (!mounted) return;
-      showSnackBarError(context, 'Error al seleccionar la imagen');
-    }
   }
 
   void _confirmAnonymousOrVisible() async {

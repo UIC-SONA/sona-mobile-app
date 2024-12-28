@@ -1,27 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
+import 'package:sona/shared/utils/time_formatters.dart';
 import 'package:sona/ui/utils/cached_user_screen.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
-import 'package:sona/ui/widgets/image_builder.dart';
 
 class PostCard extends StatefulWidget {
-  final ValueNotifier<Post>? notifier;
-  final Post? post;
-  final bool showImages;
-  final bool truncateContent;
+  final ValueNotifier<Forum> notifier;
+  final VoidCallback? onComment;
 
   const PostCard({
     super.key,
-    this.post,
-    this.notifier,
-    required this.showImages,
-    required this.truncateContent,
-  })  : assert(post != null || notifier != null, 'Either post or notifier must be provided'),
-        assert(post == null || notifier == null, 'Only one of post or notifier must be provided');
+    required this.notifier,
+    this.onComment,
+  });
 
   @override
   State<PostCard> createState() => _PostCardState();
@@ -29,22 +23,17 @@ class PostCard extends StatefulWidget {
 
 class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper {
   final _userService = injector.get<UserService>();
-  final _postService = injector.get<PostService>();
-  late ValueNotifier<Post> _post;
+  final _forumService = injector.get<ForumService>();
 
   @override
   UserService get userService => _userService;
 
-  @override
-  void initState() {
-    super.initState();
-    _post = widget.notifier ?? ValueNotifier(widget.post!);
-  }
+  ValueNotifier<Forum> get notifier => widget.notifier;
 
   void _toggleLike(bool isLiked) async {
-    final post = _post.value;
-    await (isLiked ? _postService.unlikePost(post.id) : _postService.likePost(post.id));
-    _post.value = await _postService.find(post.id);
+    final post = notifier.value;
+    await (isLiked ? _forumService.unlikeForum(post.id) : _forumService.likeForum(post.id));
+    notifier.value = await _forumService.find(post.id);
   }
 
   void _reportPost() async {
@@ -58,7 +47,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper {
       },
     );
     if (confirmed == true) {
-      await _postService.reportPost(_post.value.id);
+      await _forumService.reportForum(notifier.value.id);
       if (!mounted) return;
       showSnackBar(context, content: const Text('Publicación reportada'));
     }
@@ -88,7 +77,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper {
                     children: [
                       _buildAuthorName(),
                       Text(
-                        _formatDate(_post.value.createdAt),
+                        formatDate(notifier.value.createdAt),
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
@@ -98,55 +87,21 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper {
             ),
             const SizedBox(height: 12),
             ValueListenableBuilder(
-              valueListenable: _post,
+              valueListenable: notifier,
               builder: (context, post, _) {
                 return Text(
                   post.content,
-                  maxLines: widget.truncateContent ? 3 : null,
-                  overflow: TextOverflow.ellipsis,
+                  maxLines: null,
+                  softWrap: true,
                 );
               },
             ),
-            const SizedBox(height: 12),
-            // Imágenes si existen
-            if (widget.showImages && _post.value.images.isNotEmpty) ...[
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 1,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                ),
-                itemCount: _post.value.images.length,
-                itemBuilder: (context, index) {
-                  final image = _post.value.images[index];
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: ImageBuilder(
-                      provider: _postService.image(image),
-                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return const SizedBox(
-                          width: 40,
-                          height: 40,
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-            ],
-
             // Contador de likes y comentarios
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 ValueListenableBuilder(
-                  valueListenable: _post,
+                  valueListenable: notifier,
                   builder: (context, post, _) {
                     final isLiked = post.likedBy.contains(user.id);
                     return TextButton.icon(
@@ -164,10 +119,10 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper {
                 //comentarios
                 const SizedBox(width: 16),
                 ValueListenableBuilder(
-                  valueListenable: _post,
+                  valueListenable: notifier,
                   builder: (context, post, _) {
                     return TextButton.icon(
-                      onPressed: () {},
+                      onPressed: widget.onComment,
                       icon: const Icon(Icons.comment_outlined),
                       label: Text('${post.comments.length}'),
                     );
@@ -175,7 +130,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper {
                 ),
                 const SizedBox(width: 16),
                 ValueListenableBuilder(
-                  valueListenable: _post,
+                  valueListenable: notifier,
                   builder: (context, post, _) {
                     return IconButton(
                       color: Theme.of(context).primaryColor,
@@ -193,14 +148,14 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper {
   }
 
   Widget _buildAuthorAvatar() {
-    final post = _post.value;
+    final post = notifier.value;
     return CircleAvatar(
       child: post.author != null ? buildProfilePicture(post.author!) : const Icon(Icons.person),
     );
   }
 
   Widget _buildAuthorName() {
-    final author = _post.value.author;
+    final author = notifier.value.author;
     if (author == null) {
       return const Text(
         'Anónimo',
@@ -226,9 +181,5 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper {
         );
       },
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return DateFormat('d MMM, yyyy').format(date);
   }
 }

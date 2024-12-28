@@ -1,6 +1,7 @@
 export 'chat.dart';
 export 'chat_bot.dart';
-export 'menstrual_calendar.dart';
-export 'post.dart';
+export 'didatic_content.dart';
+export 'forum.dart';
+export 'menstrual_cycle.dart';
 export 'tip.dart';
 export 'user.dart';

@@ -63,6 +63,15 @@ final theme = ThemeData(
       shape: WidgetStateProperty.all(const RoundedRectangleBorder(borderRadius: borderRadius)),
     ),
   ),
+  outlinedButtonTheme: OutlinedButtonThemeData(
+    style: ButtonStyle(
+      backgroundColor: WidgetStateProperty.all<Color>(Colors.transparent),
+      foregroundColor: WidgetStateProperty.all<Color>(deepMagenta),
+      side: WidgetStateProperty.all<BorderSide>(const BorderSide(color: deepMagenta)),
+      surfaceTintColor: WidgetStateProperty.all<Color>(deepMagenta),
+      shape: WidgetStateProperty.all(const RoundedRectangleBorder(borderRadius: borderRadius)),
+    ),
+  ),
   drawerTheme: const DrawerThemeData(
     backgroundColor: softGreen,
   ),

@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart' hide Page;
 import 'package:http/http.dart';
 import 'package:http_image_provider/http_image_provider.dart';
-import 'package:sona/shared/extensions.dart';
 import 'package:sona/shared/rest_crud.dart';
 import 'package:sona/shared/crud.dart';
 import 'package:sona/shared/schemas/message.dart';
@@ -12,7 +11,6 @@ import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/domain/providers/locale.dart';
 import 'package:sona/shared/constants.dart';
 import 'package:sona/shared/http/http.dart';
-import 'package:sona/shared/schemas/page.dart';
 
 mixin UserService implements ReadOperations<User, int> {
   User? _currentUser;
@@ -37,10 +35,6 @@ mixin UserService implements ReadOperations<User, int> {
   Future<User> profile();
 
   Future<Message> anonymize(bool anonymize);
-
-  Future<List<User>> listByRole(Authority role);
-
-  Future<Page<User>> pageByRole(Authority role, [PageQuery? query]);
 
   Future<void> refreshCurrentUser() async {
     _currentUser = await profile();
@@ -167,29 +161,5 @@ class ApiUserService extends RestReadOperations<User, int> with UserService {
     );
 
     return response.getBody<Message>();
-  }
-
-  @override
-  Future<List<User>> listByRole(Authority role) async {
-    final response = await request(
-      uri.replace(path: '$path/role/${role.javaName}'),
-      client: client,
-      method: HttpMethod.get,
-      headers: commonHeaders,
-    );
-
-    return response.getBody<List<User>>();
-  }
-
-  @override
-  Future<Page<User>> pageByRole(Authority role, [PageQuery? query]) async {
-    final response = await request(
-      uri.replace(path: '$path/role/${role.javaName}/page', queryParameters: query?.toQueryParameters()),
-      client: client,
-      method: HttpMethod.get,
-      headers: commonHeaders,
-    );
-
-    return response.getBody<PageMap>().as<User>();
   }
 }
