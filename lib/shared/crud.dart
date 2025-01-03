@@ -37,59 +37,21 @@ abstract interface class WriteOperations<T, D, ID> implements Creatable<T, D>, U
 
 abstract interface class CrudOperations<T, D, ID> implements ReadOperations<T, ID>, WriteOperations<T, D, ID> {}
 
-enum FilterOperator {
-  eq("eq"),
-  ne("ne"),
-  gt("gt"),
-  ge("ge"),
-  lt("lt"),
-  le("le"),
-  in_("in"),
-  nin("nin"),
-  like("like"),
-  isNull("isNull"),
-  notNull("notNull");
-
-  final String value;
-
-  const FilterOperator(this.value);
-}
-
-class Filter {
-  final String property;
-  final FilterOperator operator;
-  final dynamic value;
-
-  Filter({
-    required this.property,
-    required this.operator,
-    required this.value,
-  });
-
-  String toQueryParameter() {
-    return '$property:${operator.value}:${scape(value)}';
-  }
-
-  static String scape(dynamic value) {
-    return value.toString().replaceAll(',', r'\,').replaceAll(':', r'\:');
-  }
-}
-
 class PageQuery {
   final String? search;
   final List<String>? properties;
   final Direction? direction;
-  final List<Filter>? filters;
   final int? page;
   final int? size;
+  final Map<String, List<String>> attributes;
 
   PageQuery({
     this.search,
     this.properties,
     this.direction,
-    this.filters,
     this.page,
     this.size,
+    this.attributes = const {},
   });
 
   Map<String, dynamic> toQueryParameters() {
@@ -97,9 +59,9 @@ class PageQuery {
       'search': search,
       'properties': properties?.join(','),
       'direction': direction?.value,
-      'filters': filters?.map((e) => e.toQueryParameter()).join(','),
       'page': page?.toString(),
       'size': size?.toString(),
+      ...attributes,
     };
   }
 
@@ -107,17 +69,17 @@ class PageQuery {
     String? search,
     List<String>? properties,
     Direction? direction,
-    List<Filter>? filters,
     int? page,
     int? size,
+    Map<String, List<String>>? attributes,
   }) {
     return PageQuery(
       search: search ?? this.search,
       properties: properties ?? this.properties,
       direction: direction ?? this.direction,
-      filters: filters ?? this.filters,
       page: page ?? this.page,
       size: size ?? this.size,
+      attributes: attributes ?? this.attributes,
     );
   }
 }

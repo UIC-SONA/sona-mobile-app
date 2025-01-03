@@ -89,7 +89,6 @@ class _SonaDrawerState extends FullState<SonaDrawer> {
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
     final user = _userService.currentUser;
-    final representation = user.representation;
 
     return Drawer(
       child: ListView(
@@ -110,11 +109,11 @@ class _SonaDrawerState extends FullState<SonaDrawer> {
                   Column(
                     children: [
                       Text(
-                        representation.fullName,
+                        user.fullName,
                         style: const TextStyle(color: Colors.white, fontSize: 20),
                       ),
                       Text(
-                        representation.email,
+                        user.email,
                         style: const TextStyle(color: Colors.white, fontSize: 16),
                       ),
                     ],
@@ -256,7 +255,7 @@ class SonaScaffold extends StatelessWidget {
     required this.body,
     this.floatingActionButton,
     this.bottomNavigationBar,
-    this.padding = 5,
+    this.padding = 10,
     this.appBarTittle,
   });
 

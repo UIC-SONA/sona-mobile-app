@@ -42,14 +42,10 @@ mixin UserService implements ReadOperations<User, int> {
 
   static User notFound = User(
     id: -1,
-    representation: UserRepresentation(
-      firstName: 'Usuario',
-      lastName: 'no encontrado',
-      id: '',
-      username: '',
-      email: '',
-      emailVerified: false,
-    ),
+    firstName: 'Usuario',
+    lastName: 'no encontrado',
+    username: '',
+    email: '',
     keycloakId: '',
     profilePicturePath: '',
     authorities: [],

@@ -47,7 +47,7 @@ Future<void> setupDependencies() async {
   injector.registerSingleton<ChatService>(() => ApiStompChatService(authProvider: authProvider, localeProvider: localeProvider, userService: userService));
   injector.registerSingleton<ChatBotService>(() => ApiChatBotService(authProvider: authProvider, localeProvider: localeProvider));
   injector.registerSingleton<TipService>(() => ApiTipService(authProvider: authProvider, localeProvider: localeProvider));
-  injector.registerSingleton<ForumService>(() => ApiPostService(authProvider: authProvider, localeProvider: localeProvider));
+  injector.registerSingleton<PostService>(() => ApiPostService(authProvider: authProvider, localeProvider: localeProvider));
   injector.registerSingleton<DidacticContentService>(() => ApiDidacticContentService(authProvider: authProvider, localeProvider: localeProvider));
 
 //Router

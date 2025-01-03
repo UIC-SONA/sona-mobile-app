@@ -5,7 +5,6 @@ import 'package:logger/logger.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
-import 'package:sona/shared/crud.dart';
 import 'package:sona/shared/errors.dart';
 import 'package:sona/shared/extensions.dart';
 import 'package:sona/shared/http/http.dart';
@@ -27,28 +26,29 @@ class _ChatScreenState extends FullState<ChatScreen> {
   final _userService = injector.get<UserService>();
   final _controller = PageController();
 
-  late final _currentPage = valueState(0);
+  var _currentPage = 0;
 
   @override
   Widget build(BuildContext context) {
     final profile = _userService.currentUser;
+    final isProfessional = profile.authorities.any((authority) => authority == Authority.medicalProfessional || authority == Authority.legalProfessional);
 
     return SonaScaffold(
       actionButton: SonaActionButton.home(),
-      body: profile.authorities.contains(Authority.professional)
+      body: isProfessional
           ? ChatsPageView(profile: profile, controller: _controller)
           : PageView(
               controller: _controller,
-              onPageChanged: (index) => _currentPage.value = index,
+              onPageChanged: (index) => setState(() => _currentPage = index),
               children: [
                 ChatsPageView(profile: profile, controller: _controller),
                 UsersPageView(profile: profile),
               ],
             ),
-      bottomNavigationBar: profile.authorities.contains(Authority.professional)
+      bottomNavigationBar: isProfessional
           ? null
           : BottomNavigationBar(
-              currentIndex: _currentPage.value!,
+              currentIndex: _currentPage,
               items: const [
                 BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
                 BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Usuarios'),
@@ -59,7 +59,7 @@ class _ChatScreenState extends FullState<ChatScreen> {
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOut,
                 );
-                _currentPage.value = index;
+                setState(() => _currentPage = index);
               },
             ),
     );
@@ -314,6 +314,8 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> with ChatM
   }
 
   Widget _buildNoMessages() {
+    final isProfessional = profile.authorities.any((authority) => authority == Authority.medicalProfessional || authority == Authority.legalProfessional);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -342,7 +344,7 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> with ChatM
             ),
           ),
           const SizedBox(height: 20),
-          profile.authorities.contains(Authority.professional)
+          isProfessional
               ? const Text('¡Espere a que alguien inicie una conversación con usted!')
               : FilledButton.icon(
                   onPressed: () {
@@ -365,7 +367,7 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> with ChatM
     return Text(
         switch (room.room.type) {
           ChatRoomType.group => room.room.name,
-          ChatRoomType.private => room.participants.first.representation.fullName,
+          ChatRoomType.private => room.participants.first.fullName,
         },
         style: const TextStyle(fontWeight: FontWeight.bold));
   }
@@ -422,7 +424,7 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
   final _pagingController = PagingQueryController<User>(firstPage: 0);
   final _searchController = TextEditingController();
 
-  Authority _role = Authority.professional;
+  var _authorities = <Authority>[Authority.medicalProfessional, Authority.legalProfessional];
 
   @override
   ChatService get chatService => _chatService;
@@ -439,13 +441,9 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
     _pagingController.configureFetcher(
       (query) => _userService.page(
         query.copyWith(
-          filters: [
-            Filter(
-              property: 'role',
-              operator: FilterOperator.eq,
-              value: _role.javaName,
-            ),
-          ],
+          attributes: {
+            'authorities': _authorities.map((authority) => authority.javaName).toList(),
+          },
         ),
       ),
     );
@@ -505,7 +503,6 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
           },
           itemBuilder: (context, user, index) {
             if (user.id == profile.id) return const SizedBox();
-            final representation = user.representation;
             return TextButton(
               style: ButtonStyle(
                 padding: WidgetStateProperty.all(const EdgeInsets.all(0)),
@@ -513,10 +510,10 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
               onPressed: () => _openChat(user),
               child: ListTile(
                 title: Text(
-                  '${representation.firstName} ${representation.lastName}',
+                  '${user.firstName} ${user.lastName}',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-                subtitle: Text('@${representation.username}'),
+                subtitle: Text('@${user.username}'),
                 leading: _buildAvatar(user),
                 trailing: Icon(Icons.chat, color: Theme.of(context).primaryColor),
               ),
@@ -563,72 +560,48 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              _buildFilterAll(),
-              ...rolesData.entries.map((entry) {
-                final role = entry.key;
-                final data = entry.value;
-                return ListTile(
-                  title: Text(data['name']),
-                  leading: Icon(data['icon']),
-                  onTap: () {
-                    _role = role;
-                    _pagingController.refresh();
-                    Navigator.pop(context);
-                  },
-                );
-              }),
+              ..._authoritiesData.map(
+                (data) {
+                  return ListTile(
+                    title: Text(data['name'] as String),
+                    leading: Icon(data['icon'] as IconData),
+                    onTap: () {
+                      _authorities = data['select'] as List<Authority>;
+                      _pagingController.refresh();
+                      Navigator.pop(context);
+                    },
+                  );
+                },
+              ),
             ],
           ),
         );
       },
     );
   }
-
-  Widget _buildFilterAll() {
-    // return ListTile(
-    //   title: const Text('Todos'),
-    //   leading: const Icon(Icons.group),
-    //   onTap: () {
-    //     _role = null;
-    //     _pagingController.refresh();
-    //     Navigator.pop(context);
-    //   },
-    // );
-    return const SizedBox();
-  }
 }
 
 Widget _buildAvatar(User user) {
-  final representation = user.representation;
   return CircleAvatar(
     backgroundImage: user.profilePicturePath != null ? NetworkImage(user.profilePicturePath!) : null,
-    child: Text(representation.firstName[0]),
+    child: Text(user.firstName[0]),
   );
 }
 
-final Map<Authority, dynamic> rolesData = {
-  // Authority.admin: {
-  //   'name': 'Administrador',
-  //   'icon': Icons.admin_panel_settings,
-  // },
-  // Authority.administrative: {
-  //   'name': 'Administrativo',
-  //   'icon': Icons.business,
-  // },
-  Authority.professional: {
+final _authoritiesData = [
+  {
     'name': 'Todos los profesionales',
     'icon': Icons.business,
+    'select': [Authority.medicalProfessional, Authority.legalProfessional],
   },
-  Authority.medicalProfessional: {
+  {
     'name': 'Profesional médico',
     'icon': Icons.medical_services,
+    'select': [Authority.medicalProfessional],
   },
-  Authority.legalProfessional: {
+  {
     'name': 'Profesional legal',
     'icon': Icons.gavel,
+    'select': [Authority.legalProfessional],
   },
-  // Authority.user: {
-  //   'name': 'Usuario',
-  //   'icon': Icons.person,
-  // },
-};
+];

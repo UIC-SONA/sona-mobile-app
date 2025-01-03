@@ -50,7 +50,7 @@ class _MyMenstrualCycleCalenderViewState extends State<MyMenstrualCycleCalenderV
   List<DateTime>? selectedWeekDays;
   DateTime _selectedDateTime = DateTime.now();
   String? currentMonth;
-  bool isExpanded = false;
+  bool isExpanded = true;
   String displayMonth = "";
   String today = "";
   bool isExpandable = true;

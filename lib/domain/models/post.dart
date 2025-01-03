@@ -1,11 +1,11 @@
-class Forum extends ByAuthor<int> {
+class Post extends ByAuthor<int> {
   final String id;
   final String content;
   final List<Comment> comments;
   final List<int> likedBy;
   final DateTime createdAt;
 
-  Forum({
+  Post({
     required this.id,
     required this.content,
     required this.comments,
@@ -14,8 +14,8 @@ class Forum extends ByAuthor<int> {
     required int? author,
   }) : super(author);
 
-  factory Forum.fromJson(Map<String, dynamic> json) {
-    return Forum(
+  factory Post.fromJson(Map<String, dynamic> json) {
+    return Post(
       id: json['id'],
       content: json['content'],
       comments: List<Comment>.from(json['comments'].map((x) => Comment.fromJson(x))),

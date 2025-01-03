@@ -25,9 +25,9 @@ class ForumScreen extends StatefulWidget {
 }
 
 class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHelper {
-  final _postService = injector.get<ForumService>();
+  final _postService = injector.get<PostService>();
   final _userService = injector.get<UserService>();
-  final _pagingController = PagingQueryController<Forum>(firstPage: 0);
+  final _pagingController = PagingQueryController<Post>(firstPage: 0);
 
   @override
   UserService get userService => _userService;
@@ -38,12 +38,12 @@ class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHel
     _pagingController.configureFetcher(_fetcher);
   }
 
-  Future<Page<Forum>> _fetcher(PageQuery query) async {
+  Future<Page<Post>> _fetcher(PageQuery query) async {
     return await _postService.page(query.copyWith(properties: ['createdAt'], direction: Direction.desc));
   }
 
-  void _openCommentsScreen(ValueNotifier<Forum> forum) async {
-    context.router.push<Forum>(
+  void _openCommentsScreen(ValueNotifier<Post> forum) async {
+    context.router.push<Post>(
       ForumCommentsRoute(
         forum: forum.value,
         onPop: (result) {
@@ -82,9 +82,9 @@ class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHel
       onRefresh: () {
         return Future.sync(_pagingController.refresh);
       },
-      child: PagedListView<int, Forum>(
+      child: PagedListView<int, Post>(
         pagingController: _pagingController,
-        builderDelegate: PagedChildBuilderDelegate<Forum>(
+        builderDelegate: PagedChildBuilderDelegate<Post>(
           noItemsFoundIndicatorBuilder: (context) {
             return const Center(
               child: Text('No hay publicaciones'),

@@ -118,8 +118,6 @@ class MenstrualCycleServiceImpl extends MenstrualCycleService implements WebReso
           method: HttpMethod.get,
           headers: commonHeaders,
         );
-        print("asdsadsad---> ${response.body}");
-
         return response.getBody<CycleData>();
       },
       onNotFound: () {

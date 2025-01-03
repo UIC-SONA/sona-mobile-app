@@ -15,6 +15,8 @@ class ServicesOptionsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isProfessional = _userService.currentUser.authorities.any((element) => element == Authority.medicalProfessional || element == Authority.legalProfessional);
+
     return SonaScaffold(
       actionButton: SonaActionButton.home(),
       body: Column(
@@ -27,7 +29,7 @@ class ServicesOptionsScreen extends StatelessWidget {
                 onPressed: () => AutoRouter.of(context).push(const ChatBotRoute()),
               ),
               MenuButton(
-                label: _userService.currentUser.authorities.contains(Authority.professional) ? 'Chat' : 'Chat con Profesionales',
+                label: isProfessional ? 'Chat' : 'Chat con Profesionales',
                 icon: Icons.chat,
                 onPressed: () => AutoRouter.of(context).push(const ChatRoute()),
               ),

@@ -88,12 +88,20 @@ class _TipsScreenState extends FullState<TipsScreen> {
                             fontSize: 18,
                           ),
                         ),
-                        subtitle: Text(tip.summary),
+                        subtitle: Text(
+                          tip.summary,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.justify,
+                        ),
                       ),
                     ),
-                    ElevatedButton(
-                      onPressed: () => _selectTip(tip),
-                      child: const Text('Ver más'),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: ElevatedButton(
+                        onPressed: () => _selectTip(tip),
+                        child: const Text('Ver más'),
+                      ),
                     ),
                   ],
                 ),
@@ -129,9 +137,7 @@ class _TipsScreenState extends FullState<TipsScreen> {
                         const SizedBox(height: 16),
                         MarkdownBody(
                           data: tip.description,
-                          styleSheet: MarkdownStyleSheet(
-                            p: const TextStyle(fontSize: 16),
-                          ),
+                          styleSheet: MarkdownStyleSheet(textAlign: WrapAlignment.spaceEvenly, p: const TextStyle(fontSize: 15)),
                         ),
                       ],
                     ),
@@ -139,7 +145,7 @@ class _TipsScreenState extends FullState<TipsScreen> {
                   const SizedBox(height: 20),
                   Center(
                     child: ImageBuilder(
-                      provider: _tipsService.tipImage(tip.id),
+                      provider: _tipsService.image(tip),
                     ),
                   ),
                   const SizedBox(height: 20),

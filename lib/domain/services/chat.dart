@@ -14,6 +14,8 @@ import 'package:stomp_dart_client/stomp_dart_client.dart';
 typedef OnReceiveMessage = void Function(ChatMessageSent message);
 typedef OnReadMessage = void Function(ReadMessages messagesIds);
 
+Logger _log = Logger();
+
 abstract class ChatService {
   //
   final List<OnReceiveMessage> _onReceiveMessageListeners = [];
@@ -25,19 +27,19 @@ abstract class ChatService {
 
   //
   Future<ChatMessageSent> send({
-    required String roomId,
+    required ChatRoom room,
     required String requestId,
     required String message,
   });
 
   Future<ChatMessageSent> sendImage({
-    required String roomId,
+    required ChatRoom room,
     required String requestId,
     required String imagePath,
   });
 
   Future<ChatMessageSent> sendVoice({
-    required String roomId,
+    required ChatRoom room,
     required String requestId,
     required String audioPath,
   });
@@ -116,8 +118,6 @@ mixin ChatMessageListenner<T extends ChatService> {
   void onReadMessage(ReadMessages readMessages);
 }
 
-Logger _log = Logger();
-
 class ApiStompChatService extends ChatService implements WebResource {
   //
   final AuthProvider authProvider;
@@ -186,12 +186,12 @@ class ApiStompChatService extends ChatService implements WebResource {
 
   @override
   Future<ChatMessageSent> send({
-    required String roomId,
+    required ChatRoom room,
     required String requestId,
     required String message,
   }) async {
     final response = await request(
-      uri.replace(path: '$path/send/$roomId', queryParameters: {'requestId': requestId}),
+      uri.replace(path: '$path/send/${room.id}', queryParameters: {'requestId': requestId}),
       client: client,
       method: HttpMethod.post,
       headers: {
@@ -206,12 +206,12 @@ class ApiStompChatService extends ChatService implements WebResource {
 
   @override
   Future<ChatMessageSent> sendImage({
-    required String roomId,
+    required ChatRoom room,
     required String requestId,
     required String imagePath,
   }) async {
     final response = await multipartRequest(
-      uri.replace(path: '$path/send/$roomId/image', queryParameters: {'requestId': requestId}),
+      uri.replace(path: '$path/send/${room.id}/image', queryParameters: {'requestId': requestId}),
       method: HttpMethod.post,
       client: client,
       headers: commonHeaders,
@@ -225,12 +225,12 @@ class ApiStompChatService extends ChatService implements WebResource {
 
   @override
   Future<ChatMessageSent> sendVoice({
-    required String roomId,
+    required ChatRoom room,
     required String requestId,
     required String audioPath,
   }) async {
     final response = await multipartRequest(
-      uri.replace(path: '$path/send/$roomId/voice', queryParameters: {'requestId': requestId}),
+      uri.replace(path: '$path/send/${room.id}/voice', queryParameters: {'requestId': requestId}),
       method: HttpMethod.post,
       client: client,
       headers: commonHeaders,

@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:logger/logger.dart';
 import 'package:sona/shared/crud.dart';
 import 'package:sona/shared/http/extensions.dart';
 import 'package:sona/shared/http/request.dart';
@@ -6,9 +7,14 @@ import 'package:sona/shared/http/types.dart';
 import 'package:sona/shared/json.dart';
 import 'package:sona/shared/schemas/page.dart';
 
+final log = Logger();
+
 Future<Page<T>> _page<T>(Uri uri, String path, Map<String, String> headers, http.Client? client, [PageQuery? query]) async {
+  var pageUri =  uri.replace(path: path, queryParameters: query?.toQueryParameters());
+  log.d('Page uri: $pageUri');
+
   final response = await request(
-    uri.replace(path: path, queryParameters: query?.toQueryParameters()),
+    pageUri,
     client: client,
     method: HttpMethod.get,
     headers: {

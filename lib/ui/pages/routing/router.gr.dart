@@ -123,8 +123,8 @@ class DidacticContentRoute extends PageRouteInfo<void> {
 class ForumCommentsRoute extends PageRouteInfo<ForumCommentsRouteArgs> {
   ForumCommentsRoute({
     Key? key,
-    required Forum forum,
-    required void Function(Forum) onPop,
+    required Post forum,
+    required void Function(Post) onPop,
     List<PageRouteInfo>? children,
   }) : super(
           ForumCommentsRoute.name,
@@ -160,9 +160,9 @@ class ForumCommentsRouteArgs {
 
   final Key? key;
 
-  final Forum forum;
+  final Post forum;
 
-  final void Function(Forum) onPop;
+  final void Function(Post) onPop;
 
   @override
   String toString() {

@@ -90,7 +90,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
           children: [
             Text(
               capitalizedDate,
-              style: Theme.of(context).textTheme.titleLarge,
+              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             switch (_selectedDateDayType) {

@@ -13,8 +13,8 @@ import 'package:sona/ui/widgets/sona_scaffold.dart';
 
 @RoutePage()
 class ForumCommentsScreen extends StatefulWidget {
-  final Forum forum;
-  final void Function(Forum) onPop;
+  final Post forum;
+  final void Function(Post) onPop;
 
   const ForumCommentsScreen({
     super.key,
@@ -27,17 +27,17 @@ class ForumCommentsScreen extends StatefulWidget {
 }
 
 class _ForumCommentsScreenState extends FullState<ForumCommentsScreen> with UserServiceWidgetHelper {
-  final _forumService = injector.get<ForumService>();
+  final _postService = injector.get<PostService>();
   final _userService = injector.get<UserService>();
   final _commentController = TextEditingController();
 
-  late Forum forum;
+  late Post post;
   bool _sendingComment = false;
 
   @override
   void initState() {
     super.initState();
-    forum = widget.forum;
+    post = widget.forum;
   }
 
   @override
@@ -56,8 +56,8 @@ class _ForumCommentsScreenState extends FullState<ForumCommentsScreen> with User
       Future<void> createComment(bool anonymous) async {
         _sendingComment = true;
         refresh();
-        await _forumService.createComment(
-          postId: forum.id,
+        await _postService.createComment(
+          postId: post.id,
           content: _commentController.text,
           anonymous: anonymous,
         );
@@ -78,7 +78,7 @@ class _ForumCommentsScreenState extends FullState<ForumCommentsScreen> with User
         if (anonymous == null) return;
         await createComment(anonymous);
       }
-      forum = await _forumService.find(forum.id);
+      post = await _postService.find(post.id);
       _commentController.clear();
     } catch (e) {
       if (!mounted) return;
@@ -90,9 +90,12 @@ class _ForumCommentsScreenState extends FullState<ForumCommentsScreen> with User
   }
 
   void _toggleLike(bool isLiked, Comment comment) async {
-    final id = comment.id;
-     await (isLiked ? _forumService.unlikeComment(forum.id, id) : _forumService.likeComment(forum.id, id));
-    forum = await _forumService.find(forum.id);
+    if (isLiked) {
+      await _postService.unlikeComment(post, comment);
+    } else {
+      await _postService.likeComment(post, comment);
+    }
+    post = await _postService.find(post.id);
     refresh();
   }
 
@@ -107,7 +110,7 @@ class _ForumCommentsScreenState extends FullState<ForumCommentsScreen> with User
       },
     );
     if (confirmed == true) {
-      await _forumService.reportComment(forum.id, comment.id);
+      await _postService.reportComment(post, comment);
       if (!mounted) return;
       showSnackBar(context, content: const Text('Comentario reportado'));
     }
@@ -121,7 +124,7 @@ class _ForumCommentsScreenState extends FullState<ForumCommentsScreen> with User
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
-          widget.onPop(forum);
+          widget.onPop(post);
         }
       },
       child: SonaScaffold(
@@ -133,7 +136,7 @@ class _ForumCommentsScreenState extends FullState<ForumCommentsScreen> with User
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: buildComments(forum.comments),
+                    children: buildComments(post.comments),
                   ),
                 ],
               ),

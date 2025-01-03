@@ -10,11 +10,11 @@ import 'package:sona/shared/rest_crud.dart';
 import 'package:sona/shared/schemas/message.dart';
 import 'package:http/http.dart' as http;
 
-class ForumDto {
+class PostDto {
   final bool? anonymous;
   final String content;
 
-  ForumDto({
+  PostDto({
     this.anonymous,
     required this.content,
   });
@@ -32,7 +32,7 @@ class ForumDto {
   }
 }
 
-abstract class ForumService implements CrudOperations<Forum, ForumDto, String> {
+abstract class PostService implements CrudOperations<Post, PostDto, String> {
   Future<Comment> createComment({
     required String postId,
     required String content,
@@ -44,20 +44,20 @@ abstract class ForumService implements CrudOperations<Forum, ForumDto, String> {
     required String commentId,
   });
 
-  Future<Message> likeForum(String postId);
+  Future<Message> likePost(Post post);
 
-  Future<Message> unlikeForum(String postId);
+  Future<Message> unlikePost(Post post);
 
-  Future<Message> reportForum(String postId);
+  Future<Message> reportPost(Post post);
 
-  Future<Message> likeComment(String postId, String commentId);
+  Future<Message> likeComment(Post post, Comment comment);
 
-  Future<Message> unlikeComment(String postId, String commentId);
+  Future<Message> unlikeComment(Post post, Comment comment);
 
-  Future<Message> reportComment(String postId, String commentId);
+  Future<Message> reportComment(Post post, Comment comment);
 }
 
-class ApiPostService extends RestCrudOperations<Forum, ForumDto, String> implements ForumService {
+class ApiPostService extends RestCrudOperations<Post, PostDto, String> implements PostService {
   //
   final AuthProvider authProvider;
   final LocaleProvider localeProvider;
@@ -77,7 +77,7 @@ class ApiPostService extends RestCrudOperations<Forum, ForumDto, String> impleme
   String get path => '/forum';
 
   @override
-  Future<Forum> create(ForumDto dto) async {
+  Future<Post> create(PostDto dto) async {
     final response = await request(
       uri.replace(path: path),
       client: client,
@@ -89,7 +89,7 @@ class ApiPostService extends RestCrudOperations<Forum, ForumDto, String> impleme
       body: jsonEncode(dto.toJson()),
     );
 
-    return response.getBody<Forum>();
+    return response.getBody<Post>();
   }
 
   @override
@@ -122,9 +122,9 @@ class ApiPostService extends RestCrudOperations<Forum, ForumDto, String> impleme
   }
 
   @override
-  Future<Message> likeForum(String postId) async {
+  Future<Message> likePost(Post post) async {
     final response = await request(
-      uri.replace(path: '$path/$postId/like'),
+      uri.replace(path: '$path/${post.id}/like'),
       client: client,
       method: HttpMethod.post,
       headers: commonHeaders,
@@ -133,9 +133,9 @@ class ApiPostService extends RestCrudOperations<Forum, ForumDto, String> impleme
   }
 
   @override
-  Future<Message> unlikeForum(String postId) async {
+  Future<Message> unlikePost(Post post) async {
     final response = await request(
-      uri.replace(path: '$path/$postId/unlike'),
+      uri.replace(path: '$path/${post.id}/unlike'),
       client: client,
       method: HttpMethod.post,
       headers: commonHeaders,
@@ -144,9 +144,9 @@ class ApiPostService extends RestCrudOperations<Forum, ForumDto, String> impleme
   }
 
   @override
-  Future<Message> reportForum(String postId) async {
+  Future<Message> reportPost(Post post) async {
     final response = await request(
-      uri.replace(path: '$path/$postId/report'),
+      uri.replace(path: '$path/${post.id}/report'),
       client: client,
       method: HttpMethod.post,
       headers: commonHeaders,
@@ -155,9 +155,9 @@ class ApiPostService extends RestCrudOperations<Forum, ForumDto, String> impleme
   }
 
   @override
-  Future<Message> likeComment(String postId, String commentId) async {
+  Future<Message> likeComment(Post post, Comment comment) async {
     final response = await request(
-      uri.replace(path: '$path/$postId/comments/$commentId/like'),
+      uri.replace(path: '$path/${post.id}/comments/${comment.id}/like'),
       client: client,
       method: HttpMethod.post,
       headers: commonHeaders,
@@ -166,9 +166,9 @@ class ApiPostService extends RestCrudOperations<Forum, ForumDto, String> impleme
   }
 
   @override
-  Future<Message> unlikeComment(String postId, String commentId) async {
+  Future<Message> unlikeComment(Post post, Comment comment) async {
     final response = await request(
-      uri.replace(path: '$path/$postId/comments/$commentId/unlike'),
+      uri.replace(path: '$path/${post.id}/comments/${comment.id}/unlike'),
       client: client,
       method: HttpMethod.post,
       headers: commonHeaders,
@@ -177,9 +177,9 @@ class ApiPostService extends RestCrudOperations<Forum, ForumDto, String> impleme
   }
 
   @override
-  Future<Message> reportComment(String postId, String commentId) async {
+  Future<Message> reportComment(Post post, Comment comment) async {
     final response = await request(
-      uri.replace(path: '$path/$postId/comments/$commentId/report'),
+      uri.replace(path: '$path/${post.id}/comments/${comment.id}/report'),
       client: client,
       method: HttpMethod.post,
       headers: commonHeaders,

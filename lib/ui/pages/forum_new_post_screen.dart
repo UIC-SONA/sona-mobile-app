@@ -17,7 +17,7 @@ class ForumNewPostScreen extends StatefulWidget {
 }
 
 class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> {
-  final _postService = injector.get<ForumService>();
+  final _postService = injector.get<PostService>();
   final _userService = injector.get<UserService>();
 
   bool? _anonymous;
@@ -104,7 +104,7 @@ class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> {
               ),
             ),
             Text(
-              _userService.currentUser.representation.username,
+              _userService.currentUser.username,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
             ),
           ],
@@ -123,7 +123,7 @@ class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> {
 
     _showLoadingDialog();
     try {
-      var dto = ForumDto(anonymous: anonymous, content: _controller.text);
+      var dto = PostDto(anonymous: anonymous, content: _controller.text);
       await _postService.create(dto);
       if (!mounted) return;
       AutoRouter.of(context).popUntil((route) => route.settings.name == ForumRoute.name);

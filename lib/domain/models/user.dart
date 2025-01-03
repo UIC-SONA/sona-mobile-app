@@ -3,7 +3,6 @@ import 'package:sona/shared/extensions.dart';
 enum Authority {
   admin,
   administrative,
-  professional,
   medicalProfessional,
   legalProfessional,
   user;
@@ -13,71 +12,40 @@ enum Authority {
   }
 }
 
-class UserRepresentation {
-  final String id;
+class User {
+  final int id;
+  final String keycloakId;
   final String username;
   final String firstName;
   final String lastName;
   final String email;
-  final bool emailVerified;
-
-  UserRepresentation({
-    required this.id,
-    required this.username,
-    required this.firstName,
-    required this.lastName,
-    required this.email,
-    required this.emailVerified,
-  });
-
-  String get fullName => '$firstName $lastName';
-
-  factory UserRepresentation.fromJson(Map<String, dynamic> json) {
-    return UserRepresentation(
-      id: json['id'],
-      username: json['username'],
-      firstName: json['firstName'],
-      lastName: json['lastName'],
-      email: json['email'],
-      emailVerified: json['emailVerified'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'username': username,
-      'firstName': firstName,
-      'lastName': lastName,
-      'email': email,
-      'emailVerified': emailVerified,
-    };
-  }
-}
-
-class User {
-  final int id;
-  final String keycloakId;
   final String? profilePicturePath;
-  final UserRepresentation representation;
   final List<Authority> authorities;
   final bool anonymous;
 
   User({
     required this.id,
     required this.keycloakId,
+    required this.username,
+    required this.firstName,
+    required this.lastName,
+    required this.email,
     required this.profilePicturePath,
-    required this.representation,
     required this.authorities,
     required this.anonymous,
   });
+
+  String get fullName => '$firstName $lastName';
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'],
       keycloakId: json['keycloakId'],
       profilePicturePath: json['profilePicturePath'],
-      representation: UserRepresentation.fromJson(json['representation']),
+      username: json['username'],
+      firstName: json['firstName'],
+      lastName: json['lastName'],
+      email: json['email'],
       authorities: List.from(json['authorities']).map((e) => Authority.fromString(e)).toList(),
       anonymous: json['anonymous'],
     );
@@ -87,8 +55,10 @@ class User {
     return {
       'id': id,
       'keycloakId': keycloakId,
+      'username': username,
+      'firstName': firstName,
+      'lastName': lastName,
       'profilePicturePath': profilePicturePath,
-      'representation': representation.toJson(),
       'authorities': authorities,
       'anonymous': anonymous,
     };
@@ -96,7 +66,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(id: $id, keycloakId: $keycloakId, profilePicturePath: $profilePicturePath, representation: $representation, authorities: $authorities)';
+    return 'User{id: $id, keycloakId: $keycloakId, username: $username, firstName: $firstName, lastName: $lastName, email: $email, profilePicturePath: $profilePicturePath, authorities: $authorities, anonymous: $anonymous}';
   }
 
   @override

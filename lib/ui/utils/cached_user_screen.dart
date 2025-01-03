@@ -54,7 +54,7 @@ mixin UserServiceWidgetHelper {
         }
         final user = snapshot.data as User;
         return Text(
-          user.representation.username,
+          user.username,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
           ),

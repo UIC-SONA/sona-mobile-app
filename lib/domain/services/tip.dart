@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart' hide Page;
 import 'package:http/http.dart' as http;
 import 'package:http_image_provider/http_image_provider.dart';
@@ -17,7 +16,7 @@ abstract class TipService {
 
   Future<Page<Tip>> activesPage([PageQuery? query]);
 
-  ImageProvider<Object> tipImage(String tipId);
+  ImageProvider<Object> image(Tip tip);
 }
 
 class ApiTipService implements TipService, WebResource {
@@ -56,7 +55,7 @@ class ApiTipService implements TipService, WebResource {
   @override
   Future<Page<Tip>> activesPage([PageQuery? query]) async {
     final response = await request(
-      uri.replace(path: '$path/actives/page', queryParameters: query?.toQueryParameters()),
+      uri.replace(path: '$path/actives', queryParameters: query?.toQueryParameters()),
       client: client,
       method: HttpMethod.get,
       headers: commonHeaders,
@@ -66,9 +65,9 @@ class ApiTipService implements TipService, WebResource {
   }
 
   @override
-  ImageProvider<Object> tipImage(String tipId) {
+  ImageProvider<Object> image(Tip tip) {
     return HttpImageProvider(
-      uri.replace(path: '$path/$tipId/image'),
+      uri.replace(path: '$path/${tip.id}/image'),
       headers: commonHeaders,
       client: client,
     );

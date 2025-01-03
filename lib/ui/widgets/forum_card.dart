@@ -8,7 +8,7 @@ import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
 
 class PostCard extends StatefulWidget {
-  final ValueNotifier<Forum> notifier;
+  final ValueNotifier<Post> notifier;
   final VoidCallback? onComment;
 
   const PostCard({
@@ -23,16 +23,16 @@ class PostCard extends StatefulWidget {
 
 class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper {
   final _userService = injector.get<UserService>();
-  final _forumService = injector.get<ForumService>();
+  final _forumService = injector.get<PostService>();
 
   @override
   UserService get userService => _userService;
 
-  ValueNotifier<Forum> get notifier => widget.notifier;
+  ValueNotifier<Post> get notifier => widget.notifier;
 
   void _toggleLike(bool isLiked) async {
     final post = notifier.value;
-    await (isLiked ? _forumService.unlikeForum(post.id) : _forumService.likeForum(post.id));
+    await (isLiked ? _forumService.unlikePost(post) : _forumService.likePost(post));
     notifier.value = await _forumService.find(post.id);
   }
 
@@ -47,7 +47,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper {
       },
     );
     if (confirmed == true) {
-      await _forumService.reportForum(notifier.value.id);
+      await _forumService.reportPost(notifier.value);
       if (!mounted) return;
       showSnackBar(context, content: const Text('Publicación reportada'));
     }
@@ -174,7 +174,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper {
         }
         final user = snapshot.data as User;
         return Text(
-          user.representation.username,
+          user.username,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
           ),

@@ -59,7 +59,7 @@ class _CustomizedCalendarCellState extends State<CustomizedCalendarCell> {
     if (checkIsFuturePeriodDay()) {
       return DayType.periodPrediction;
     }
-    if (checkIsFutureOvulationDay()) {
+    if (checkIsFutureOvulationDay() || checkIsOvulationDay()) {
       return DayType.ovulationPrediction;
     }
     return null;
@@ -68,6 +68,7 @@ class _CustomizedCalendarCellState extends State<CustomizedCalendarCell> {
   @override
   Widget build(BuildContext context) {
     DayType? dayType = getDayType();
+    //CalendarCell
 
     return InkWell(
       onTap: widget.onTapDay != null
@@ -135,6 +136,8 @@ class _CustomizedCalendarCellState extends State<CustomizedCalendarCell> {
     return isMatchDate;
   }
 
+
+
   bool checkIsPastPeriodDay() {
     bool isPeriodDay = false;
     if (widget.previousPeriodDate.isNotEmpty) {
@@ -191,6 +194,18 @@ class _CustomizedCalendarCellState extends State<CustomizedCalendarCell> {
       }
     }
     return isMatchDate;
+  }
+
+  bool checkIsOvulationDay() {
+    bool isOvlDay = false;
+
+    if (widget.previousPeriodDate.isNotEmpty) {
+      DateTime ovulationDay = DateFormat("yyyy-MM-dd").parse(widget.previousPeriodDate).add(Duration(days: widget.cycleLength)).subtract(const Duration(days: 14));
+      if (widget.day.compareTo(ovulationDay) == 0) {
+        isOvlDay = true;
+      }
+    }
+    return isOvlDay;
   }
 }
 

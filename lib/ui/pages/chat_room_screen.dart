@@ -34,7 +34,6 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
   final List<String> _messagesRequests = [];
 
   late final _chatService = injector.get<ChatService>();
-  late final _chatViewState = valueState(ChatViewState.loading);
   late final ChatController _chatController = ChatController(
     initialMessageList: [],
     scrollController: _scrollController,
@@ -42,8 +41,9 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
     currentUser: _mapUser(profile),
   );
 
-  int _chunk = 1;
-  bool _isLoadingMore = false;
+  var _chatViewState = ChatViewState.loading;
+  var _chunk = 1;
+  var _isLoadingMore = false;
 
   ChatRoomData get roomData => widget.roomData;
 
@@ -106,7 +106,9 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
       await _loadChatHistory();
       await _markAsRead();
     } catch (e, stackTrace) {
-      _chatViewState.value = ChatViewState.error;
+      setState(() {
+        _chatViewState = ChatViewState.error;
+      });
       _log.e('Error loading chat room', error: e, stackTrace: stackTrace);
     }
   }
@@ -118,8 +120,10 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
 
     final initialMessage = await _chatService.messages(roomId: roomId, chunk: _chunk);
     _chatController.loadMoreData(_mapMessages(initialMessage));
-    _chatViewState.value = initialMessage.isEmpty ? ChatViewState.noData : ChatViewState.hasMessages;
-    _chunk--;
+    setState(() {
+      _chunk--;
+      _chatViewState = initialMessage.isEmpty ? ChatViewState.noData : ChatViewState.hasMessages;
+    });
   }
 
   Future<void> _markAsRead() async {
@@ -183,9 +187,9 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
     try {
       _messagesRequests.add(requestId);
       final messageSent = await switch (messageType) {
-        MessageType.text => _chatService.send(roomId: roomData.id, message: message, requestId: requestId),
-        MessageType.image => _chatService.sendImage(roomId: roomData.id, imagePath: message, requestId: requestId),
-        MessageType.voice => _chatService.sendVoice(roomId: roomData.id, audioPath: message, requestId: requestId),
+        MessageType.text => _chatService.send(room: roomData.room, message: message, requestId: requestId),
+        MessageType.image => _chatService.sendImage(room: roomData.room, imagePath: message, requestId: requestId),
+        MessageType.voice => _chatService.sendVoice(room: roomData.room, audioPath: message, requestId: requestId),
         MessageType.custom => throw UnimplementedError(),
       };
 
@@ -198,8 +202,8 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
   }
 
   void _setChatViewStateHasMessages() {
-    if (_chatViewState.value == ChatViewState.noData) {
-      _chatViewState.value = ChatViewState.hasMessages;
+    if (_chatViewState == ChatViewState.noData) {
+      _chatViewState = ChatViewState.hasMessages;
     }
   }
 
@@ -211,7 +215,7 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
       padding: 0,
       body: SonaChatView(
         chatController: _chatController,
-        chatViewState: _chatViewState.value!,
+        chatViewState: _chatViewState,
         sendMessage: _sendMessage,
         enableCameraImagePicker: true,
         enableGalleryImagePicker: true,
@@ -237,7 +241,7 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
   ChatUser _mapUser(User user) {
     return ChatUser(
       id: user.id.toString(),
-      name: user.representation.firstName,
+      name: user.firstName,
       profilePhoto: user.profilePicturePath,
     );
   }

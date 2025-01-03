@@ -23,7 +23,6 @@ class PagingQueryController<T> extends PagingController<int, T> {
 
   void configureFetcher(Future<Page<T>> Function(PageQuery query) fetcher) {
     addPageRequestListener((pageKey) async {
-      _log.i('Fetching page $pageKey');
       final pageNumber = pageKey ~/ size;
       try {
         final page = await fetcher(PageQuery(
@@ -34,7 +33,6 @@ class PagingQueryController<T> extends PagingController<int, T> {
           direction: direction,
         ));
 
-        _log.i('Date fetched for page $pageNumber, data: $page');
         final content = page.content;
         final length = content.length;
 

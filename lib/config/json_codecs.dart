@@ -12,7 +12,6 @@ setupJsonCodecs() {
   Json.register<Tip>(fromJson: Tip.fromJson, toJson: (value) => value.toJson());
   Json.register<User>(fromJson: User.fromJson, toJson: (value) => value.toJson());
   Json.register<UserInfo>(fromJson: UserInfo.fromJson, toJson: (value) => value.toJson());
-  Json.register<UserRepresentation>(fromJson: UserRepresentation.fromJson, toJson: (value) => value.toJson());
   Json.register<PromptResponse>(fromJson: PromptResponse.fromJson, toJson: (value) => value.toJson());
   Json.register<PageMap>(fromJson: PageMap.fromJson, toJson: (value) => value.toJson());
   Json.register<PageInfo>(fromJson: PageInfo.fromJson, toJson: (value) => value.toJson());
@@ -20,7 +19,7 @@ setupJsonCodecs() {
   Json.register<ReadBy>(fromJson: ReadBy.fromJson, toJson: (value) => value.toJson());
   Json.register<ChatRoom>(fromJson: ChatRoom.fromJson, toJson: (value) => value.toJson());
   Json.register<ChatMessageSent>(fromJson: ChatMessageSent.fromJson, toJson: (value) => value.toJson());
-  Json.register<Forum>(fromJson: Forum.fromJson, toJson: (value) => value.toJson());
+  Json.register<Post>(fromJson: Post.fromJson, toJson: (value) => value.toJson());
   Json.register<Comment>(fromJson: Comment.fromJson, toJson: (value) => value.toJson());
   Json.register<DidaticContent>(fromJson: DidaticContent.fromJson, toJson: (value) => value.toJson());
 }

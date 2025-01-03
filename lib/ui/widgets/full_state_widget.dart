@@ -58,28 +58,6 @@ abstract class FullState<T extends StatefulWidget> extends State<T> {
     return state;
   }
 
-  /// Creates a new value state result with automatic lifecycle management
-  ValueStateResult<R> valueState<R>(
-    R? initialData, {
-    Function(Object)? onError,
-    Stream<R>? stream,
-  }) {
-    final state = ValueStateResult<R>(
-      initialData: initialData,
-      setState: safeUpdateState,
-      onError: onError,
-    );
-
-    if (stream != null) {
-      _stateSubscriptions.add(stream.listen(
-        (data) => state.value = data,
-        onError: (error) => state.error = error,
-      ));
-    }
-
-    return state;
-  }
-
   /// Creates a new loading state with automatic lifecycle management
   StateLoadingResult loadingState(
     bool loading, {
@@ -214,37 +192,6 @@ abstract class StateResult<R> {
     if (_error != null) return error(_error!);
     if (_value != null) return value(_value as R);
     return initial();
-  }
-}
-
-/// State result for values that can be updated
-class ValueStateResult<R> extends StateResult<R> {
-  ValueStateResult({
-    super.initialData,
-    required super.setState,
-    super.onError,
-  });
-
-  set value(R? value) {
-    _reset();
-    _value = value;
-    if (value != null) {
-      _controller.add(value);
-    }
-    setState(() {});
-  }
-
-  set error(Object? value) {
-    _reset();
-    _error = value;
-    setState(() {});
-    if (onError != null && value != null) onError!(value);
-  }
-
-  set loading(bool value) {
-    _reset();
-    _loading = value;
-    setState(() {});
   }
 }
 
