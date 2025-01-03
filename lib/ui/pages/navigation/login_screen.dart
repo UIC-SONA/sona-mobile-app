@@ -222,7 +222,6 @@ class _LoginScreenState extends FullState<LoginScreen> {
 
   Future<void> _onLoginSuccess() async {
     await injector.get<UserService>().refreshCurrentUser();
-    await injector.get<MenstrualCycleService>().init();
   }
 
   void _togglePasswordVisibility() {

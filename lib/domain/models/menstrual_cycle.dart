@@ -14,7 +14,6 @@ class CycleData {
   });
 
   factory CycleData.fromJson(Map<String, dynamic> json) {
-    print("asdsadsad $json");
     return CycleData(
       periodDuration: json['periodDuration'],
       cycleLength: json['cycleLength'],

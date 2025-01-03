@@ -1,41 +1,26 @@
-import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'package:menstrual_cycle_widget/menstrual_cycle_widget.dart';
+import 'package:sona/ui/widgets/menstrual_cycle/menstrual_cycle.dart';
 
 class CustomizedCalendarCell extends StatefulWidget {
-  final Function(DayType?)? onTapDay;
+  final VoidCallback? onTapDay;
   final DateTime day;
+  final CycleDayType? dayType;
   final bool isSelected;
   final bool isToday;
   final TextStyle? dayTextStyle;
   final Color selectedColor;
   final Color todayColor;
-
-  // PERIOD CONFIGURATION
-  final String previousPeriodDate;
-  final int cycleLength;
-  final int periodDuration;
-
-  // PERIOD LOGS
-  final List<String> pastAllPeriodsDays;
-  final List<String> futurePeriodDays;
-  final List<String> futureOvulationDays;
   final Color themeColor;
 
   const CustomizedCalendarCell({
     super.key,
     required this.themeColor,
     this.onTapDay,
+    this.dayType,
     required this.day,
     this.dayTextStyle,
     required this.selectedColor,
     required this.todayColor,
-    this.pastAllPeriodsDays = const <String>[],
-    this.previousPeriodDate = "",
-    this.futurePeriodDays = const <String>[],
-    this.periodDuration = defaultPeriodDuration,
-    this.cycleLength = defaultCycleLength,
-    this.futureOvulationDays = const <String>[],
     this.isSelected = false,
     this.isToday = false,
   });
@@ -52,30 +37,10 @@ class _CustomizedCalendarCellState extends State<CustomizedCalendarCell> {
     super.initState();
   }
 
-  DayType? getDayType() {
-    if (checkIsPastPeriodDay()) {
-      return DayType.period;
-    }
-    if (checkIsFuturePeriodDay()) {
-      return DayType.periodPrediction;
-    }
-    if (checkIsFutureOvulationDay() || checkIsOvulationDay()) {
-      return DayType.ovulationPrediction;
-    }
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
-    DayType? dayType = getDayType();
-    //CalendarCell
-
     return InkWell(
-      onTap: widget.onTapDay != null
-          ? () {
-              widget.onTapDay!(dayType);
-            }
-          : null,
+      onTap: widget.onTapDay,
       child: Column(
         children: [
           Container(
@@ -92,10 +57,10 @@ class _CustomizedCalendarCellState extends State<CustomizedCalendarCell> {
               ),
             ),
           ),
-          if (dayType != null)
+          if (widget.dayType != null)
             SizedBox(
               height: 15,
-              child: _buildDayTypeWidget(dayType),
+              child: _buildDayTypeWidget(widget.dayType!),
             ),
         ],
       ),
@@ -112,7 +77,7 @@ class _CustomizedCalendarCellState extends State<CustomizedCalendarCell> {
     return Colors.transparent;
   }
 
-  Widget _buildDayTypeWidget(DayType dayType) {
+  Widget _buildDayTypeWidget(CycleDayType dayType) {
     final config = defaultDayTypeWidgetConfigurer(dayType);
     return Padding(
       padding: const EdgeInsets.only(top: 5),
@@ -122,90 +87,6 @@ class _CustomizedCalendarCellState extends State<CustomizedCalendarCell> {
         color: config.iconColor,
       ),
     );
-  }
-
-  bool checkIsFuturePeriodDay() {
-    bool isMatchDate = false;
-    if (widget.previousPeriodDate.isNotEmpty) {
-      String currentDate = defaultDateFormat.format(widget.day);
-      int index = widget.futurePeriodDays.indexOf(currentDate);
-      if (index != -1) {
-        isMatchDate = true;
-      }
-    }
-    return isMatchDate;
-  }
-
-
-
-  bool checkIsPastPeriodDay() {
-    bool isPeriodDay = false;
-    if (widget.previousPeriodDate.isNotEmpty) {
-      String currentDate = defaultDateFormat.format(widget.day);
-      List<String> periodDays = widget.pastAllPeriodsDays;
-      for (int index = 0; index < periodDays.length; index++) {
-        if (periodDays[index] == currentDate) {
-          isPeriodDay = true;
-          break;
-        }
-      }
-    }
-    return isPeriodDay;
-  }
-
-  bool checkIsPeriodDay() {
-    bool isPeriodDay = false;
-    if (widget.previousPeriodDate.isNotEmpty) {
-      final lastPeriodDate = DateFormat("yyyy-MM-dd").parse(widget.previousPeriodDate).add(const Duration(days: -1));
-      final endPeriodDate = DateFormat("yyyy-MM-dd").parse(widget.previousPeriodDate).add(Duration(days: widget.periodDuration));
-      final inDays = lastPeriodDate.difference(DateTime.now()).inDays;
-      final startPeriodDate = DateTime.parse(widget.previousPeriodDate);
-      final isCurrentDateBtnPeriodsDays = (startPeriodDate.isBefore(widget.day) && endPeriodDate.isAfter(widget.day));
-
-      var isValidPeriodDayCount = false; // Check is valid day count of period date
-      if (inDays > 0 && inDays <= widget.periodDuration) {
-        isValidPeriodDayCount = true;
-      } else if (inDays < 0 && inDays >= -widget.periodDuration) {
-        isValidPeriodDayCount = true;
-      }
-      if (!isCurrentDateBtnPeriodsDays) {
-        isPeriodDay = false;
-      } else if (!isValidPeriodDayCount) {
-        isPeriodDay = false;
-      } else {
-        final isBefore = widget.day.isBefore(endPeriodDate);
-        final isAfter = widget.day.isAfter(lastPeriodDate);
-
-        if (isBefore && isAfter) {
-          isPeriodDay = true;
-        }
-      }
-    }
-    return isPeriodDay;
-  }
-
-  bool checkIsFutureOvulationDay() {
-    bool isMatchDate = false;
-    if (widget.futureOvulationDays.isNotEmpty) {
-      String currentDate = defaultDateFormat.format(widget.day);
-      int index = widget.futureOvulationDays.indexOf(currentDate);
-      if (index != -1) {
-        isMatchDate = true;
-      }
-    }
-    return isMatchDate;
-  }
-
-  bool checkIsOvulationDay() {
-    bool isOvlDay = false;
-
-    if (widget.previousPeriodDate.isNotEmpty) {
-      DateTime ovulationDay = DateFormat("yyyy-MM-dd").parse(widget.previousPeriodDate).add(Duration(days: widget.cycleLength)).subtract(const Duration(days: 14));
-      if (widget.day.compareTo(ovulationDay) == 0) {
-        isOvlDay = true;
-      }
-    }
-    return isOvlDay;
   }
 }
 
@@ -250,70 +131,18 @@ Widget getInformationView(Color daySelectedColor, Color themeColor) {
   );
 }
 
-enum DayType {
-  period,
-  periodPrediction,
-  ovulationPrediction,
-}
-
-class DayTypeWidgetConfiguration {
-  final Color iconColor;
-  final IconData icon;
-  final Color onIconColor;
-  final String text;
-
-  const DayTypeWidgetConfiguration({
-    required this.iconColor,
-    required this.icon,
-    required this.onIconColor,
-    required this.text,
-  });
-}
-
-typedef DayTypeWidgetConfigurer = DayTypeWidgetConfiguration Function(DayType dayType);
-
-DayTypeWidgetConfiguration defaultDayTypeWidgetConfigurer(DayType dayType) {
-  switch (dayType) {
-    case DayType.period:
-      return const DayTypeWidgetConfiguration(
-        iconColor: defaultMenstruationColor,
-        icon: Icons.water_drop_sharp,
-        onIconColor: defaultMenstruationColor,
-        text: "Período",
-      );
-    case DayType.periodPrediction:
-      return const DayTypeWidgetConfiguration(
-        iconColor: defaultMenstruationColor,
-        icon: Icons.water_drop_outlined,
-        onIconColor: defaultMenstruationColor,
-        text: "Predicción de periodo",
-      );
-    case DayType.ovulationPrediction:
-      return const DayTypeWidgetConfiguration(
-        iconColor: defaultOvulationColor,
-        icon: Icons.favorite_border,
-        onIconColor: defaultOvulationColor,
-        text: "Predicción de ovulación",
-      );
-  }
-}
-
 class EditCalendarCell extends StatefulWidget {
   final DateTime day;
   final TextStyle? dateStyles;
-  final String? previousPeriodDate;
-  final List<String>? pastAllPeriodsDays;
-  final int periodDuration;
-  final Function(bool) multipleDateSelectionCallBack;
+  final bool initialChecked;
+  final Function(bool) onChecked;
 
   const EditCalendarCell({
     super.key,
     required this.day,
     this.dateStyles,
-    this.pastAllPeriodsDays = const <String>[],
-    this.periodDuration = defaultPeriodDuration,
-    required this.multipleDateSelectionCallBack,
-    this.previousPeriodDate = "",
+    this.initialChecked = false,
+    required this.onChecked,
   });
 
   @override
@@ -322,16 +151,15 @@ class EditCalendarCell extends StatefulWidget {
 
 class _EditCalendarCellState extends State<EditCalendarCell> {
   var isChecked = false;
-  var isChanged = false;
 
-  Widget editModeView({
-    bool isPeriodDay = false,
-    bool isPastPeriodDay = false,
-  }) {
-    if ((isPeriodDay || isPastPeriodDay) && !isChanged) {
-      isChecked = true;
-      widget.multipleDateSelectionCallBack.call(true);
-    }
+  @override
+  void initState() {
+    super.initState();
+    isChecked = widget.initialChecked;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       children: [
         Center(
@@ -346,70 +174,16 @@ class _EditCalendarCellState extends State<EditCalendarCell> {
         ),
         Expanded(
           child: Checkbox(
-              value: isChecked,
-              activeColor: isChecked ? defaultMenstruationColor : Colors.black,
-              onChanged: (value) {
-                if (value == null) return;
-                widget.multipleDateSelectionCallBack.call(value);
-                isChanged = true;
-                setState(() => isChecked = value);
-              }),
+            value: isChecked,
+            activeColor: isChecked ? defaultMenstruationColor : Colors.black,
+            onChanged: (value) {
+              if (value == null) return;
+              widget.onChecked.call(value);
+              setState(() => isChecked = value);
+            },
+          ),
         ),
       ],
     );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isPeriodDay = checkIsPeriodDay();
-    final isPastPeriodDay = checkIsPastPeriodDay();
-    return editModeView(
-      isPeriodDay: isPeriodDay,
-      isPastPeriodDay: isPastPeriodDay,
-    );
-  }
-
-  bool checkIsPastPeriodDay() {
-    bool isPeriodDay = false;
-    if (widget.previousPeriodDate!.isNotEmpty) {
-      String currentDate = defaultDateFormat.format(widget.day);
-      List<String> periodDays = widget.pastAllPeriodsDays!;
-      for (int index = 0; index < periodDays.length; index++) {
-        if (periodDays[index] == currentDate) {
-          isPeriodDay = true;
-          break;
-        }
-      }
-    }
-    return isPeriodDay;
-  }
-
-  bool checkIsPeriodDay() {
-    bool isPeriodDay = false;
-    if (widget.previousPeriodDate!.isNotEmpty) {
-      final lastPeriodDate = DateFormat("yyyy-MM-dd").parse(widget.previousPeriodDate!).add(const Duration(days: -1));
-      final endPeriodDate = DateFormat("yyyy-MM-dd").parse(widget.previousPeriodDate!).add(Duration(days: widget.periodDuration));
-      final inDays = lastPeriodDate.difference(DateTime.now()).inDays;
-      final startPeriodDate = DateTime.parse(widget.previousPeriodDate!);
-
-      final isCurrentDateBtnPeriodsDays = (startPeriodDate.isBefore(widget.day) && endPeriodDate.isAfter(widget.day));
-
-      var isValidPeriodDayCount = false; // Check is valid day count of period date
-      if (inDays > 0 && inDays <= widget.periodDuration) {
-        isValidPeriodDayCount = true;
-      } else if (inDays < 0 && inDays >= -widget.periodDuration) {
-        isValidPeriodDayCount = true;
-      }
-      if (!isCurrentDateBtnPeriodsDays) {
-        isPeriodDay = false;
-      } else if (!isValidPeriodDayCount) {
-        isPeriodDay = false;
-      } else {
-        if (widget.day.isBefore(DateTime.now())) {
-          isPeriodDay = false;
-        }
-      }
-    }
-    return isPeriodDay;
   }
 }

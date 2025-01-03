@@ -1,51 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:menstrual_cycle_widget/menstrual_cycle_widget.dart';
-import 'package:menstrual_cycle_widget/ui/calender_view/calender_view.dart';
-import 'package:sona/ui/widgets/menstrual_cycle/calendar_date_formatter.dart';
+import 'package:sona/ui/utils/date_time.dart' as dtu;
+import 'package:sona/ui/widgets/menstrual_cycle/calendar_date_tools.dart';
 import 'package:sona/ui/widgets/menstrual_cycle/calendar_cell.dart';
-import 'package:sona/ui/widgets/menstrual_cycle/menstrual_monthly_calender_view.dart';
+import 'package:sona/ui/widgets/menstrual_cycle/menstrual_cycle.dart';
+import 'package:sona/ui/widgets/menstrual_cycle/menstrual_cycle_calendar_editable_view.dart';
+import 'package:sona/ui/widgets/simple_gesture_detector.dart';
 
-class CalendarRefersher {
-  void Function()? refresh;
-
-  void refreshCalendar() {
-    refresh?.call();
-  }
-}
-
-class MyMenstrualCycleCalenderView extends StatefulWidget {
+class MenstrualCycleCalendarView extends StatefulWidget {
+  // THEMING
   final Color daySelectedColor;
   final Color themeColor;
   final Color backgroundColor;
-  final String logPeriodText;
+  final String editPeriodText;
   final bool hideInfoView;
   final bool hideBottomBar;
   final bool hideLogPeriodButton;
   final bool isExpanded;
-  final void Function(DateTime, DayType?)? onDateSelected;
-  final VoidCallback? onDataChanged;
-  final CalendarRefersher? refresher;
 
-  const MyMenstrualCycleCalenderView({
+  // CALLBACKS AND REFRESHER
+  final PeriodCalculatorController controller;
+  final void Function(DateTime, CycleDayType?)? onDateSelected;
+  final VoidCallback? onDataChanged;
+
+  const MenstrualCycleCalendarView({
     super.key,
+    required this.controller,
     this.daySelectedColor = Colors.grey,
     this.themeColor = Colors.black,
     this.backgroundColor = Colors.white,
-    this.logPeriodText = Strings.logPeriodLabel,
+    this.editPeriodText = "EDIT",
     this.hideInfoView = false,
     this.hideBottomBar = false,
     this.hideLogPeriodButton = false,
     this.isExpanded = false,
     this.onDateSelected,
     this.onDataChanged,
-    this.refresher,
   });
 
   @override
-  State<MyMenstrualCycleCalenderView> createState() => _MyMenstrualCycleCalenderViewState();
+  State<MenstrualCycleCalendarView> createState() => _MenstrualCycleCalendarViewState();
 }
 
-class _MyMenstrualCycleCalenderViewState extends State<MyMenstrualCycleCalenderView> {
+class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView> {
   List<DateTime>? selectedMonthsDays;
   List<DateTime>? selectedWeekDays;
   DateTime _selectedDateTime = DateTime.now();
@@ -56,11 +52,6 @@ class _MyMenstrualCycleCalenderViewState extends State<MyMenstrualCycleCalenderV
   bool isExpandable = true;
 
   DateTime get selectedDateTime => _selectedDateTime;
-  final _instance = MenstrualCycleWidget.instance!;
-
-  List<String> futurePeriodDays = [];
-  List<String> futureOvulationDays = [];
-  List<String>? pastAllPeriodsDays = [];
 
   CalenderDateFormatter? _formatter;
 
@@ -77,35 +68,12 @@ class _MyMenstrualCycleCalenderViewState extends State<MyMenstrualCycleCalenderV
   @override
   void initState() {
     super.initState();
-
     _selectedDateTime = DateTime.now();
     selectedMonthsDays = _daysInMonth(selectedDateTime);
-    selectedWeekDays = CalenderDateUtils.daysInRange(_firstDayOfWeek(selectedDateTime), _lastDayOfWeek(selectedDateTime)).toList();
-
-    init();
-
-    if (widget.refresher != null) {
-      widget.refresher!.refresh = init;
-    }
+    selectedWeekDays = dtu.daysInRange(_firstDayOfWeek(selectedDateTime), _lastDayOfWeek(selectedDateTime)).toList();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    if (widget.refresher != null) {
-      widget.refresher!.refresh = null;
-    }
-  }
-
-  init() async {
-    await _instance.calculateLastPeriodDate();
-    pastAllPeriodsDays = _instance.pastAllPeriodDays;
-    futurePeriodDays = await initFuturePeriodDay();
-    futureOvulationDays = await initFutureOvulationDay();
-    setState(() {});
-  }
-
-  Widget calendarGridView() {
+  Widget calendarGridView(PerdiodCalculatorResult result) {
     return SimpleGestureDetector(
       onSwipeUp: _onSwipeUp,
       onSwipeDown: _onSwipeDown,
@@ -122,13 +90,13 @@ class _MyMenstrualCycleCalenderViewState extends State<MyMenstrualCycleCalenderV
           shrinkWrap: true,
           crossAxisCount: 7,
           padding: const EdgeInsets.only(bottom: 0.0),
-          children: calendarBuilder(),
+          children: calendarBuilder(result),
         ),
       ]),
     );
   }
 
-  List<Widget> calendarBuilder() {
+  List<Widget> calendarBuilder(PerdiodCalculatorResult result) {
     List<Widget> calendarGridItems = [];
     List<DateTime>? calendarDays = isExpanded ? selectedMonthsDays : selectedWeekDays;
 
@@ -150,7 +118,7 @@ class _MyMenstrualCycleCalenderViewState extends State<MyMenstrualCycleCalenderV
     var now = DateTime.now();
 
     for (var day in calendarDays!) {
-      day = CalenderDateUtils.getDay(day);
+      day = dtu.getDay(day);
       day = _normalizeDay(day);
 
       if (day.hour > 0) {
@@ -158,33 +126,26 @@ class _MyMenstrualCycleCalenderViewState extends State<MyMenstrualCycleCalenderV
         day = day.subtract(Duration(hours: day.hour));
       }
 
-      if (monthStarted && day.day == 01) {
+      if (monthStarted && day.day == 1) {
         monthEnded = true;
       }
 
-      if (CalenderDateUtils.isFirstDayOfMonth(day)) {
+      if (dtu.isFirstDayOfMonth(day)) {
         monthStarted = true;
       }
 
+      CycleDayType? dayType = result.getCycleDayType(day);
       //
-      bool isToday = CalenderDateUtils.isSameDay(now, day);
+      bool isToday = dtu.isSameDay(now, day);
       calendarGridItems.add(CustomizedCalendarCell(
+        dayType: dayType,
         day: day,
-        onTapDay: (dayType) => handleSelectedDateCallback(day, dayType),
+        onTapDay: () => handleSelectedDateCallback(day, dayType),
         themeColor: widget.themeColor,
         selectedColor: widget.daySelectedColor,
         todayColor: widget.themeColor,
         dayTextStyle: isToday ? const TextStyle(color: Colors.white, fontWeight: FontWeight.bold) : configureDateStyle(monthStarted, monthEnded),
-        //PERIOD CONFIFURATION
-        previousPeriodDate: _instance.getPreviousPeriodDay(),
-        periodDuration: _instance.getPeriodDuration(),
-        cycleLength: _instance.getCycleLength(),
-        //PERIOD LOGS
-        pastAllPeriodsDays: pastAllPeriodsDays ?? [],
-        futurePeriodDays: futurePeriodDays,
-        futureOvulationDays: futureOvulationDays,
-        // STATES
-        isSelected: CalenderDateUtils.isSameDay(_selectedDateTime, day),
+        isSelected: dtu.isSameDay(selectedDateTime, day),
         isToday: isToday,
       ));
     }
@@ -231,9 +192,9 @@ class _MyMenstrualCycleCalenderViewState extends State<MyMenstrualCycleCalenderV
                 Padding(
                   padding: const EdgeInsets.all(4),
                   child: OutlinedButton(
-                    onPressed: _onTapLogPeriod,
+                    onPressed: _onTapEditPeriod,
                     child: Text(
-                      widget.logPeriodText,
+                      widget.editPeriodText,
                       style: TextStyle(color: widget.themeColor, fontSize: 11),
                     ),
                   ),
@@ -320,10 +281,15 @@ class _MyMenstrualCycleCalenderViewState extends State<MyMenstrualCycleCalenderV
               ),
             ],
           ),
-          ExpansionCrossFade(
-            collapsed: calendarGridView(),
-            expanded: calendarGridView(),
-            isExpanded: isExpanded,
+          ValueListenableBuilder(
+            valueListenable: widget.controller,
+            builder: (context, value, child) {
+              return _ExpansionCrossFade(
+                collapsed: calendarGridView(value),
+                expanded: calendarGridView(value),
+                isExpanded: isExpanded,
+              );
+            },
           ),
           const SizedBox(height: 15),
           if (!widget.hideInfoView) getInformationView(widget.daySelectedColor, widget.themeColor),
@@ -340,24 +306,20 @@ class _MyMenstrualCycleCalenderViewState extends State<MyMenstrualCycleCalenderV
     var lastDayOfCurrentWeek = _lastDayOfWeek(selectedDateTime);
 
     setState(() {
-      selectedWeekDays = CalenderDateUtils.daysInRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek).toList();
+      selectedWeekDays = dtu.daysInRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek).toList();
       selectedMonthsDays = _daysInMonth(selectedDateTime);
       var monthFormat = formatter.formatDayMonth(selectedDateTime);
 
       displayMonth = "${monthFormat[0].toUpperCase()}${monthFormat.substring(1)}";
-      var todayFormat = formatter.formatDay(selectedDateTime);
-
-      today = todayFormat;
+      today = formatter.formatDay(selectedDateTime);
     });
-
-    // _launchDateSelectionCallback(selectedDateTime);
   }
 
   void nextMonth() {
     setState(() {
-      _selectedDateTime = CalenderDateUtils.nextMonth(selectedDateTime);
-      var firstDateOfNewMonth = CalenderDateUtils.firstDayOfMonth(selectedDateTime);
-      var lastDateOfNewMonth = CalenderDateUtils.lastDayOfMonth(selectedDateTime);
+      _selectedDateTime = dtu.nextMonth(selectedDateTime);
+      var firstDateOfNewMonth = dtu.firstDayOfMonth(selectedDateTime);
+      var lastDateOfNewMonth = dtu.lastDayOfMonth(selectedDateTime);
       updateSelectedRange(firstDateOfNewMonth, lastDateOfNewMonth);
       selectedMonthsDays = _daysInMonth(selectedDateTime);
       var monthFormat = formatter.formatMonthYear(selectedDateTime);
@@ -367,9 +329,9 @@ class _MyMenstrualCycleCalenderViewState extends State<MyMenstrualCycleCalenderV
 
   void previousMonth() {
     setState(() {
-      _selectedDateTime = CalenderDateUtils.previousMonth(selectedDateTime);
-      var firstDateOfNewMonth = CalenderDateUtils.firstDayOfMonth(selectedDateTime);
-      var lastDateOfNewMonth = CalenderDateUtils.lastDayOfMonth(selectedDateTime);
+      _selectedDateTime = dtu.previousMonth(selectedDateTime);
+      var firstDateOfNewMonth = dtu.firstDayOfMonth(selectedDateTime);
+      var lastDateOfNewMonth = dtu.lastDayOfMonth(selectedDateTime);
       updateSelectedRange(firstDateOfNewMonth, lastDateOfNewMonth);
       selectedMonthsDays = _daysInMonth(selectedDateTime);
       var monthFormat = formatter.formatMonthYear(selectedDateTime);
@@ -381,53 +343,47 @@ class _MyMenstrualCycleCalenderViewState extends State<MyMenstrualCycleCalenderV
 
   void nextWeek() {
     setState(() {
-      _selectedDateTime = CalenderDateUtils.nextWeek(selectedDateTime);
+      _selectedDateTime = dtu.nextWeek(selectedDateTime);
       var firstDayOfCurrentWeek = _firstDayOfWeek(selectedDateTime);
       var lastDayOfCurrentWeek = _lastDayOfWeek(selectedDateTime);
       updateSelectedRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek);
-      selectedWeekDays = CalenderDateUtils.daysInRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek).toList();
+      selectedWeekDays = dtu.daysInRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek).toList();
       var monthFormat = formatter.formatMonthYear(selectedDateTime);
 
       displayMonth = "${monthFormat[0].toUpperCase()}${monthFormat.substring(1)}";
     });
-    // _launchDateSelectionCallback(selectedDateTime);
   }
 
   void previousWeek() {
     setState(() {
-      _selectedDateTime = CalenderDateUtils.previousWeek(selectedDateTime);
+      _selectedDateTime = dtu.previousWeek(selectedDateTime);
       var firstDayOfCurrentWeek = _firstDayOfWeek(selectedDateTime);
       var lastDayOfCurrentWeek = _lastDayOfWeek(selectedDateTime);
       updateSelectedRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek);
-      selectedWeekDays = CalenderDateUtils.daysInRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek).toList();
+      selectedWeekDays = dtu.daysInRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek).toList();
       var monthFormat = formatter.formatMonthYear(selectedDateTime);
 
       displayMonth = "${monthFormat[0].toUpperCase()}${monthFormat.substring(1)}";
     });
-    //  _launchDateSelectionCallback(selectedDateTime);
   }
 
   void updateSelectedRange(DateTime start, DateTime end) {}
 
-  void _onTapLogPeriod() async {
-    final dataChanged = await Navigator.of(context).push<bool>(MaterialPageRoute(
-      builder: (context) => MyMenstrualCycleMonthlyCalenderView(
-        themeColor: widget.themeColor,
-        hideInfoView: widget.hideInfoView,
-        isShowCloseIcon: true,
-        onDataChanged: (value) {},
-        formatter: formatter,
-        todayColor: widget.themeColor,
-        daySelectedColor: widget.daySelectedColor,
+  void _onTapEditPeriod() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => MenstrualCycleCalendarEditableView(
+          controller: widget.controller,
+          themeColor: widget.themeColor,
+          hideInfoView: widget.hideInfoView,
+          isShowCloseIcon: true,
+          onDataChanged: widget.onDataChanged,
+          formatter: formatter,
+          todayColor: widget.themeColor,
+          daySelectedColor: widget.daySelectedColor,
+        ),
       ),
-    ));
-
-    if (dataChanged != null && dataChanged) {
-      init();
-      if (widget.onDataChanged != null) {
-        widget.onDataChanged!();
-      }
-    }
+    );
   }
 
   void _onSwipeUp() {
@@ -460,7 +416,7 @@ class _MyMenstrualCycleCalenderViewState extends State<MyMenstrualCycleCalenderV
     }
   }
 
-  void handleSelectedDateCallback(DateTime day, DayType? dayType) {
+  void handleSelectedDateCallback(DateTime day, CycleDayType? dayType) {
     var firstDayOfCurrentWeek = _firstDayOfWeek(day);
     var lastDayOfCurrentWeek = _lastDayOfWeek(day);
     if (selectedDateTime.month > day.month) {
@@ -471,13 +427,13 @@ class _MyMenstrualCycleCalenderViewState extends State<MyMenstrualCycleCalenderV
     }
     setState(() {
       _selectedDateTime = day;
-      selectedWeekDays = CalenderDateUtils.daysInRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek).toList();
+      selectedWeekDays = dtu.daysInRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek).toList();
       selectedMonthsDays = _daysInMonth(day);
     });
     _launchDateSelectionCallback(day, dayType);
   }
 
-  void _launchDateSelectionCallback(DateTime day, [DayType? dayType]) {
+  void _launchDateSelectionCallback(DateTime day, [CycleDayType? dayType]) {
     if (widget.onDateSelected != null) {
       widget.onDateSelected!(day, dayType);
     }
@@ -493,10 +449,10 @@ class _MyMenstrualCycleCalenderViewState extends State<MyMenstrualCycleCalenderV
   }
 
   List<DateTime> _daysInMonth(DateTime month) {
-    var first = CalenderDateUtils.firstDayOfMonth(month);
+    var first = dtu.firstDayOfMonth(month);
     var daysBefore = first.weekday;
     var firstToDisplay = first.subtract(Duration(days: daysBefore));
-    var last = CalenderDateUtils.lastDayOfMonth(month);
+    var last = dtu.lastDayOfMonth(month);
 
     var daysAfter = 7 - last.weekday;
 
@@ -506,7 +462,7 @@ class _MyMenstrualCycleCalenderViewState extends State<MyMenstrualCycleCalenderV
     }
 
     var lastToDisplay = last.add(Duration(days: daysAfter));
-    return CalenderDateUtils.daysInRange(firstToDisplay, lastToDisplay).toList();
+    return dtu.daysInRange(firstToDisplay, lastToDisplay).toList();
   }
 }
 
@@ -549,4 +505,30 @@ Widget getInformationView(Color daySelectedColor, Color themeColor) {
       ],
     ),
   );
+}
+
+class _ExpansionCrossFade extends StatelessWidget {
+  final Widget? collapsed;
+  final Widget? expanded;
+  final bool? isExpanded;
+
+  const _ExpansionCrossFade({
+    this.collapsed,
+    this.expanded,
+    this.isExpanded,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedCrossFade(
+      firstChild: collapsed!,
+      secondChild: expanded!,
+      reverseDuration: const Duration(milliseconds: 1000),
+      firstCurve: const Interval(0.0, 1.0, curve: Curves.fastOutSlowIn),
+      secondCurve: const Interval(0.0, 1.0, curve: Curves.fastOutSlowIn),
+      sizeCurve: Curves.decelerate,
+      crossFadeState: isExpanded! ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+      duration: const Duration(milliseconds: 1000),
+    );
+  }
 }

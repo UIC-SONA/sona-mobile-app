@@ -1,10 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' show DateFormat;
-import 'package:menstrual_cycle_widget/menstrual_cycle_widget.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/services/services.dart';
-import 'package:sona/ui/widgets/menstrual_cycle/calendar_cell.dart';
+import 'package:sona/ui/widgets/menstrual_cycle/menstrual_cycle.dart';
 import 'package:sona/ui/widgets/menstrual_cycle/menstrual_cycle_calender_view.dart';
 
 import 'package:sona/ui/widgets/full_state_widget.dart';
@@ -21,20 +20,43 @@ class MenstrualCalendarScreen extends StatefulWidget {
 class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
   final _menstrualCycleService = injector.get<MenstrualCycleService>();
 
-  final instance = MenstrualCycleWidget.instance!;
-  final _calendarRefresher = CalendarRefersher();
-  var menstrualCycleDuration = 28;
-  var periodDuration = 5;
+  final _calendarController = BasicPeriodCalculatorController();
+
+  var cycleLength = 28;
+  var periodLength = 5;
 
   var _selectedDate = DateTime.now();
-  DayType? _selectedDateDayType;
+  CycleDayType? _selectedDateDayType;
 
   updateMenstrualData() async {
     await _menstrualCycleService.saveCycleDetails(
-      periodDuration: periodDuration,
-      cycleLength: menstrualCycleDuration,
+      periodDuration: periodLength,
+      cycleLength: cycleLength,
     );
-    _calendarRefresher.refresh?.call();
+
+    _calendarController.changeData(
+      cycleLength: cycleLength,
+      periodLength: periodLength,
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final cycleData = await _menstrualCycleService.getCycleData();
+    setState(() {
+      cycleLength = cycleData.cycleLength;
+      periodLength = cycleData.periodDuration;
+    });
+    _calendarController.changeData(
+      cycleLength: cycleLength,
+      periodLength: periodLength,
+      pastPeriodDays: cycleData.periodDates,
+    );
   }
 
   @override
@@ -54,14 +76,14 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Center(
-                child: MyMenstrualCycleCalenderView(
-                  refresher: _calendarRefresher,
+                child: MenstrualCycleCalendarView(
+                  controller: _calendarController,
                   themeColor: primaryColor,
-                  logPeriodText: "EDITAR",
+                  editPeriodText: "EDITAR",
                   daySelectedColor: Colors.greenAccent,
                   hideInfoView: false,
                   onDataChanged: () {
-                    _menstrualCycleService.savePeriodDates();
+                    _menstrualCycleService.savePeriodDates(_calendarController.pastPeriodDays);
                   },
                   onDateSelected: (date, dayType) {
                     setState(() {
@@ -94,8 +116,8 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
             ),
             const SizedBox(height: 8),
             switch (_selectedDateDayType) {
-              DayType.ovulationPrediction => const Text('Alta probabilidad de quedarse embarazada'),
-              DayType.periodPrediction || DayType.period => const Text('Probabilidad media de quedarse embarazada'),
+              CycleDayType.ovulationPrediction => const Text('Alta probabilidad de quedarse embarazada'),
+              CycleDayType.periodPrediction || CycleDayType.period => const Text('Probabilidad media de quedarse embarazada'),
               null => const Text('Baja probabilidad de quedarse embarazada'),
             }
           ],
@@ -142,7 +164,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
                             color: Colors.white, // Background color
                           ),
                           child: DropdownButton<int>(
-                            value: menstrualCycleDuration,
+                            value: cycleLength,
                             items: List<int>.generate(31, (index) => (15 + index)).map((value) {
                               return DropdownMenuItem<int>(
                                 value: value,
@@ -152,7 +174,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
                             onChanged: (newValue) async {
                               if (newValue == null) return;
                               setState(() {
-                                menstrualCycleDuration = newValue;
+                                cycleLength = newValue;
                               });
                               updateMenstrualData();
                             },
@@ -181,7 +203,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
                             color: Colors.white, // Background color
                           ),
                           child: DropdownButton<int>(
-                            value: periodDuration,
+                            value: periodLength,
                             items: List<int>.generate(8, (index) => (2 + index)).map((value) {
                               return DropdownMenuItem<int>(
                                 value: value,
@@ -191,7 +213,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
                             onChanged: (newValue) async {
                               if (newValue == null) return;
                               setState(() {
-                                periodDuration = newValue;
+                                periodLength = newValue;
                               });
                               updateMenstrualData();
                             },

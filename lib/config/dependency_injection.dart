@@ -40,10 +40,6 @@ Future<void> setupDependencies() async {
   }
 
   injector.registerSingleton<MenstrualCycleService>(() => MenstrualCycleServiceImpl(authProvider: authProvider, localeProvider: localeProvider, userService: userService));
-
-  final menstrualCycleService = injector.get<MenstrualCycleService>();
-  await menstrualCycleService.init();
-
   injector.registerSingleton<ChatService>(() => ApiStompChatService(authProvider: authProvider, localeProvider: localeProvider, userService: userService));
   injector.registerSingleton<ChatBotService>(() => ApiChatBotService(authProvider: authProvider, localeProvider: localeProvider));
   injector.registerSingleton<TipService>(() => ApiTipService(authProvider: authProvider, localeProvider: localeProvider));

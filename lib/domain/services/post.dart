@@ -74,7 +74,7 @@ class ApiPostService extends RestCrudOperations<Post, PostDto, String> implement
   Map<String, String> get commonHeaders => {'Accept-Language': localeProvider.languageCode};
 
   @override
-  String get path => '/forum';
+  String get path => '/forum/posts';
 
   @override
   Future<Post> create(PostDto dto) async {
