@@ -1,17 +1,17 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart' hide Page;
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-import 'package:logger/logger.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/errors.dart';
-import 'package:sona/shared/extensions.dart';
-import 'package:sona/shared/http/http.dart';
 import 'package:sona/shared/utils/deboucing.dart';
 import 'package:sona/ui/pages/routing/router.dart';
+import 'package:sona/ui/utils/helpers/chat_service_widget_helper.dart';
+import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';
 import 'package:sona/ui/utils/paging.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
+import 'package:sona/ui/widgets/professional_botton_sheet.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
 
 @RoutePage()
@@ -31,18 +31,18 @@ class _ChatScreenState extends FullState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final profile = _userService.currentUser;
-    final isProfessional = profile.authorities.any((authority) => authority == Authority.medicalProfessional || authority == Authority.legalProfessional);
+    final isProfessional = profile.authorities.any((authority) => professionalAuthorities.contains(authority));
 
     return SonaScaffold(
       actionButton: SonaActionButton.home(),
       body: isProfessional
-          ? ChatsPageView(profile: profile, controller: _controller)
+          ? ChatsPageView(controller: _controller)
           : PageView(
               controller: _controller,
               onPageChanged: (index) => setState(() => _currentPage = index),
               children: [
-                ChatsPageView(profile: profile, controller: _controller),
-                UsersPageView(profile: profile),
+                ChatsPageView(controller: _controller),
+                UsersPageView(),
               ],
             ),
       bottomNavigationBar: isProfessional
@@ -66,125 +66,34 @@ class _ChatScreenState extends FullState<ChatScreen> {
   }
 }
 
-class _ChatRoomDataNotifier extends ChangeNotifier {
-  final Map<String, ChatRoomData> _roomsData = {};
-
-  List<ChatRoomData> get roomsData => _roomsData.values.toList()
-    ..sort((a, b) {
-      final createdAtA = a.lastMessage?.createdAt;
-      final createdAtB = b.lastMessage?.createdAt;
-      if (createdAtA == null || createdAtB == null) return 0;
-      return createdAtB.compareTo(createdAtA);
-    });
-
-  void addRooms(List<ChatRoomData> rooms) {
-    for (var room in rooms) {
-      _roomsData[room.id] = room;
-    }
-    notifyListeners();
-  }
-
-  void addRoom(ChatRoomData room) {
-    if (!_roomsData.containsKey(room.id)) {
-      _roomsData[room.id] = room;
-      notifyListeners();
-    }
-  }
-
-  void updateRoomLastMessage(String roomId, ChatMessage message) {
-    if (_roomsData.containsKey(roomId)) {
-      final updatedRoom = _roomsData[roomId]!.copyWith(lastMessage: message);
-      _roomsData[roomId] = updatedRoom;
-      notifyListeners();
-    }
-  }
-
-  bool exists(String roomId) => _roomsData.containsKey(roomId);
-
-  void clearRooms() {
-    _roomsData.clear();
-    notifyListeners();
-  }
-}
-
 class ChatsPageView extends StatefulWidget {
   final PageController controller;
-  final User profile;
 
-  const ChatsPageView({super.key, required this.controller, required this.profile});
+  const ChatsPageView({
+    super.key,
+    required this.controller,
+  });
 
   @override
   State<ChatsPageView> createState() => _ChatsPageViewState();
 }
 
-final Logger _log = Logger();
-
-abstract class _ChatRoomHelperState<T extends StatefulWidget> extends FullState<T> with AutomaticKeepAliveClientMixin {
+class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAliveClientMixin, ChatMessageListenner, UserServiceWidgetHelper, ChatServiceWidgetHelper {
   //
-  final _cacheUsers = <int, User>{};
+  late final _chatService = injector.get<ChatService>();
+  late final _loading = loadingState(false);
 
   @override
   bool get wantKeepAlive => true;
 
-  @protected
-  ChatService get chatService;
-
-  @protected
-  UserService get userService;
-
-  @protected
-  User get profile;
-
-  void cacheUser(User user) {
-    _cacheUsers[user.id] = user;
-  }
-
-  Future<ChatRoomData> createRoomData(ChatRoom room) async {
-    //
-    final participants = <User>[];
-    for (final userId in room.participants) {
-      if (userId == profile.id) continue;
-      participants.add(await getUser(userId));
-    }
-
-    final lastMessage = await chatService.lastMessage(roomId: room.id);
-    return ChatRoomData(
-      room: room,
-      participants: participants,
-      lastMessage: lastMessage,
-    );
-  }
-
-  Future<User> getUser(int userId) async {
-    return _cacheUsers[userId] ??= await onNotFound<User>(
-      fetch: () => userService.find(userId),
-      onNotFound: () => UserService.notFound,
-    );
-  }
-}
-
-class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> with ChatMessageListenner<ChatService> {
-  //
-  late final _chatService = injector.get<ChatService>();
-  late final _userService = injector.get<UserService>();
-  late final _room = fetchState(([positionalArguments, namedArguments]) => _chatService.rooms());
-  late final _loading = loadingState(false);
-
-  final _chatRoomNotifier = _ChatRoomDataNotifier();
-
-  @override
-  User get profile => widget.profile;
+  final _listenner = ChatRoomDataListenner();
 
   @override
   ChatService get chatService => _chatService;
 
   @override
-  UserService get userService => _userService;
-
-  @override
   void initState() {
     super.initState();
-    _chatRoomNotifier.addListener(refresh);
     loadData();
     initMessageListeners();
   }
@@ -192,27 +101,14 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> with ChatM
   @override
   void dispose() {
     disposeMessageListeners();
-    _chatRoomNotifier.dispose();
     super.dispose();
   }
 
   Future<void> loadData() async {
     await _loading.run(() async {
-      _cacheUsers.clear();
-
-      await _room.fetch();
-      final rooms = _room.value!;
-
-      final usersIds = rooms.expand((room) => room.participants).toSet().where((userId) => userId != profile.id).toList();
-
-      final users = await _userService.findMany(usersIds);
-      if (users.length != usersIds.length) _log.w("Not all users were found");
-
-      users.forEach(cacheUser);
-
-      final roomStates = await Future.wait(rooms.map(createRoomData));
-      _chatRoomNotifier.clearRooms();
-      _chatRoomNotifier.addRooms(roomStates);
+      final rooms = await roomsData();
+      _listenner.clearRooms();
+      _listenner.addRooms(rooms);
     });
   }
 
@@ -222,14 +118,12 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> with ChatM
     final message = messageSent.message;
     final roomId = messageSent.roomId;
 
-    if (_chatRoomNotifier.exists(roomId)) {
-      _chatRoomNotifier.updateRoomLastMessage(roomId, message);
+    if (_listenner.exists(roomId)) {
+      _listenner.updateRoomLastMessage(roomId, message);
       return;
     }
 
-    final room = await _chatService.room(roomId: messageSent.roomId);
-    final roomState = await createRoomData(room);
-    _chatRoomNotifier.addRoom(roomState);
+    _listenner.addRoom(await roomData(roomId: roomId));
   }
 
   @override
@@ -239,8 +133,8 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> with ChatM
     final messageIds = readMessages.messageIds;
     final readBy = readMessages.readBy;
 
-    if (_chatRoomNotifier.exists(roomId)) {
-      final room = _chatRoomNotifier.roomsData.firstWhere((room) => room.id == roomId);
+    if (_listenner.exists(roomId)) {
+      final room = _listenner.value.firstWhere((room) => room.id == roomId);
       final messages = room.lastMessage;
 
       if (messages != null) {
@@ -249,34 +143,35 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> with ChatM
 
         if (messages.readBy.any((readBy) => readBy.participantId == readBy.participantId)) return;
         messages.readBy.add(readBy);
-        _chatRoomNotifier.updateRoomLastMessage(roomId, messages);
+        _listenner.updateRoomLastMessage(roomId, messages);
       }
     }
 
-    final room = await _chatService.room(roomId: roomId);
-    final roomState = await createRoomData(room);
-    _chatRoomNotifier.addRoom(roomState);
+    _listenner.addRoom(await roomData(roomId: roomId));
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return FullState.whenAll(
-      [_room, _loading],
+    return _loading.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       initial: () => const SizedBox(),
       error: (error) => Center(child: Text(extractError(error).message)),
-      data: (data) => _buildContent(context),
+      value: (data) => _buildContent(context),
     );
   }
 
   Widget _buildContent(BuildContext context) {
-    final roomsData = _chatRoomNotifier.roomsData;
+    return ValueListenableBuilder(
+      valueListenable: _listenner,
+      builder: (context, value, child) {
+        if (value.isEmpty) return _buildNoMessages();
+        return _buildListRooms(value);
+      },
+    );
+  }
 
-    if (roomsData.isEmpty) {
-      return _buildNoMessages();
-    }
-
+  Widget _buildListRooms(List<ChatRoomData> roomsData) {
     return RefreshIndicator(
       onRefresh: loadData,
       child: ListView.builder(
@@ -293,17 +188,17 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> with ChatM
                 onPressed: () {
                   AutoRouter.of(context).push(
                     ChatRoomRoute(
-                      profile: profile,
+                      profile: currentUser,
                       roomData: roomData,
                     ),
                   );
                 },
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  title: _buildTitle(roomData, profile),
-                  subtitle: _buildSubtitle(roomData, profile),
-                  leading: _buildLeading(roomData, profile),
-                  trailing: _buildTrailing(roomData, profile),
+                  title: _buildTitle(roomData),
+                  subtitle: _buildSubtitle(roomData),
+                  leading: _buildLeading(roomData),
+                  trailing: _buildTrailing(roomData),
                 ),
               ),
             ],
@@ -314,7 +209,7 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> with ChatM
   }
 
   Widget _buildNoMessages() {
-    final isProfessional = profile.authorities.any((authority) => authority == Authority.medicalProfessional || authority == Authority.legalProfessional);
+    final isProfessional = currentUser.authorities.any((authority) => professionalAuthorities.contains(authority));
 
     return Center(
       child: Column(
@@ -363,7 +258,7 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> with ChatM
     );
   }
 
-  Widget _buildTitle(ChatRoomData room, User profile) {
+  Widget _buildTitle(ChatRoomData room) {
     return Text(
         switch (room.room.type) {
           ChatRoomType.group => room.room.name,
@@ -372,13 +267,13 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> with ChatM
         style: const TextStyle(fontWeight: FontWeight.bold));
   }
 
-  Widget _buildSubtitle(ChatRoomData room, User profile) {
+  Widget _buildSubtitle(ChatRoomData room) {
     var lastMessage = room.lastMessage;
     if (lastMessage == null) return const SizedBox();
     return SizedBox(
       width: 250.0, // Ancho fijo para el subtítulo
       child: Text(
-        lastMessage.sentBy == profile.id ? 'Tú: ${lastMessage.message}' : lastMessage.message,
+        lastMessage.sentBy == currentUser.id ? 'Tú: ${lastMessage.message}' : lastMessage.message,
         style: const TextStyle(color: Colors.grey),
         overflow: TextOverflow.ellipsis, // Trunca el texto si es demasiado largo
         maxLines: 1, // Solo una línea
@@ -386,54 +281,43 @@ class _ChatsPageViewState extends _ChatRoomHelperState<ChatsPageView> with ChatM
     );
   }
 
-  Widget _buildLeading(ChatRoomData state, User profile) {
+  Widget _buildLeading(ChatRoomData state) {
     final room = state.room;
     if (room.type == ChatRoomType.group) {
       return const Icon(Icons.group);
     }
-    final participant = state.participants.firstWhere((user) => user.id != profile.id);
+    final participant = state.participants.firstWhere((user) => user.id != currentUser.id);
     return _buildAvatar(participant);
   }
 
-  Widget _buildTrailing(ChatRoomData roomData, User profile) {
+  Widget _buildTrailing(ChatRoomData roomData) {
     final lastMessage = roomData.lastMessage;
     if (lastMessage == null) return const SizedBox();
-    if (lastMessage.sentBy == profile.id) return const Icon(Icons.chevron_right, color: Colors.grey);
+    if (lastMessage.sentBy == currentUser.id) return const Icon(Icons.chevron_right, color: Colors.grey);
 
     final readBy = lastMessage.readBy.map((readBy) => readBy.participantId).toSet();
-    final isRead = readBy.contains(profile.id);
+    final isRead = readBy.contains(currentUser.id);
 
     return isRead ? const Icon(Icons.chevron_right, color: Colors.grey) : Icon(Icons.info, color: Theme.of(context).primaryColor);
   }
 }
 
 class UsersPageView extends StatefulWidget {
-  //
-  final User profile;
-
-  const UsersPageView({super.key, required this.profile});
+  const UsersPageView({
+    super.key,
+  });
 
   @override
   State<UsersPageView> createState() => _UsersPageViewState();
 }
 
-class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
+class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAliveClientMixin, UserServiceWidgetHelper, ChatServiceWidgetHelper {
   //
-  final _chatService = injector.get<ChatService>();
   final _userService = injector.get<UserService>();
   final _pagingController = PagingQueryController<User>(firstPage: 0);
   final _searchController = TextEditingController();
 
-  var _authorities = <Authority>[Authority.medicalProfessional, Authority.legalProfessional];
-
-  @override
-  ChatService get chatService => _chatService;
-
-  @override
-  UserService get userService => _userService;
-
-  @override
-  User get profile => widget.profile;
+  var _authorities = professionalAuthorities;
 
   @override
   void initState() {
@@ -441,8 +325,8 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
     _pagingController.configureFetcher(
       (query) => _userService.page(
         query.copyWith(
-          attributes: {
-            'authorities': _authorities.map((authority) => authority.javaName).toList(),
+          params: {
+            'authorities': _authorities.map((authority) => authority.authority).toList(),
           },
         ),
       ),
@@ -468,7 +352,10 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
       decoration: InputDecoration(
         hintText: 'Buscar usuario',
         prefixIcon: const Icon(Icons.search),
-        suffixIcon: IconButton(onPressed: _openFilterSettings, icon: const Icon(Icons.settings)),
+        suffixIcon: IconButton(
+          onPressed: _openFilterSettings,
+          icon: const Icon(Icons.filter_alt_rounded),
+        ),
       ),
     );
   }
@@ -502,7 +389,7 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
             );
           },
           itemBuilder: (context, user, index) {
-            if (user.id == profile.id) return const SizedBox();
+            if (user.id == currentUser.id) return const SizedBox();
             return TextButton(
               style: ButtonStyle(
                 padding: WidgetStateProperty.all(const EdgeInsets.all(0)),
@@ -532,14 +419,14 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
     );
 
     try {
-      final roomData = await createRoomData(await _chatService.room(userId: user.id));
+      final room = await roomData(userId: user.id);
 
       if (!mounted) return;
       Navigator.of(context).pop();
       AutoRouter.of(context).push(
         ChatRoomRoute(
-          profile: profile,
-          roomData: roomData,
+          profile: currentUser,
+          roomData: room,
         ),
       );
     } catch (error) {
@@ -553,32 +440,17 @@ class _UsersPageViewState extends _ChatRoomHelperState<UsersPageView> {
   }
 
   void _openFilterSettings() {
-    showModalBottomSheet(
+    showPorfessionalAuthoritiesSelector(
       context: context,
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              ..._authoritiesData.map(
-                (data) {
-                  return ListTile(
-                    title: Text(data['name'] as String),
-                    leading: Icon(data['icon'] as IconData),
-                    onTap: () {
-                      _authorities = data['select'] as List<Authority>;
-                      _pagingController.refresh();
-                      Navigator.pop(context);
-                    },
-                  );
-                },
-              ),
-            ],
-          ),
-        );
+      onSelected: (authorities) {
+        _authorities = authorities;
+        _pagingController.refresh();
       },
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 Widget _buildAvatar(User user) {
@@ -587,21 +459,3 @@ Widget _buildAvatar(User user) {
     child: Text(user.firstName[0]),
   );
 }
-
-final _authoritiesData = [
-  {
-    'name': 'Todos los profesionales',
-    'icon': Icons.business,
-    'select': [Authority.medicalProfessional, Authority.legalProfessional],
-  },
-  {
-    'name': 'Profesional médico',
-    'icon': Icons.medical_services,
-    'select': [Authority.medicalProfessional],
-  },
-  {
-    'name': 'Profesional legal',
-    'icon': Icons.gavel,
-    'select': [Authority.legalProfessional],
-  },
-];

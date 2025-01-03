@@ -44,15 +44,12 @@ class MenstrualCycleCalendarView extends StatefulWidget {
 class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView> {
   List<DateTime>? selectedMonthsDays;
   List<DateTime>? selectedWeekDays;
-  DateTime _selectedDateTime = DateTime.now();
+  DateTime selectedDateTime = DateTime.now();
   String? currentMonth;
   bool isExpanded = true;
   String displayMonth = "";
   String today = "";
   bool isExpandable = true;
-
-  DateTime get selectedDateTime => _selectedDateTime;
-
   CalenderDateFormatter? _formatter;
 
   CalenderDateFormatter get formatter {
@@ -68,7 +65,7 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
   @override
   void initState() {
     super.initState();
-    _selectedDateTime = DateTime.now();
+    selectedDateTime = DateTime.now();
     selectedMonthsDays = _daysInMonth(selectedDateTime);
     selectedWeekDays = dtu.daysInRange(_firstDayOfWeek(selectedDateTime), _lastDayOfWeek(selectedDateTime)).toList();
   }
@@ -301,7 +298,7 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
   }
 
   void resetToToday() {
-    _selectedDateTime = DateTime.now();
+    selectedDateTime = DateTime.now();
     var firstDayOfCurrentWeek = _firstDayOfWeek(selectedDateTime);
     var lastDayOfCurrentWeek = _lastDayOfWeek(selectedDateTime);
 
@@ -317,7 +314,7 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
 
   void nextMonth() {
     setState(() {
-      _selectedDateTime = dtu.nextMonth(selectedDateTime);
+      selectedDateTime = dtu.nextMonth(selectedDateTime);
       var firstDateOfNewMonth = dtu.firstDayOfMonth(selectedDateTime);
       var lastDateOfNewMonth = dtu.lastDayOfMonth(selectedDateTime);
       updateSelectedRange(firstDateOfNewMonth, lastDateOfNewMonth);
@@ -329,7 +326,7 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
 
   void previousMonth() {
     setState(() {
-      _selectedDateTime = dtu.previousMonth(selectedDateTime);
+      selectedDateTime = dtu.previousMonth(selectedDateTime);
       var firstDateOfNewMonth = dtu.firstDayOfMonth(selectedDateTime);
       var lastDateOfNewMonth = dtu.lastDayOfMonth(selectedDateTime);
       updateSelectedRange(firstDateOfNewMonth, lastDateOfNewMonth);
@@ -343,7 +340,7 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
 
   void nextWeek() {
     setState(() {
-      _selectedDateTime = dtu.nextWeek(selectedDateTime);
+      selectedDateTime = dtu.nextWeek(selectedDateTime);
       var firstDayOfCurrentWeek = _firstDayOfWeek(selectedDateTime);
       var lastDayOfCurrentWeek = _lastDayOfWeek(selectedDateTime);
       updateSelectedRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek);
@@ -356,7 +353,7 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
 
   void previousWeek() {
     setState(() {
-      _selectedDateTime = dtu.previousWeek(selectedDateTime);
+      selectedDateTime = dtu.previousWeek(selectedDateTime);
       var firstDayOfCurrentWeek = _firstDayOfWeek(selectedDateTime);
       var lastDayOfCurrentWeek = _lastDayOfWeek(selectedDateTime);
       updateSelectedRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek);
@@ -426,7 +423,7 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
       nextMonth();
     }
     setState(() {
-      _selectedDateTime = day;
+      selectedDateTime = day;
       selectedWeekDays = dtu.daysInRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek).toList();
       selectedMonthsDays = _daysInMonth(day);
     });
@@ -439,12 +436,12 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
     }
   }
 
-  _firstDayOfWeek(DateTime date) {
+  DateTime _firstDayOfWeek(DateTime date) {
     var day = DateTime.utc(selectedDateTime.year, selectedDateTime.month, selectedDateTime.day, 12);
     return day.subtract(Duration(days: day.weekday));
   }
 
-  _lastDayOfWeek(DateTime date) {
+  DateTime _lastDayOfWeek(DateTime date) {
     return _firstDayOfWeek(date).add(const Duration(days: 7));
   }
 

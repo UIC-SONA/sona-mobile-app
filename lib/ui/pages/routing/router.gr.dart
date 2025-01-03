@@ -10,6 +10,25 @@
 part of 'router.dart';
 
 /// generated route for
+/// [AppointmentScreen]
+class AppointmentRoute extends PageRouteInfo<void> {
+  const AppointmentRoute({List<PageRouteInfo>? children})
+      : super(
+          AppointmentRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'AppointmenttRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AppointmentScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [ChatBotScreen]
 class ChatBotRoute extends PageRouteInfo<void> {
   const ChatBotRoute({List<PageRouteInfo>? children})
@@ -119,18 +138,18 @@ class DidacticContentRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [ForumCommentsScreen]
-class ForumCommentsRoute extends PageRouteInfo<ForumCommentsRouteArgs> {
-  ForumCommentsRoute({
+/// [ForumPostCommentsScreen]
+class ForumPostCommentsRoute extends PageRouteInfo<ForumPostCommentsRouteArgs> {
+  ForumPostCommentsRoute({
     Key? key,
-    required Post forum,
-    required void Function(Post) onPop,
+    required PostWithUser post,
+    required void Function(PostWithUser) onPop,
     List<PageRouteInfo>? children,
   }) : super(
-          ForumCommentsRoute.name,
-          args: ForumCommentsRouteArgs(
+          ForumPostCommentsRoute.name,
+          args: ForumPostCommentsRouteArgs(
             key: key,
-            forum: forum,
+            post: post,
             onPop: onPop,
           ),
           initialChildren: children,
@@ -141,32 +160,32 @@ class ForumCommentsRoute extends PageRouteInfo<ForumCommentsRouteArgs> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      final args = data.argsAs<ForumCommentsRouteArgs>();
-      return ForumCommentsScreen(
+      final args = data.argsAs<ForumPostCommentsRouteArgs>();
+      return ForumPostCommentsScreen(
         key: args.key,
-        forum: args.forum,
+        post: args.post,
         onPop: args.onPop,
       );
     },
   );
 }
 
-class ForumCommentsRouteArgs {
-  const ForumCommentsRouteArgs({
+class ForumPostCommentsRouteArgs {
+  const ForumPostCommentsRouteArgs({
     this.key,
-    required this.forum,
+    required this.post,
     required this.onPop,
   });
 
   final Key? key;
 
-  final Post forum;
+  final PostWithUser post;
 
-  final void Function(Post) onPop;
+  final void Function(PostWithUser) onPop;
 
   @override
   String toString() {
-    return 'ForumCommentsRouteArgs{key: $key, forum: $forum, onPop: $onPop}';
+    return 'ForumCommentsRouteArgs{key: $key, forum: $post, onPop: $onPop}';
   }
 }
 
@@ -301,8 +320,7 @@ class ServicesOptionsRoute extends PageRouteInfo<ServicesOptionsRouteArgs> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      final args = data.argsAs<ServicesOptionsRouteArgs>(
-          orElse: () => const ServicesOptionsRouteArgs());
+      final args = data.argsAs<ServicesOptionsRouteArgs>(orElse: () => const ServicesOptionsRouteArgs());
       return ServicesOptionsScreen(key: args.key);
     },
   );

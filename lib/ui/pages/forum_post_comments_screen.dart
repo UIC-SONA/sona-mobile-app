@@ -6,38 +6,39 @@ import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/utils/time_formatters.dart';
-import 'package:sona/ui/utils/cached_user_screen.dart';
+import 'package:sona/ui/utils/helpers/post_service_widget_helper.dart';
+import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
 
 @RoutePage()
-class ForumCommentsScreen extends StatefulWidget {
-  final Post forum;
-  final void Function(Post) onPop;
+class ForumPostCommentsScreen extends StatefulWidget {
+  final PostWithUser post;
+  final void Function(PostWithUser) onPop;
 
-  const ForumCommentsScreen({
+  const ForumPostCommentsScreen({
     super.key,
-    required this.forum,
+    required this.post,
     required this.onPop,
   });
 
   @override
-  State<ForumCommentsScreen> createState() => _ForumCommentsScreenState();
+  State<ForumPostCommentsScreen> createState() => _ForumPostCommentsScreenState();
 }
 
-class _ForumCommentsScreenState extends FullState<ForumCommentsScreen> with UserServiceWidgetHelper {
+class _ForumPostCommentsScreenState extends FullState<ForumPostCommentsScreen> with UserServiceWidgetHelper, PostServiceWidgetHelper {
   final _postService = injector.get<PostService>();
   final _userService = injector.get<UserService>();
   final _commentController = TextEditingController();
 
-  late Post post;
+  late PostWithUser post;
   bool _sendingComment = false;
 
   @override
   void initState() {
     super.initState();
-    post = widget.forum;
+    post = widget.post;
   }
 
   @override
@@ -45,9 +46,6 @@ class _ForumCommentsScreenState extends FullState<ForumCommentsScreen> with User
     _commentController.dispose();
     super.dispose();
   }
-
-  @override
-  UserService get userService => _userService;
 
   Future<void> _submitComment() async {
     if (_commentController.text.trim().isEmpty) return;
@@ -78,7 +76,7 @@ class _ForumCommentsScreenState extends FullState<ForumCommentsScreen> with User
         if (anonymous == null) return;
         await createComment(anonymous);
       }
-      post = await _postService.find(post.id);
+      post = await findPostWithUser(post.id);
       _commentController.clear();
     } catch (e) {
       if (!mounted) return;
@@ -95,7 +93,7 @@ class _ForumCommentsScreenState extends FullState<ForumCommentsScreen> with User
     } else {
       await _postService.likeComment(post, comment);
     }
-    post = await _postService.find(post.id);
+    post = await findPostWithUser(post.id);
     refresh();
   }
 

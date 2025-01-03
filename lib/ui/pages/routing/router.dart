@@ -16,8 +16,11 @@ import 'package:sona/ui/pages/menstrual_calendar_screens.dart';
 import 'package:sona/ui/pages/tips_screen.dart';
 import 'package:sona/ui/pages/forum_screen.dart';
 import 'package:sona/ui/pages/forum_new_post_screen.dart';
-import 'package:sona/ui/pages/forum_comments_screen.dart';
+import 'package:sona/ui/pages/forum_post_comments_screen.dart';
 import 'package:sona/ui/pages/didactic_content_screen.dart';
+import 'package:sona/ui/pages/appointments_screen.dart';
+import 'package:sona/ui/utils/helpers/chat_service_widget_helper.dart';
+import 'package:sona/ui/utils/helpers/post_service_widget_helper.dart';
 
 part 'router.gr.dart';
 
@@ -46,9 +49,10 @@ class AppRouter extends RootStackRouter {
         AutoRoute(path: "/chat", page: ChatRoute.page),
         AutoRoute(path: "/chat-room", page: ChatRoomRoute.page),
         AutoRoute(path: "/forum", page: ForumRoute.page),
-        AutoRoute(path: "/forum/new", page: ForumNewPostRoute.page),
-        AutoRoute(path: "/forum/comments", page: ForumCommentsRoute.page),
+        AutoRoute(path: "/forum/new-post", page: ForumNewPostRoute.page),
+        AutoRoute(path: "/forum/post/comments", page: ForumPostCommentsRoute.page),
         AutoRoute(path: "/didactic-content", page: DidacticContentRoute.page),
+        AutoRoute(path: "/appointments", page: AppointmentRoute.page),
       ];
 
   @override

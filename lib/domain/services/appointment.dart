@@ -9,7 +9,7 @@ import 'package:sona/shared/crud.dart';
 import 'package:sona/shared/http/http.dart';
 import 'package:sona/shared/schemas/page.dart';
 
-abstract class AppoinmentService {
+abstract class AppointmentService {
   Future<Appointment> program({
     required DateTime date,
     required int hour,
@@ -31,11 +31,11 @@ abstract class AppoinmentService {
   });
 }
 
-class ApiAppoinmentService extends AppoinmentService implements WebResource {
+class ApiAppointmentService extends AppointmentService implements WebResource {
   final AuthProvider authProvider;
   final LocaleProvider localeProvider;
 
-  ApiAppoinmentService({required this.authProvider, required this.localeProvider});
+  ApiAppointmentService({required this.authProvider, required this.localeProvider});
 
   @override
   Uri get uri => apiUri;

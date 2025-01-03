@@ -6,6 +6,7 @@ import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/ui/utils/dialogs.dart';
+import 'package:sona/ui/utils/helpers/chat_service_widget_helper.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
 import 'package:sona/ui/widgets/sona_chat_view.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';

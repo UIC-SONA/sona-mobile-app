@@ -10,7 +10,7 @@ import 'package:sona/shared/schemas/page.dart';
 final log = Logger();
 
 Future<Page<T>> _page<T>(Uri uri, String path, Map<String, String> headers, http.Client? client, [PageQuery? query]) async {
-  var pageUri =  uri.replace(path: path, queryParameters: query?.toQueryParameters());
+  var pageUri = uri.replace(path: path, queryParameters: query?.toQueryParameters());
   log.d('Page uri: $pageUri');
 
   final response = await request(
@@ -22,6 +22,8 @@ Future<Page<T>> _page<T>(Uri uri, String path, Map<String, String> headers, http
       'Accept': 'application/json',
     },
   );
+
+  log.d('Page response: ${response.body}');
   return response.getBody<PageMap>().as<T>();
 }
 

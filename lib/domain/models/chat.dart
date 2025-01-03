@@ -1,4 +1,3 @@
-import 'user.dart';
 
 enum ChatMessageType {
   image,
@@ -213,36 +212,5 @@ class ReadMessages {
   @override
   String toString() {
     return 'ReadMessages{roomId: $roomId, readBy: $readBy, messageIds: $messageIds}';
-  }
-}
-
-class ChatRoomData {
-  final ChatRoom room;
-  final List<User> participants;
-  final ChatMessage? lastMessage;
-
-  ChatRoomData({
-    required this.room,
-    required this.participants,
-    required this.lastMessage,
-  });
-
-  String get id => room.id;
-
-  @override
-  String toString() {
-    return 'ChatRoomInformation(room: $room, participants: $participants, lastMessage: $lastMessage)';
-  }
-
-  ChatRoomData copyWith({
-    ChatRoom? room,
-    List<User>? participants,
-    ChatMessage? lastMessage,
-  }) {
-    return ChatRoomData(
-      room: room ?? this.room,
-      participants: participants ?? this.participants,
-      lastMessage: lastMessage ?? this.lastMessage,
-    );
   }
 }

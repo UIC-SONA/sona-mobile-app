@@ -1,15 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart' hide Page;
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-import 'package:sona/config/dependency_injection.dart';
-import 'package:sona/domain/models/models.dart';
-
-import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/crud.dart';
 import 'package:sona/shared/schemas/direction.dart';
 import 'package:sona/shared/schemas/page.dart';
 import 'package:sona/ui/pages/routing/router.dart';
-import 'package:sona/ui/utils/cached_user_screen.dart';
+import 'package:sona/ui/utils/helpers/post_service_widget_helper.dart';
+import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';
 import 'package:sona/ui/utils/paging.dart';
 
 import 'package:sona/ui/widgets/full_state_widget.dart';
@@ -24,13 +21,8 @@ class ForumScreen extends StatefulWidget {
   State<ForumScreen> createState() => _ForumScreenState();
 }
 
-class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHelper {
-  final _postService = injector.get<PostService>();
-  final _userService = injector.get<UserService>();
-  final _pagingController = PagingQueryController<Post>(firstPage: 0);
-
-  @override
-  UserService get userService => _userService;
+class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHelper, PostServiceWidgetHelper {
+  final _pagingController = PagingQueryController<PostWithUser>(firstPage: 0);
 
   @override
   void initState() {
@@ -38,14 +30,14 @@ class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHel
     _pagingController.configureFetcher(_fetcher);
   }
 
-  Future<Page<Post>> _fetcher(PageQuery query) async {
-    return await _postService.page(query.copyWith(properties: ['createdAt'], direction: Direction.desc));
+  Future<Page<PostWithUser>> _fetcher(PageQuery query) async {
+    return await pagePostWithUser(query.copyWith(properties: ['createdAt'], direction: Direction.desc));
   }
 
-  void _openCommentsScreen(ValueNotifier<Post> forum) async {
-    context.router.push<Post>(
-      ForumCommentsRoute(
-        forum: forum.value,
+  void _openCommentsScreen(ValueNotifier<PostWithUser> forum) async {
+    context.router.push(
+      ForumPostCommentsRoute(
+        post: forum.value,
         onPop: (result) {
           forum.value = result;
         },
@@ -82,9 +74,9 @@ class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHel
       onRefresh: () {
         return Future.sync(_pagingController.refresh);
       },
-      child: PagedListView<int, Post>(
+      child: PagedListView<int, PostWithUser>(
         pagingController: _pagingController,
-        builderDelegate: PagedChildBuilderDelegate<Post>(
+        builderDelegate: PagedChildBuilderDelegate<PostWithUser>(
           noItemsFoundIndicatorBuilder: (context) {
             return const Center(
               child: Text('No hay publicaciones'),

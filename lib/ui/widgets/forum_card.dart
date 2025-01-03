@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:sona/config/dependency_injection.dart';
-import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/utils/time_formatters.dart';
-import 'package:sona/ui/utils/cached_user_screen.dart';
+import 'package:sona/ui/utils/helpers/post_service_widget_helper.dart';
+import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
 
 class PostCard extends StatefulWidget {
-  final ValueNotifier<Post> notifier;
+  final ValueNotifier<PostWithUser> notifier;
   final VoidCallback? onComment;
 
   const PostCard({
@@ -21,19 +21,16 @@ class PostCard extends StatefulWidget {
   State<PostCard> createState() => _PostCardState();
 }
 
-class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper {
+class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, PostServiceWidgetHelper {
   final _userService = injector.get<UserService>();
   final _forumService = injector.get<PostService>();
 
-  @override
-  UserService get userService => _userService;
-
-  ValueNotifier<Post> get notifier => widget.notifier;
+  ValueNotifier<PostWithUser> get notifier => widget.notifier;
 
   void _toggleLike(bool isLiked) async {
     final post = notifier.value;
     await (isLiked ? _forumService.unlikePost(post) : _forumService.likePost(post));
-    notifier.value = await _forumService.find(post.id);
+    notifier.value = await findPostWithUser(post.id);
   }
 
   void _reportPost() async {
@@ -155,7 +152,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper {
   }
 
   Widget _buildAuthorName() {
-    final author = notifier.value.author;
+    final author = notifier.value.userAuthor;
     if (author == null) {
       return const Text(
         'Anónimo',
@@ -163,23 +160,11 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper {
       );
     }
 
-    return FutureBuilder(
-      future: getUser(author),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Icon(Icons.person, color: Colors.black);
-        }
-        if (snapshot.hasError) {
-          return const Icon(Icons.error, color: Colors.black);
-        }
-        final user = snapshot.data as User;
-        return Text(
-          user.username,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        );
-      },
+    return Text(
+      author.username,
+      style: const TextStyle(
+        fontWeight: FontWeight.bold,
+      ),
     );
   }
 }

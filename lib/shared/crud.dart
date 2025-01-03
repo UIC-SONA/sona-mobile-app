@@ -43,7 +43,7 @@ class PageQuery {
   final Direction? direction;
   final int? page;
   final int? size;
-  final Map<String, List<String>> attributes;
+  final Map<String, List<String>> params;
 
   PageQuery({
     this.search,
@@ -51,7 +51,7 @@ class PageQuery {
     this.direction,
     this.page,
     this.size,
-    this.attributes = const {},
+    this.params = const {},
   });
 
   Map<String, dynamic> toQueryParameters() {
@@ -61,7 +61,7 @@ class PageQuery {
       'direction': direction?.value,
       'page': page?.toString(),
       'size': size?.toString(),
-      ...attributes,
+      ...params,
     };
   }
 
@@ -71,7 +71,7 @@ class PageQuery {
     Direction? direction,
     int? page,
     int? size,
-    Map<String, List<String>>? attributes,
+    Map<String, List<String>>? params,
   }) {
     return PageQuery(
       search: search ?? this.search,
@@ -79,7 +79,7 @@ class PageQuery {
       direction: direction ?? this.direction,
       page: page ?? this.page,
       size: size ?? this.size,
-      attributes: attributes ?? this.attributes,
+      params: params ?? this.params,
     );
   }
 }

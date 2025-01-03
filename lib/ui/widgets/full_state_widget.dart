@@ -190,7 +190,7 @@ abstract class StateResult<R> {
   }) {
     if (_loading) return loading();
     if (_error != null) return error(_error!);
-    if (_value != null) return value(_value as R);
+    if (hasValue) return value(_value as R);
     return initial();
   }
 }

@@ -1,16 +1,24 @@
-import 'package:sona/shared/extensions.dart';
-
 enum Authority {
-  admin,
-  administrative,
-  medicalProfessional,
-  legalProfessional,
-  user;
+  admin("ADMIN", "Administrador"),
+  administrative("ADMINISTRATIVE", "Administrativo"),
+  medicalProfessional("MEDICAL_PROFESSIONAL", "Professional médico"),
+  legalProfessional("LEGAL_PROFESSIONAL", "Professional jurídico"),
+  user("USER", "Usuário");
 
-  static Authority fromString(String value) {
-    return Authority.values.firstWhere((e) => e.javaName == value);
+  final String authority;
+  final String humanName;
+
+  const Authority(this.authority, this.humanName);
+
+  static Authority of(String authority) {
+    return Authority.values.firstWhere((e) => e.authority == authority);
   }
 }
+
+const List<Authority> professionalAuthorities = [
+  Authority.medicalProfessional,
+  Authority.legalProfessional,
+];
 
 class User {
   final int id;
@@ -46,7 +54,7 @@ class User {
       firstName: json['firstName'],
       lastName: json['lastName'],
       email: json['email'],
-      authorities: List.from(json['authorities']).map((e) => Authority.fromString(e)).toList(),
+      authorities: List.from(json['authorities']).map((e) => Authority.of(e)).toList(),
       anonymous: json['anonymous'],
     );
   }

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:intl/intl.dart';
 
 typedef MapperIndexed<T, R> = R Function(T element, int index);
 typedef Mapper<T, R> = R Function(T element);
@@ -224,9 +223,6 @@ extension DateTimeExtension on DateTime {
 
   bool get isWeekday => !isWeekend;
 
-  String format([DateTimeFormat format = DateTimeFormat.dateTime]) {
-    return DateFormat(format.pattern).format(this);
-  }
 }
 
 enum DateTimeFormat {

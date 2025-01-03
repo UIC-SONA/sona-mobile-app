@@ -1,4 +1,4 @@
-export 'appoinment.dart';
+export 'appointment.dart';
 export 'chat.dart';
 export 'chat_bot.dart';
 export 'didatic_content.dart';
