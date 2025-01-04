@@ -46,6 +46,7 @@ Future<void> setupDependencies() async {
   injector.registerSingleton<PostService>(() => ApiPostService(authProvider: authProvider, localeProvider: localeProvider));
   injector.registerSingleton<DidacticContentService>(() => ApiDidacticContentService(authProvider: authProvider, localeProvider: localeProvider));
   injector.registerSingleton<AppointmentService>(() => ApiAppointmentService(authProvider: authProvider, localeProvider: localeProvider));
+  injector.registerSingleton<ProfessionalScheduleService>(() => ApiProfessionalScheduleService(authProvider: authProvider, localeProvider: localeProvider));
 
 //Router
   injector.registerSingleton<AuthGuard>(() => AuthGuard(authProvider: authProvider));

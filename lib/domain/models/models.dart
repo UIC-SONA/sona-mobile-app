@@ -1,9 +1,10 @@
-export 'appoiment.dart ';
+export 'appointment.dart';
 export 'chat.dart';
 export 'didatic_content.dart';
 export 'post.dart';
 export 'menstrual_cycle.dart';
 export 'problem_details.dart';
-export 'promp_response.dart';
+export 'professional_schedule.dart';
+export 'chat_bot.dart';
 export 'tip.dart';
 export 'user.dart';

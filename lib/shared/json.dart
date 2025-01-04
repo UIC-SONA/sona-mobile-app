@@ -57,7 +57,7 @@ abstract final class Json {
 
   /// METHOD TO REGISTER SERIALIZATION AND DESERIALIZATION FOR A TYPE
   /// [fromJson] is a function that takes a [Map<String, dynamic>] and returns an instance of T
-  /// [toJson] is a function that takes an instance of T and returns a Map<String, dynamic>
+  /// [toJson] is a function that takes an instance of T and returns a [Map<String, dynamic>]
   ///
   /// Examples:
   ///
@@ -107,10 +107,10 @@ abstract final class Json {
         notNull<int>(json, 'blue'),
       ),
       toJson: (Color value) => {
-        'alpha': value.alpha,
-        'red': value.red,
-        'green': value.green,
-        'blue': value.blue,
+        'alpha': value.a,
+        'red': value.r,
+        'green': value.g,
+        'blue': value.b,
       },
     );
 

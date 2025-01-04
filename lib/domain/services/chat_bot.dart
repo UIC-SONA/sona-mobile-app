@@ -1,4 +1,4 @@
-import 'package:sona/domain/models/promp_response.dart';
+import 'package:sona/domain/models/chat_bot.dart';
 import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/domain/providers/locale.dart';
 import 'package:sona/shared/constants.dart';

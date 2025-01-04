@@ -6,6 +6,7 @@ import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/domain/providers/locale.dart';
 import 'package:sona/shared/constants.dart';
 import 'package:sona/shared/crud.dart';
+import 'package:sona/shared/extensions.dart';
 import 'package:sona/shared/http/http.dart';
 import 'package:sona/shared/schemas/page.dart';
 
@@ -24,11 +25,11 @@ abstract class AppointmentService {
 
   Future<Page<Appointment>> appoiments([PageQuery? query]);
 
-  Future<List<AppointmentRange>> professionalAppointmentsDates({
-    required User professional,
-    required DateTime from,
-    required DateTime to,
-  });
+  Future<List<AppoimentDetails>> professionalAppointmentsDates(
+    User professional,
+    DateTime from,
+    DateTime to,
+  );
 }
 
 class ApiAppointmentService extends AppointmentService implements WebResource {
@@ -47,7 +48,7 @@ class ApiAppointmentService extends AppointmentService implements WebResource {
   Map<String, String> get commonHeaders => {'Accept-Language': localeProvider.languageCode};
 
   @override
-  String get path => '/appoinment';
+  String get path => '/appointment';
 
   @override
   Future<Appointment> program({
@@ -65,9 +66,9 @@ class ApiAppointmentService extends AppointmentService implements WebResource {
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
-        'date': date.toIso8601String(),
+        'date': date.toIso8601String().split('T').first,
         'hour': hour,
-        'type': type.toString(),
+        'type': type.javaName,
         'professionalId': professional.id,
       }),
     );
@@ -110,22 +111,21 @@ class ApiAppointmentService extends AppointmentService implements WebResource {
   }
 
   @override
-  Future<List<AppointmentRange>> professionalAppointmentsDates({
-    required User professional,
-    required DateTime from,
-    required DateTime to,
-  }) async {
+  Future<List<AppoimentDetails>> professionalAppointmentsDates(
+    User professional,
+    DateTime from,
+    DateTime to,
+  ) async {
     final response = await request(
-      uri.replace(path: '$path/professional-dates', queryParameters: {
-        'professionalId': professional.id.toString(),
-        'from': from.toIso8601String(),
-        'to': to.toIso8601String(),
+      uri.replace(path: '$path/professional/${professional.id}', queryParameters: {
+        'from': from.toIso8601String().split('T').first,
+        'to': to.toIso8601String().split('T').first,
       }),
-      client: authProvider.client!,
+      client: client,
       method: HttpMethod.get,
       headers: commonHeaders,
     );
 
-    return response.getBody<List<AppointmentRange>>();
+    return response.getBody<List<AppoimentDetails>>();
   }
 }

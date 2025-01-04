@@ -440,7 +440,7 @@ class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAli
   }
 
   void _openFilterSettings() {
-    showPorfessionalAuthoritiesSelector(
+    showProfessionalAuthoritiesSelector(
       context: context,
       onSelected: (authorities) {
         _authorities = authorities;

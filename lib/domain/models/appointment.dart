@@ -2,7 +2,7 @@ import 'package:sona/domain/models/models.dart';
 import 'package:sona/shared/extensions.dart';
 
 class Appointment {
-  final String id;
+  final int id;
   final DateTime date;
   final int hour;
   final bool canceled;
@@ -47,6 +47,14 @@ class Appointment {
       'professional': professional.toJson(),
     };
   }
+
+  AppoimentDetails get detail {
+    return AppoimentDetails(
+      from: date.add(Duration(hours: hour)),
+      to: date.add(Duration(hours: hour + 1)),
+      type: type,
+    );
+  }
 }
 
 enum AppointmentType {
@@ -54,19 +62,22 @@ enum AppointmentType {
   presential,
 }
 
-class AppointmentRange {
+class AppoimentDetails {
   final DateTime from;
   final DateTime to;
+  final AppointmentType type;
 
-  AppointmentRange({
+  AppoimentDetails({
     required this.from,
     required this.to,
+    required this.type,
   });
 
-  factory AppointmentRange.fromJson(Map<String, dynamic> json) {
-    return AppointmentRange(
+  factory AppoimentDetails.fromJson(Map<String, dynamic> json) {
+    return AppoimentDetails(
       from: DateTime.parse(json['from']),
       to: DateTime.parse(json['to']),
+      type: AppointmentType.values.firstWhere((e) => e.javaName == json['type']),
     );
   }
 
@@ -74,6 +85,7 @@ class AppointmentRange {
     return {
       'from': from.toIso8601String(),
       'to': to.toIso8601String(),
+      'type': type.javaName,
     };
   }
 }

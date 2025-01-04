@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sona/domain/models/models.dart';
 
-void showPorfessionalAuthoritiesSelector({
+void showProfessionalAuthoritiesSelector({
   required BuildContext context,
   required void Function(List<Authority>) onSelected,
 }) {

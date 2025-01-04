@@ -56,7 +56,12 @@ final theme = ThemeData(
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ButtonStyle(
       elevation: WidgetStateProperty.all<double>(1),
-      backgroundColor: WidgetStateProperty.all<Color>(deepMagenta),
+      backgroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) {
+          return hintColor;
+        }
+        return deepMagenta;
+      }),
       foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
       surfaceTintColor: WidgetStateProperty.all<Color>(Colors.white),
       iconColor: WidgetStateProperty.all<Color>(Colors.white),

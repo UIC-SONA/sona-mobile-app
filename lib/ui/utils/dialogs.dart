@@ -56,3 +56,15 @@ Future<FF?> showAlertErrorDialog<FF>(BuildContext context, {required Object erro
   final Error err = errorDetailExtractor(error);
   return showAlertDialog(context, title: err.title, message: err.message);
 }
+
+void showLoadingDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    },
+  );
+}

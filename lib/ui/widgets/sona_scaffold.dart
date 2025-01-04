@@ -6,6 +6,7 @@ import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/theme/backgrounds.dart';
+import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
 
 class SonaAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -76,7 +77,6 @@ class SonaDrawer extends StatefulWidget {
 class _SonaDrawerState extends FullState<SonaDrawer> {
   final _userService = injector.get<UserService>();
   final _authProvider = injector.get<AuthProvider>();
-  late final _logoutState = fetchState(([positionalArguments, namedArguments]) => _logout());
   late final _anonymizeState = fetchState(([positionalArguments, namedArguments]) => _anonymize(positionalArguments![0]));
 
   @override
@@ -151,42 +151,37 @@ class _SonaDrawerState extends FullState<SonaDrawer> {
           ),
           ListTile(
             title: const Text('Cerrar sesión'),
-            leading: _logoutState.isLoading ? const CircularProgressIndicator() : const Icon(Icons.logout),
-            onTap: _logoutState.fetch,
+            leading: const Icon(Icons.logout),
+            onTap: _showLogoutConfirmDialog,
           ),
         ],
       ),
     );
   }
 
-  Future<void> _logout() async {
-    await _showLoadingDialog();
-    await _authProvider.logout();
-    if (mounted) AutoRouter.of(context).replaceAll([const LoginRoute()]);
+  Future<void> _showLogoutConfirmDialog() async {
+    final isConfirmed = await showAlertDialog<bool>(
+      context,
+      title: 'Cerrar sesión',
+      message: '¿Estás seguro de que deseas cerrar sesión?',
+      actions: {
+        'Cancelar': () => Navigator.of(context).pop(false),
+        'Aceptar': () => Navigator.of(context).pop(true),
+      },
+    );
+
+    if (!mounted) return;
+
+    if (isConfirmed != null && isConfirmed) {
+      showLoadingDialog(context);
+      await _authProvider.logout();
+      if (mounted) AutoRouter.of(context).replaceAll([const LoginRoute()]);
+    }
   }
 
   Future<void> _anonymize(bool value) async {
     await _userService.anonymize(value);
     await _userService.refreshCurrentUser();
-  }
-
-  Future<void> _showLoadingDialog() async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return const AlertDialog(
-          content: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(width: 20),
-              Text("Cerrando sesión..."),
-            ],
-          ),
-        );
-      },
-    );
   }
 }
 
@@ -270,11 +265,9 @@ class SonaScaffold extends StatelessWidget {
       drawer: showLeading ? const SonaDrawer() : null,
       body: Background(
         child: SafeArea(
-          child: Center(
-            child: Padding(
-              padding: EdgeInsets.all(padding),
-              child: body,
-            ),
+          child: Padding(
+            padding: EdgeInsets.all(padding),
+            child: body,
           ),
         ),
       ),

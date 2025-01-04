@@ -43,7 +43,7 @@ class PageQuery {
   final Direction? direction;
   final int? page;
   final int? size;
-  final Map<String, List<String>> params;
+  final Map<String, Iterable<String>> params;
 
   PageQuery({
     this.search,
