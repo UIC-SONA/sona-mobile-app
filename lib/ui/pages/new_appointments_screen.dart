@@ -1,28 +1,27 @@
 import 'package:auto_route/annotations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/crud.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';
-import 'package:sona/ui/widgets/dropdown.dart';
+import 'package:sona/ui/widgets/search_dropdown.dart';
 import 'package:sona/ui/widgets/professional_botton_sheet.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart' hide Appointment, AppointmentType;
 import 'package:intl/intl.dart';
 
 @RoutePage()
-class AppointmentScreen extends StatefulWidget {
-  const AppointmentScreen({super.key});
+class NewAppointmentScreen extends StatefulWidget {
+  const NewAppointmentScreen({super.key});
 
   @override
-  State<AppointmentScreen> createState() => _AppointmentScreenState();
+  State<NewAppointmentScreen> createState() => _NewAppointmentScreenState();
 }
 
-class _AppointmentScreenState extends State<AppointmentScreen> with UserServiceWidgetHelper {
+class _NewAppointmentScreenState extends State<NewAppointmentScreen> with UserServiceWidgetHelper {
   //
   final _controller = CalendarController();
 
@@ -35,7 +34,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> with UserServiceW
   final int _pageSize = 20;
 
   List<Authority> _authorities = professionalAuthorities;
-  List<AppoimentDetails> _appointments = [];
+  List<AppoimentRange> _appointments = [];
   User? _selectedProfessional;
   DateTimeRange? _visibleRange;
 
@@ -67,11 +66,11 @@ class _AppointmentScreenState extends State<AppointmentScreen> with UserServiceW
 
     final results = await Future.wait([
       _professionalScheduleService.professionalSchedules(_selectedProfessional!, from, to),
-      _appointmentService.professionalAppointmentsDates(_selectedProfessional!, from, to),
+      _appointmentService.professionalAppointmentsRanges(_selectedProfessional!, from, to),
     ]);
 
     _schedulers.value = results[0] as List<ProfessionalSchedule>;
-    _appointments = results[1] as List<AppoimentDetails>;
+    _appointments = results[1] as List<AppoimentRange>;
   }
 
   void _setSelectedProfessional(User? user) {
@@ -80,6 +79,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> with UserServiceW
   }
 
   void _onScheduleTapped(ProfessionalSchedule schedule) {
+    if (schedule.date.isBefore(DateTime.now())) return;
     _showModalBottomAppoinmentSelector(schedule);
   }
 
@@ -87,56 +87,77 @@ class _AppointmentScreenState extends State<AppointmentScreen> with UserServiceW
   Widget build(BuildContext context) {
     return SonaScaffold(
       actionButton: SonaActionButton.home(),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SearchDropdown(
-              hideOnEmpty: true,
-              pageSize: _pageSize,
-              onSearch: _onSearch,
-              onSelected: _setSelectedProfessional,
-              dependencies: [_authorities],
-              itemBuilder: (context, user, isSelected) {
-                return ListTile(
-                  title: Text(user.fullName),
-                  subtitle: Text("@${user.username}"),
-                  leading: buildProfilePicture(user.id),
-                );
-              },
-              inputDecoration: InputDecoration(
-                hintText: 'Buscar profesional',
-                suffixIcon: IconButton(
-                  onPressed: _openFilterSettings,
-                  icon: const Icon(Icons.filter_alt_rounded),
-                ),
-              ),
-              dropdownDecoration: BoxDecoration(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 50),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              displayMapper: (User item) {
-                return item.fullName;
-              },
-            ),
-            const SizedBox(height: 10),
-            if (_selectedProfessional != null) ...[
-              Column(
-                children: [
-                  _buildProfessionDetails(_selectedProfessional!),
-                  const SizedBox(height: 10),
-                  _buildCalendar(_selectedProfessional!),
-                ],
-              ),
-            ],
-          ],
+      body: Column(
+        children: [
+          _buildSearchProfessional(),
+          const SizedBox(height: 10),
+          Expanded(
+            child: _selectedProfessional != null
+                ? SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        _buildProfessionDetails(_selectedProfessional!),
+                        const SizedBox(height: 10),
+                        _buildCalendar(_selectedProfessional!),
+                      ],
+                    ),
+                  )
+                : _buildEmptyState(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchProfessional() {
+    return SearchDropdown(
+      hideOnEmpty: true,
+      pageSize: _pageSize,
+      onSearch: _onSearch,
+      onSelected: _setSelectedProfessional,
+      dependencies: [_authorities],
+      itemBuilder: (context, user, isSelected) {
+        return ListTile(
+          title: Text(user.fullName),
+          subtitle: Text("@${user.username}"),
+          leading: buildProfilePicture(user.id),
+        );
+      },
+      inputDecoration: InputDecoration(
+        hintText: 'Buscar profesional',
+        suffixIcon: IconButton(
+          onPressed: _openFilterSettings,
+          icon: const Icon(Icons.filter_alt_rounded),
         ),
+      ),
+      dropdownDecoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      displayMapper: (User item) => item.fullName,
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.calendar_today,
+            size: 100,
+            color: Colors.grey,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Seleccione un profesional para ver su horario de atención',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 20,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -260,8 +281,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> with UserServiceW
             type: appointmentType.value,
             professional: schedule.professional,
           );
-          Logger().i('Appointment created: $result');
-          _appointments.add(result.detail);
+          _appointments.add(result.range);
           if (!mounted) return;
           Navigator.of(context).pop();
           Navigator.of(context).pop();
@@ -270,6 +290,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> with UserServiceW
           if (!mounted) return;
           Navigator.of(context).pop();
           await showAlertErrorDialog(context, error: e);
+          rethrow;
         }
       }
     }
@@ -392,48 +413,46 @@ class _AppointmentScreenState extends State<AppointmentScreen> with UserServiceW
 
   Widget _buildProfessionDetails(User professional) {
     final isMedicalProfessional = professional.authorities.contains(Authority.medicalProfessional);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    buildProfilePicture(professional.id),
-                    const SizedBox(width: 20),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          professional.fullName,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  buildProfilePicture(professional.id),
+                  const SizedBox(width: 20),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        professional.fullName,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                        Text(
-                          '@${professional.username}',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                          ),
+                      ),
+                      Text(
+                        '@${professional.username}',
+                        style: const TextStyle(
+                          color: Colors.grey,
                         ),
-                      ],
-                    ),
-                  ],
-                ),
-                Tooltip(
-                  message: isMedicalProfessional ? 'Profesional médico' : 'Profesional',
-                  child: Icon(
-                    isMedicalProfessional ? Icons.medical_services : Icons.person,
+                      ),
+                    ],
                   ),
-                )
-              ],
-            ),
-          ],
-        ),
+                ],
+              ),
+              Tooltip(
+                message: isMedicalProfessional ? 'Profesional médico' : 'Profesional',
+                child: Icon(
+                  isMedicalProfessional ? Icons.medical_services : Icons.person,
+                ),
+              )
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -478,12 +497,12 @@ class ProfessionalScheduleDataSources extends CalendarDataSource {
 
 class AppointmentRangeDataSource extends CalendarDataSource {
   //
-  AppointmentRangeDataSource(List<AppoimentDetails> source) {
+  AppointmentRangeDataSource(List<AppoimentRange> source) {
     appointments = source;
   }
 
   @override
-  List<AppoimentDetails> get appointments => super.appointments as List<AppoimentDetails>;
+  List<AppoimentRange> get appointments => super.appointments as List<AppoimentRange>;
 
   @override
   DateTime getStartTime(int index) {

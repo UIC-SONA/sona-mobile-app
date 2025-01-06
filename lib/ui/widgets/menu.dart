@@ -29,12 +29,14 @@ class MenuButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final String label;
   final IconData icon;
+  final String? description;
 
   const MenuButton({
     super.key,
     this.onPressed,
     required this.label,
     required this.icon,
+    this.description,
   });
 
   @override
@@ -98,6 +100,17 @@ class _MenuButtonState extends FullState<MenuButton> {
                   color: Colors.white,
                 ),
               ),
+              if (widget.description != null) ...[
+                const SizedBox(height: 10),
+                Text(
+                  widget.description!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ],
           ),
         ),

@@ -10,20 +10,20 @@
 part of 'router.dart';
 
 /// generated route for
-/// [AppointmentScreen]
-class AppointmentRoute extends PageRouteInfo<void> {
-  const AppointmentRoute({List<PageRouteInfo>? children})
+/// [AppointmentMenuScreen]
+class AppointmentMenuRoute extends PageRouteInfo<void> {
+  const AppointmentMenuRoute({List<PageRouteInfo>? children})
       : super(
-          AppointmentRoute.name,
+          AppointmentMenuRoute.name,
           initialChildren: children,
         );
 
-  static const String name = 'AppointmenttRoute';
+  static const String name = 'AppointmentMenuRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const AppointmentScreen();
+      return const AppointmentMenuScreen();
     },
   );
 }
@@ -138,6 +138,25 @@ class DidacticContentRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [ForumNewPostScreen]
+class ForumNewPostRoute extends PageRouteInfo<void> {
+  const ForumNewPostRoute({List<PageRouteInfo>? children})
+      : super(
+          ForumNewPostRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'ForumNewPostRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const ForumNewPostScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [ForumPostCommentsScreen]
 class ForumPostCommentsRoute extends PageRouteInfo<ForumPostCommentsRouteArgs> {
   ForumPostCommentsRoute({
@@ -155,7 +174,7 @@ class ForumPostCommentsRoute extends PageRouteInfo<ForumPostCommentsRouteArgs> {
           initialChildren: children,
         );
 
-  static const String name = 'ForumCommentsRoute';
+  static const String name = 'ForumPostCommentsRoute';
 
   static PageInfo page = PageInfo(
     name,
@@ -185,27 +204,8 @@ class ForumPostCommentsRouteArgs {
 
   @override
   String toString() {
-    return 'ForumCommentsRouteArgs{key: $key, forum: $post, onPop: $onPop}';
+    return 'ForumPostCommentsRouteArgs{key: $key, post: $post, onPop: $onPop}';
   }
-}
-
-/// generated route for
-/// [ForumNewPostScreen]
-class ForumNewPostRoute extends PageRouteInfo<void> {
-  const ForumNewPostRoute({List<PageRouteInfo>? children})
-      : super(
-          ForumNewPostRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'ForumNewPostRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const ForumNewPostScreen();
-    },
-  );
 }
 
 /// generated route for
@@ -304,6 +304,44 @@ class MenuOptionsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [MyAppointmentsScreen]
+class MyAppointmentsRoute extends PageRouteInfo<void> {
+  const MyAppointmentsRoute({List<PageRouteInfo>? children})
+      : super(
+          MyAppointmentsRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'MyAppointmentsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const MyAppointmentsScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [NewAppointmentScreen]
+class NewAppointmentRoute extends PageRouteInfo<void> {
+  const NewAppointmentRoute({List<PageRouteInfo>? children})
+      : super(
+          NewAppointmentRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'NewAppointmentRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const NewAppointmentScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [ServicesOptionsScreen]
 class ServicesOptionsRoute extends PageRouteInfo<ServicesOptionsRouteArgs> {
   ServicesOptionsRoute({
@@ -320,7 +358,8 @@ class ServicesOptionsRoute extends PageRouteInfo<ServicesOptionsRouteArgs> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      final args = data.argsAs<ServicesOptionsRouteArgs>(orElse: () => const ServicesOptionsRouteArgs());
+      final args = data.argsAs<ServicesOptionsRouteArgs>(
+          orElse: () => const ServicesOptionsRouteArgs());
       return ServicesOptionsScreen(key: args.key);
     },
   );

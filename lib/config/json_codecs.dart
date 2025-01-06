@@ -24,5 +24,5 @@ setupJsonCodecs() {
   Json.register<DidaticContent>(fromJson: DidaticContent.fromJson, toJson: (value) => value.toJson());
   Json.register<ProfessionalSchedule>(fromJson: ProfessionalSchedule.fromJson, toJson: (value) => value.toJson());
   Json.register<Appointment>(fromJson: Appointment.fromJson, toJson: (value) => value.toJson());
-  Json.register<AppoimentDetails>(fromJson: AppoimentDetails.fromJson, toJson: (value) => value.toJson());
+  Json.register<AppoimentRange>(fromJson: AppoimentRange.fromJson, toJson: (value) => value.toJson());
 }

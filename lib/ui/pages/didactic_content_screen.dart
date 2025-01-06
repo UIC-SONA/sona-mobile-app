@@ -8,7 +8,6 @@ import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/crud.dart';
 import 'package:sona/shared/schemas/direction.dart';
-import 'package:sona/shared/schemas/page.dart';
 import 'package:sona/ui/utils/paging.dart';
 
 import 'package:sona/ui/widgets/full_state_widget.dart';
@@ -30,11 +29,17 @@ class _DidacticContentScreenState extends FullState<DidacticContentScreen> {
   @override
   void initState() {
     super.initState();
-    _pagingController.configureFetcher(_fetcher);
+    _pagingController.configurePageRequestListener(_loadPageDidacticContent);
   }
 
-  Future<Page<DidaticContent>> _fetcher(PageQuery query) async {
-    return await _didacticContentService.page(query.copyWith(properties: ['createdDate'], direction: Direction.desc));
+  Future<List<DidaticContent>> _loadPageDidacticContent(int page) async {
+    final result = await _didacticContentService.page(PageQuery(
+      page: page,
+      properties: ['createdDate'],
+      direction: Direction.desc,
+    ));
+
+    return result.content;
   }
 
   @override

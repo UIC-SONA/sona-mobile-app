@@ -107,7 +107,6 @@ class _SearchDropdownState<T> extends State<SearchDropdown<T>> {
       builder: (context) => GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () {
-          // Cerrar el dropdown si se hace tap fuera de él
           if (_isOpen.value) _toggleDropdown();
         },
         child: Stack(
@@ -117,10 +116,8 @@ class _SearchDropdownState<T> extends State<SearchDropdown<T>> {
               child: CompositedTransformFollower(
                 link: _layerLink,
                 showWhenUnlinked: false,
-                offset: Offset(0, size.height + 5),
-                child: Material(
-                  elevation: 8,
-                  borderRadius: BorderRadius.circular(8),
+                offset: Offset(0, size.height),
+                child: Card(
                   child: Container(
                     constraints: BoxConstraints(maxHeight: widget.maxHeight ?? 200),
                     decoration: widget.dropdownDecoration ??

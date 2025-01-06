@@ -4,6 +4,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
+import 'package:sona/shared/crud.dart';
 import 'package:sona/shared/errors.dart';
 import 'package:sona/shared/utils/deboucing.dart';
 import 'package:sona/ui/pages/routing/router.dart';
@@ -94,7 +95,7 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
   @override
   void initState() {
     super.initState();
-    loadData();
+    _loadData();
     initMessageListeners();
   }
 
@@ -104,7 +105,7 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
     super.dispose();
   }
 
-  Future<void> loadData() async {
+  Future<void> _loadData() async {
     await _loading.run(() async {
       final rooms = await roomsData();
       _listenner.clearRooms();
@@ -173,7 +174,7 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
 
   Widget _buildListRooms(List<ChatRoomData> roomsData) {
     return RefreshIndicator(
-      onRefresh: loadData,
+      onRefresh: _loadData,
       child: ListView.builder(
         itemCount: roomsData.length,
         itemBuilder: (context, index) {
@@ -322,16 +323,20 @@ class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAli
   @override
   void initState() {
     super.initState();
-    _pagingController.configureFetcher(
-      (query) => _userService.page(
-        query.copyWith(
-          params: {
-            'authorities': _authorities.map((authority) => authority.authority).toList(),
-          },
-        ),
-      ),
-    );
-    _searchController.addListener(Debouncing.build(const Duration(milliseconds: 500), () => _pagingController.search(_searchController.text)));
+    _pagingController.configurePageRequestListener(_loadPageProfessionals);
+    _searchController.addListener(Debouncing.build(const Duration(milliseconds: 500), _pagingController.refresh));
+  }
+
+  Future<List<User>> _loadPageProfessionals(int page) async {
+    final result = await _userService.page(PageQuery(
+      page: page,
+      size: 20,
+      search: _searchController.text,
+      params: {
+        'authorities': _authorities.map((authority) => authority.authority).toList(),
+      },
+    ));
+    return result.content;
   }
 
   @override

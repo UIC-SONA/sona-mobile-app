@@ -25,7 +25,7 @@ abstract class AppointmentService {
 
   Future<Page<Appointment>> appoiments([PageQuery? query]);
 
-  Future<List<AppoimentDetails>> professionalAppointmentsDates(
+  Future<List<AppoimentRange>> professionalAppointmentsRanges(
     User professional,
     DateTime from,
     DateTime to,
@@ -107,17 +107,17 @@ class ApiAppointmentService extends AppointmentService implements WebResource {
       headers: commonHeaders,
     );
 
-    return response.getBody<Page<Appointment>>();
+    return response.getBody<PageMap>().as<Appointment>();
   }
 
   @override
-  Future<List<AppoimentDetails>> professionalAppointmentsDates(
+  Future<List<AppoimentRange>> professionalAppointmentsRanges(
     User professional,
     DateTime from,
     DateTime to,
   ) async {
     final response = await request(
-      uri.replace(path: '$path/professional/${professional.id}', queryParameters: {
+      uri.replace(path: '$path/professional/${professional.id}/ranges', queryParameters: {
         'from': from.toIso8601String().split('T').first,
         'to': to.toIso8601String().split('T').first,
       }),
@@ -126,6 +126,6 @@ class ApiAppointmentService extends AppointmentService implements WebResource {
       headers: commonHeaders,
     );
 
-    return response.getBody<List<AppoimentDetails>>();
+    return response.getBody<List<AppoimentRange>>();
   }
 }

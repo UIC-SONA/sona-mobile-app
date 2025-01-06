@@ -6,6 +6,8 @@ import 'package:sona/config/dependency_injection.dart';
 
 import 'package:sona/domain/models/tip.dart';
 import 'package:sona/domain/services/tip.dart';
+import 'package:sona/shared/crud.dart';
+import 'package:sona/shared/schemas/direction.dart';
 import 'package:sona/ui/utils/paging.dart';
 
 import 'package:sona/ui/widgets/full_state_widget.dart';
@@ -29,7 +31,16 @@ class _TipsScreenState extends FullState<TipsScreen> {
   @override
   void initState() {
     super.initState();
-    _pagingController.configureFetcher(_tipsService.activesPage);
+    _pagingController.configurePageRequestListener(_loadPageActiveTips);
+  }
+
+  Future<List<Tip>> _loadPageActiveTips(int page) async {
+    final result = await _tipsService.actives(PageQuery(
+      page: page,
+      properties: ['createdDate'],
+      direction: Direction.desc,
+    ));
+    return result.content;
   }
 
   void _clearSelection() {
@@ -72,42 +83,44 @@ class _TipsScreenState extends FullState<TipsScreen> {
         pagingController: _pagingController,
         builderDelegate: PagedChildBuilderDelegate<Tip>(
           noItemsFoundIndicatorBuilder: (context) => const Center(child: Text('No se encontraron tips.')),
-          itemBuilder: (context, tip, index) {
-            return Card(
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(0),
-                        title: Text(
-                          tip.title,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        subtitle: Text(
-                          tip.summary,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.justify,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10),
-                      child: ElevatedButton(
-                        onPressed: () => _selectTip(tip),
-                        child: const Text('Ver más'),
-                      ),
-                    ),
-                  ],
+          itemBuilder: _tipBuilder,
+        ),
+      ),
+    );
+  }
+
+  Widget _tipBuilder(context, tip, index) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Row(
+          children: [
+            Expanded(
+              child: ListTile(
+                contentPadding: const EdgeInsets.all(0),
+                title: Text(
+                  tip.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                subtitle: Text(
+                  tip.summary,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.justify,
                 ),
               ),
-            );
-          },
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 10),
+              child: ElevatedButton(
+                onPressed: () => _selectTip(tip),
+                child: const Text('Ver más'),
+              ),
+            ),
+          ],
         ),
       ),
     );

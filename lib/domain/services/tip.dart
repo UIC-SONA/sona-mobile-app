@@ -11,10 +11,7 @@ import 'package:sona/shared/schemas/page.dart';
 import '../providers/auth.dart';
 
 abstract class TipService {
-  //
-  Future<List<Tip>> actives();
-
-  Future<Page<Tip>> activesPage([PageQuery? query]);
+  Future<Page<Tip>> actives([PageQuery? query]);
 
   ImageProvider<Object> image(Tip tip);
 }
@@ -41,19 +38,7 @@ class ApiTipService implements TipService, WebResource {
   Uri get uri => apiUri;
 
   @override
-  Future<List<Tip>> actives() async {
-    final response = await request(
-      uri.replace(path: '$path/actives'),
-      client: client,
-      method: HttpMethod.get,
-      headers: commonHeaders,
-    );
-
-    return response.getBody<List<Tip>>();
-  }
-
-  @override
-  Future<Page<Tip>> activesPage([PageQuery? query]) async {
+  Future<Page<Tip>> actives([PageQuery? query]) async {
     final response = await request(
       uri.replace(path: '$path/actives', queryParameters: query?.toQueryParameters()),
       client: client,

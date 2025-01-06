@@ -3,7 +3,6 @@ import 'package:flutter/material.dart' hide Page;
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:sona/shared/crud.dart';
 import 'package:sona/shared/schemas/direction.dart';
-import 'package:sona/shared/schemas/page.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/utils/helpers/post_service_widget_helper.dart';
 import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';
@@ -27,11 +26,16 @@ class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHel
   @override
   void initState() {
     super.initState();
-    _pagingController.configureFetcher(_fetcher);
+    _pagingController.configurePageRequestListener(_loadPagePostWihtUser);
   }
 
-  Future<Page<PostWithUser>> _fetcher(PageQuery query) async {
-    return await pagePostWithUser(query.copyWith(properties: ['createdAt'], direction: Direction.desc));
+  Future<List<PostWithUser>> _loadPagePostWihtUser(int page) async {
+    final result = await pagePostWithUser(PageQuery(
+      page: page,
+      properties: ['createdAt'],
+      direction: Direction.desc,
+    ));
+    return result.content;
   }
 
   void _openCommentsScreen(ValueNotifier<PostWithUser> forum) async {

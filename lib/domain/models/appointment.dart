@@ -10,6 +10,7 @@ class Appointment {
   final AppointmentType type;
   final User attendant;
   final User professional;
+  final AppoimentRange range;
 
   Appointment({
     required this.id,
@@ -20,6 +21,7 @@ class Appointment {
     required this.type,
     required this.attendant,
     required this.professional,
+    required this.range,
   });
 
   factory Appointment.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class Appointment {
       type: AppointmentType.values.firstWhere((e) => e.javaName == json['type']),
       attendant: User.fromJson(json['attendant']),
       professional: User.fromJson(json['professional']),
+      range: AppoimentRange.fromJson(json['range']),
     );
   }
 
@@ -45,15 +48,8 @@ class Appointment {
       'type': type.toString(),
       'attendant': attendant.toJson(),
       'professional': professional.toJson(),
+      'ranges': range.toJson(),
     };
-  }
-
-  AppoimentDetails get detail {
-    return AppoimentDetails(
-      from: date.add(Duration(hours: hour)),
-      to: date.add(Duration(hours: hour + 1)),
-      type: type,
-    );
   }
 }
 
@@ -62,22 +58,19 @@ enum AppointmentType {
   presential,
 }
 
-class AppoimentDetails {
+class AppoimentRange {
   final DateTime from;
   final DateTime to;
-  final AppointmentType type;
 
-  AppoimentDetails({
+  AppoimentRange({
     required this.from,
     required this.to,
-    required this.type,
   });
 
-  factory AppoimentDetails.fromJson(Map<String, dynamic> json) {
-    return AppoimentDetails(
+  factory AppoimentRange.fromJson(Map<String, dynamic> json) {
+    return AppoimentRange(
       from: DateTime.parse(json['from']),
       to: DateTime.parse(json['to']),
-      type: AppointmentType.values.firstWhere((e) => e.javaName == json['type']),
     );
   }
 
@@ -85,7 +78,6 @@ class AppoimentDetails {
     return {
       'from': from.toIso8601String(),
       'to': to.toIso8601String(),
-      'type': type.javaName,
     };
   }
 }

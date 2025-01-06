@@ -36,7 +36,7 @@ class ServicesOptionsScreen extends StatelessWidget {
               MenuButton(
                 label: 'Agendamiento de Citas',
                 icon: Icons.calendar_today,
-                onPressed: () => AutoRouter.of(context).push(const AppointmentRoute()),
+                onPressed: () => AutoRouter.of(context).push(const AppointmentMenuRoute()),
               ),
             ],
           ),

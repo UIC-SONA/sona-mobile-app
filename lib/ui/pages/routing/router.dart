@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/ui/pages/chat_room_screen.dart';
+import 'package:sona/ui/pages/my_appointments_screen.dart';
+import 'package:sona/ui/pages/navigation/appointment_menu_screen.dart';
 import 'package:sona/ui/pages/navigation/home_screen.dart';
 import 'package:sona/ui/pages/navigation/login_screen.dart';
 import 'package:sona/ui/pages/navigation/menu_options_screen.dart';
@@ -18,7 +20,7 @@ import 'package:sona/ui/pages/forum_screen.dart';
 import 'package:sona/ui/pages/forum_new_post_screen.dart';
 import 'package:sona/ui/pages/forum_post_comments_screen.dart';
 import 'package:sona/ui/pages/didactic_content_screen.dart';
-import 'package:sona/ui/pages/appointments_screen.dart';
+import 'package:sona/ui/pages/new_appointments_screen.dart';
 import 'package:sona/ui/utils/helpers/chat_service_widget_helper.dart';
 import 'package:sona/ui/utils/helpers/post_service_widget_helper.dart';
 
@@ -52,7 +54,9 @@ class AppRouter extends RootStackRouter {
         AutoRoute(path: "/forum/new-post", page: ForumNewPostRoute.page),
         AutoRoute(path: "/forum/post/comments", page: ForumPostCommentsRoute.page),
         AutoRoute(path: "/didactic-content", page: DidacticContentRoute.page),
-        AutoRoute(path: "/appointments", page: AppointmentRoute.page),
+        AutoRoute(path: "/appointment", page: AppointmentMenuRoute.page),
+        AutoRoute(path: "/appointment/new", page: NewAppointmentRoute.page),
+        AutoRoute(path: "/appointment/my", page: MyAppointmentsRoute.page),
       ];
 
   @override
