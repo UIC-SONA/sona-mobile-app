@@ -1,6 +1,6 @@
 enum Direction {
-  asc("ASC"),
-  desc("DESC");
+  asc("asc"),
+  desc("desc");
 
   final String value;
 

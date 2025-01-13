@@ -15,6 +15,7 @@ import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/ui/pages/chat_screen.dart';
 import 'package:sona/ui/pages/chat_bot_screen.dart';
 import 'package:sona/ui/pages/menstrual_calendar_screens.dart';
+import 'package:sona/ui/pages/profile_screen.dart';
 import 'package:sona/ui/pages/tips_screen.dart';
 import 'package:sona/ui/pages/forum_screen.dart';
 import 'package:sona/ui/pages/forum_new_post_screen.dart';
@@ -42,6 +43,7 @@ class AppRouter extends RootStackRouter {
         AutoRoute(path: "/", page: SplashRoute.page, initial: true),
         AutoRoute(path: "/login", page: LoginRoute.page),
         AutoRoute(path: "/home", page: HomeRoute.page),
+        AutoRoute(path: "/profile", page: ProfileRoute.page),
         AutoRoute(path: "/register", page: SignUpRoute.page),
         AutoRoute(path: "/menstrual", page: MenstrualCalendarRoute.page),
         AutoRoute(path: "/options", page: MenuOptionsRoute.page),

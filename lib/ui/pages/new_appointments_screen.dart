@@ -1,5 +1,4 @@
 import 'package:auto_route/annotations.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/models/models.dart';
@@ -23,15 +22,15 @@ class NewAppointmentScreen extends StatefulWidget {
 
 class _NewAppointmentScreenState extends State<NewAppointmentScreen> with UserServiceWidgetHelper {
   //
-  final _controller = CalendarController();
+  final appointmentService = injector.get<AppointmentService>();
+  final professionalScheduleService = injector.get<ProfessionalScheduleService>();
+  @override
+  final userService = injector.get<UserService>();
 
-  final _appointmentService = injector.get<AppointmentService>();
-  final _professionalScheduleService = injector.get<ProfessionalScheduleService>();
-  final _userService = injector.get<UserService>();
+  final int pageSize = 20;
 
-  final _schedulers = ValueNotifier<List<ProfessionalSchedule>>([]);
-
-  final int _pageSize = 20;
+  final calendarController = CalendarController();
+  final schedulers = ValueNotifier<List<ProfessionalSchedule>>([]);
 
   List<Authority> _authorities = professionalAuthorities;
   List<AppoimentRange> _appointments = [];
@@ -48,10 +47,10 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> with UserSe
   }
 
   Future<List<User>> _onSearch(String query, int page) async {
-    final users = await _userService.page(PageQuery(
+    final users = await userService.page(PageQuery(
       search: query,
       page: page - 1,
-      size: _pageSize,
+      size: pageSize,
       params: {
         'authorities': _authorities.map((e) => e.authority),
       },
@@ -65,11 +64,11 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> with UserSe
     final to = _visibleRange!.end;
 
     final results = await Future.wait([
-      _professionalScheduleService.professionalSchedules(_selectedProfessional!, from, to),
-      _appointmentService.professionalAppointmentsRanges(_selectedProfessional!, from, to),
+      professionalScheduleService.professionalSchedules(_selectedProfessional!, from, to),
+      appointmentService.professionalAppointmentsRanges(_selectedProfessional!, from, to),
     ]);
 
-    _schedulers.value = results[0] as List<ProfessionalSchedule>;
+    schedulers.value = results[0] as List<ProfessionalSchedule>;
     _appointments = results[1] as List<AppoimentRange>;
   }
 
@@ -112,7 +111,7 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> with UserSe
   Widget _buildSearchProfessional() {
     return SearchDropdown(
       hideOnEmpty: true,
-      pageSize: _pageSize,
+      pageSize: pageSize,
       onSearch: _onSearch,
       onSelected: _setSelectedProfessional,
       dependencies: [_authorities],
@@ -167,7 +166,7 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> with UserSe
       child: SizedBox(
         height: 600,
         child: ValueListenableBuilder<List<ProfessionalSchedule>>(
-          valueListenable: _schedulers,
+          valueListenable: schedulers,
           builder: (context, schedules, _) {
             return SfCalendar(
               view: CalendarView.month,
@@ -182,7 +181,7 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> with UserSe
               ),
               onViewChanged: _onCalendarViewChanged,
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              controller: _controller,
+              controller: calendarController,
               headerHeight: 50,
               viewHeaderHeight: 50,
               initialDisplayDate: DateTime.now(),
@@ -209,8 +208,8 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> with UserSe
   }
 
   void _onCalendarTapped(CalendarTapDetails details) {
-    if ((_controller.view == CalendarView.week || _controller.view == CalendarView.month) && details.targetElement == CalendarElement.viewHeader) {
-      _controller.view = CalendarView.day;
+    if ((calendarController.view == CalendarView.week || calendarController.view == CalendarView.month) && details.targetElement == CalendarElement.viewHeader) {
+      calendarController.view = CalendarView.day;
     }
     if (details.targetElement == CalendarElement.appointment) {
       final appointment = details.appointments!.first as ProfessionalSchedule;
@@ -234,10 +233,6 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> with UserSe
     });
 
     void onTap(CalendarTapDetails details) {
-      if (kDebugMode) {
-        print("Tapped: ${details.date}, target: ${details.targetElement}");
-      }
-
       if (details.targetElement == CalendarElement.calendarCell) {
         controller.selectedDate = details.date;
         return;
@@ -259,39 +254,31 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> with UserSe
           '${schedule.professional.fullName}?'
           '';
 
-      final isConfirmed = await showAlertDialog<bool?>(
+      final isConfirmed = await showConfirmDialog(
         context,
         title: 'Confirmar cita',
         message: confirmText,
-        actions: {
-          'Cancelar': () => Navigator.of(context).pop(false),
-          'Confirmar': () => Navigator.of(context).pop(true),
-        },
       );
-      if (!mounted || isConfirmed == null) return;
-      if (!isConfirmed) Navigator.of(context).pop();
-
+      if (!mounted || !isConfirmed) return;
       showLoadingDialog(context);
 
-      if (isConfirmed) {
-        try {
-          final result = await _appointmentService.program(
-            date: date,
-            hour: date.hour,
-            type: appointmentType.value,
-            professional: schedule.professional,
-          );
-          _appointments.add(result.range);
-          if (!mounted) return;
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
-          showSnackBarSuccess(context, 'Cita programada correctamente');
-        } catch (e) {
-          if (!mounted) return;
-          Navigator.of(context).pop();
-          await showAlertErrorDialog(context, error: e);
-          rethrow;
-        }
+      try {
+        final result = await appointmentService.program(
+          date: date,
+          hour: date.hour,
+          type: appointmentType.value,
+          professional: schedule.professional,
+        );
+        _appointments.add(result.range);
+        if (!mounted) return;
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+        showSnackBarSuccess(context, 'Cita programada correctamente');
+      } catch (e) {
+        if (!mounted) return;
+        Navigator.of(context).pop();
+        await showAlertErrorDialog(context, error: e);
+        rethrow;
       }
     }
 
@@ -319,90 +306,103 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> with UserSe
                 'Horario de atención: ${schedule.fromHour}:${getPeriod(minDate)} - ${schedule.toHour}:${getPeriod(maxDate)}',
                 textAlign: TextAlign.start,
               ),
-              Text(
-                'Las citas duran una hora, seleccione la hora de inicio de la cita dentro del horario de atención del profesional',
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic),
+              Divider(
+                color: Colors.grey,
               ),
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey),
-                ),
-                child: SfCalendar(
-                  showTodayButton: false,
-                  view: CalendarView.timelineDay,
-                  dataSource: AppointmentRangeDataSource(_appointments),
-                  minDate: minDate,
-                  maxDate: maxDate,
-                  onTap: onTap,
-                  timeSlotViewSettings: TimeSlotViewSettings(
-                    timeInterval: Duration(hours: 1),
-                    timelineAppointmentHeight: double.infinity,
-                  ),
-                  appointmentBuilder: (context, details) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: primaryColor,
-                        borderRadius: BorderRadius.circular(5),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Text(
+                        'Las citas duran una hora, seleccione la hora de inicio de la cita dentro del horario de atención del profesional',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic),
                       ),
-                      child: Center(
-                        child: RotatedBox(
-                          quarterTurns: 3,
-                          child: Text(
-                            'Reservado',
-                            style: const TextStyle(color: Colors.white),
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.grey),
+                        ),
+                        child: SfCalendar(
+                          showTodayButton: false,
+                          view: CalendarView.timelineDay,
+                          dataSource: AppointmentRangeDataSource(_appointments),
+                          minDate: minDate,
+                          maxDate: maxDate,
+                          onTap: onTap,
+                          timeSlotViewSettings: TimeSlotViewSettings(
+                            timeInterval: Duration(hours: 1),
+                            timelineAppointmentHeight: double.infinity,
                           ),
+                          appointmentBuilder: (context, details) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: primaryColor,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Center(
+                                child: RotatedBox(
+                                  quarterTurns: 3,
+                                  child: Text(
+                                    'Reservado',
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
-                    );
-                  },
-                ),
-              ),
-              ValueListenableBuilder<AppointmentType>(
-                valueListenable: appointmentType,
-                builder: (context, type, _) {
-                  Widget buildRadioListTile(AppointmentType type, String title) {
-                    return RadioListTile(
-                      title: Text(title),
-                      value: type,
-                      groupValue: appointmentType.value,
-                      onChanged: (value) => appointmentType.value = value!,
-                      contentPadding: const EdgeInsets.all(0),
-                      dense: true,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      visualDensity: VisualDensity.compact,
-                    );
-                  }
+                      const SizedBox(height: 10),
+                      ValueListenableBuilder<AppointmentType>(
+                        valueListenable: appointmentType,
+                        builder: (context, type, _) {
+                          Widget listTile(AppointmentType type, String title) {
+                            return RadioListTile(
+                              title: Text(title),
+                              value: type,
+                              groupValue: appointmentType.value,
+                              onChanged: (value) => appointmentType.value = value!,
+                              contentPadding: const EdgeInsets.all(0),
+                              dense: true,
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: VisualDensity.compact,
+                            );
+                          }
 
-                  return Column(
-                    children: [
-                      buildRadioListTile(AppointmentType.presential, 'Presencial'),
-                      buildRadioListTile(AppointmentType.virtual, 'Virtual'),
-                    ],
-                  );
-                },
-              ),
-              ValueListenableBuilder<DateTime?>(
-                valueListenable: selectedDate,
-                builder: (context, date, _) {
-                  return Column(
-                    children: [
-                      const SizedBox(height: 10),
-                      Text(
-                        date != null ? 'Horario seleccionado: ${date.hour} ${getPeriod(date)} a ${date.hour + 1} ${getPeriod(date)}' : 'Seleccione una hora',
-                        textAlign: TextAlign.start,
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                          return Column(
+                            children: [
+                              listTile(AppointmentType.presential, 'Presencial'),
+                              listTile(AppointmentType.virtual, 'Virtual'),
+                            ],
+                          );
+                        },
                       ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: date != null ? showConfirmationDialog : null,
-                        child: const Text('Reservar cita'),
+                      ValueListenableBuilder<DateTime?>(
+                        valueListenable: selectedDate,
+                        builder: (context, date, _) {
+                          return Column(
+                            children: [
+                              const SizedBox(height: 10),
+                              Text(
+                                date != null ? 'Horario seleccionado: ${date.hour} ${getPeriod(date)} a ${date.hour + 1} ${getPeriod(date)}' : 'Seleccione una hora',
+                                textAlign: TextAlign.start,
+                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 5),
+                              ElevatedButton(
+                                onPressed: date != null ? showConfirmationDialog : null,
+                                child: const Text('Reservar cita'),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ],
-                  );
-                },
+                  ),
+                ),
               ),
             ],
           ),

@@ -37,48 +37,52 @@ abstract interface class WriteOperations<T, D, ID> implements Creatable<T, D>, U
 
 abstract interface class CrudOperations<T, D, ID> implements ReadOperations<T, ID>, WriteOperations<T, D, ID> {}
 
+class Sort {
+  final String property;
+  final Direction direction;
+
+  Sort(this.property, this.direction);
+}
+
 class PageQuery {
   final String? search;
-  final List<String>? properties;
-  final Direction? direction;
   final int? page;
   final int? size;
+  final List<Sort> sort;
   final Map<String, Iterable<String>> params;
 
   PageQuery({
     this.search,
-    this.properties,
-    this.direction,
     this.page,
     this.size,
+    this.sort = const [],
     this.params = const {},
   });
 
   Map<String, dynamic> toQueryParameters() {
     return {
       'search': search,
-      'properties': properties?.join(','),
-      'direction': direction?.value,
       'page': page?.toString(),
       'size': size?.toString(),
+      'sort': [
+        for (final s in sort) '${s.property},${s.direction.value}',
+      ],
       ...params,
     };
   }
 
   PageQuery copyWith({
     String? search,
-    List<String>? properties,
-    Direction? direction,
     int? page,
     int? size,
+    List<Sort>? sort,
     Map<String, List<String>>? params,
   }) {
     return PageQuery(
       search: search ?? this.search,
-      properties: properties ?? this.properties,
-      direction: direction ?? this.direction,
       page: page ?? this.page,
       size: size ?? this.size,
+      sort: sort ?? this.sort,
       params: params ?? this.params,
     );
   }

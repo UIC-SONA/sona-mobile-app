@@ -8,6 +8,7 @@ import 'package:sona/shared/constants.dart';
 import 'package:sona/shared/crud.dart';
 import 'package:sona/shared/extensions.dart';
 import 'package:sona/shared/http/http.dart';
+import 'package:sona/shared/schemas/message.dart';
 import 'package:sona/shared/schemas/page.dart';
 
 abstract class AppointmentService {
@@ -18,7 +19,7 @@ abstract class AppointmentService {
     required User professional,
   });
 
-  Future<Appointment> cancel({
+  Future<Message> cancel({
     required Appointment appointment,
     required String reason,
   });
@@ -77,7 +78,7 @@ class ApiAppointmentService extends AppointmentService implements WebResource {
   }
 
   @override
-  Future<Appointment> cancel({
+  Future<Message> cancel({
     required Appointment appointment,
     required String reason,
   }) async {
@@ -95,7 +96,7 @@ class ApiAppointmentService extends AppointmentService implements WebResource {
       }),
     );
 
-    return response.getBody<Appointment>();
+    return response.getBody<Message>();
   }
 
   @override

@@ -27,17 +27,19 @@ class ChatRoomScreen extends StatefulWidget {
   State<ChatRoomScreen> createState() => _ChatRoomScreenState();
 }
 
-Logger _log = Logger();
+final _log = Logger();
 
-class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageListenner<ChatService> {
+class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageListenner {
   //
-  final ScrollController _scrollController = ScrollController();
-  final List<String> _messagesRequests = [];
+  @override
+  final chatService = injector.get<ChatService>();
 
-  late final _chatService = injector.get<ChatService>();
-  late final ChatController _chatController = ChatController(
+  final ScrollController scrollController = ScrollController();
+  final List<String> messagesSended = [];
+
+  late final chatController = ChatController(
     initialMessageList: [],
-    scrollController: _scrollController,
+    scrollController: scrollController,
     otherUsers: _mapUsers(roomData.participants),
     currentUser: _mapUser(profile),
   );
@@ -51,29 +53,23 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
   User get profile => widget.profile;
 
   @override
-  ChatService get chatService => _chatService;
-
-  @override
-  String? get filterRoomId => roomData.id;
-
-  @override
   void initState() {
     super.initState();
     _loadData();
     initMessageListeners();
-    _scrollController.addListener(_scrollListener);
+    scrollController.addListener(_scrollListener);
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_scrollListener);
+    scrollController.removeListener(_scrollListener);
     disposeMessageListeners();
     super.dispose();
   }
 
   void _scrollListener() async {
     if (_isLoadingMore) return;
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (scrollController.position.pixels >= scrollController.position.maxScrollExtent - 200) {
       await _loadMoreMessages();
     }
   }
@@ -85,14 +81,14 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
       _isLoadingMore = true;
       final nextChunk = _chunk - 1;
 
-      final moreMessages = await _chatService.messages(
+      final moreMessages = await chatService.messages(
         roomId: roomData.id,
         chunk: nextChunk,
       );
 
       if (moreMessages.isNotEmpty) {
         _chunk = nextChunk;
-        _chatController.loadMoreData(_mapMessages(moreMessages));
+        chatController.loadMoreData(_mapMessages(moreMessages));
       }
     } catch (e, stackTrace) {
       _log.e('Error loading more messages', error: e, stackTrace: stackTrace);
@@ -116,11 +112,11 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
 
   Future<void> _loadChatHistory() async {
     var roomId = roomData.id;
-    final totalChunks = await _chatService.chunkCount(roomId: roomId);
+    final totalChunks = await chatService.chunkCount(roomId: roomId);
     _chunk = totalChunks == 0 ? 1 : totalChunks;
 
-    final initialMessage = await _chatService.messages(roomId: roomId, chunk: _chunk);
-    _chatController.loadMoreData(_mapMessages(initialMessage));
+    final initialMessage = await chatService.messages(roomId: roomId, chunk: _chunk);
+    chatController.loadMoreData(_mapMessages(initialMessage));
     setState(() {
       _chunk--;
       _chatViewState = initialMessage.isEmpty ? ChatViewState.noData : ChatViewState.hasMessages;
@@ -129,7 +125,7 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
 
   Future<void> _markAsRead() async {
     var profileId = profile.id.toString();
-    final otherMessages = _chatController.initialMessageList.reversed.where((element) => element.sentBy != profileId);
+    final otherMessages = chatController.initialMessageList.reversed.where((element) => element.sentBy != profileId);
 
     final messagesIds = <String>[];
     for (var message in otherMessages) {
@@ -137,7 +133,7 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
       messagesIds.add(message.id);
     }
     if (messagesIds.isNotEmpty) {
-      await _chatService.markAsRead(roomId: roomData.id, messagesIds: messagesIds);
+      await chatService.markAsRead(roomId: roomData.id, messagesIds: messagesIds);
     }
   }
 
@@ -145,7 +141,7 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
   void onReadMessage(ReadMessages readMessages) {
     if (roomData.room.type == ChatRoomType.group) return;
     var set = readMessages.messageIds.toSet();
-    final messages = _chatController.initialMessageList;
+    final messages = chatController.initialMessageList;
     for (var message in messages) {
       if (set.contains(message.id)) {
         message.setStatus = MessageStatus.read;
@@ -158,16 +154,16 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
     if (!mounted) return;
     final message = messageSent.message;
 
-    if (message.sentBy == profile.id && _messagesRequests.contains(messageSent.requestId)) {
-      _messagesRequests.remove(messageSent.requestId);
+    if (message.sentBy == profile.id && messagesSended.contains(messageSent.requestId)) {
+      messagesSended.remove(messageSent.requestId);
       return;
     }
 
-    _chatController.addMessage(_mapMessage(message));
+    chatController.addMessage(_mapMessage(message));
     _setChatViewStateHasMessages();
 
     if (message.sentBy != profile.id) {
-      _chatService.markAsRead(roomId: roomData.id, messagesIds: [message.id]);
+      chatService.markAsRead(roomId: roomData.id, messagesIds: [message.id]);
     }
   }
 
@@ -177,20 +173,20 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
       id: requestId,
       createdAt: DateTime.now(),
       message: message,
-      sentBy: _chatController.currentUser.id,
+      sentBy: chatController.currentUser.id,
       replyMessage: replyMessage,
       messageType: messageType,
       status: MessageStatus.pending,
     );
-    _chatController.addMessage(newMessage);
+    chatController.addMessage(newMessage);
     _setChatViewStateHasMessages();
 
     try {
-      _messagesRequests.add(requestId);
+      messagesSended.add(requestId);
       final messageSent = await switch (messageType) {
-        MessageType.text => _chatService.send(room: roomData.room, message: message, requestId: requestId),
-        MessageType.image => _chatService.sendImage(room: roomData.room, imagePath: message, requestId: requestId),
-        MessageType.voice => _chatService.sendVoice(room: roomData.room, audioPath: message, requestId: requestId),
+        MessageType.text => chatService.send(room: roomData.room, message: message, requestId: requestId),
+        MessageType.image => chatService.sendImage(room: roomData.room, imagePath: message, requestId: requestId),
+        MessageType.voice => chatService.sendVoice(room: roomData.room, audioPath: message, requestId: requestId),
         MessageType.custom => throw UnimplementedError(),
       };
 
@@ -215,7 +211,7 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
       actionButton: SonaActionButton.home(),
       padding: 0,
       body: SonaChatView(
-        chatController: _chatController,
+        chatController: chatController,
         chatViewState: _chatViewState,
         sendMessage: _sendMessage,
         enableCameraImagePicker: true,

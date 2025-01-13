@@ -202,6 +202,13 @@ class _SearchDropdownState<T> extends State<SearchDropdown<T>> {
                   if (!_isOpen.value) _toggleDropdown();
                   _onSearchChanged(value);
                 },
+                onTap: () {
+                  if (!_isOpen.value) {
+                    _loading.value = true;
+                    _toggleDropdown();
+                    _onSearchChanged('');
+                  }
+                },
                 readOnly: _selected.value != null,
               );
             },

@@ -38,8 +38,14 @@ Future<FF?> showAlertDialog<FF>(BuildContext context, {required String title, re
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Center(child: Text(title, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold))),
-        content: Text(message, textAlign: TextAlign.center),
+        title: Text(
+          title,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(message),
         actions: [
           for (final entry in actions?.entries ?? [MapEntry('OK', () => Navigator.of(context).pop())])
             TextButton(
@@ -52,9 +58,87 @@ Future<FF?> showAlertDialog<FF>(BuildContext context, {required String title, re
   );
 }
 
-Future<FF?> showAlertErrorDialog<FF>(BuildContext context, {required Object error, ErrorExtractor errorDetailExtractor = extractError}) {
+Future<bool> showConfirmDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+  String cancelText = 'Cancelar',
+  String confirmText = 'Aceptar',
+}) async {
+  final result = await showAlertDialog<bool>(
+    context,
+    title: title,
+    message: message,
+    actions: {
+      cancelText: () => Navigator.of(context).pop(false),
+      confirmText: () => Navigator.of(context).pop(true),
+    },
+  );
+
+  return result ?? false;
+}
+
+Future<String?> showInputDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+  int? maxLength,
+  int? maxLines,
+  int? minLines,
+  TextInputType? keyboardType,
+}) {
+  final TextEditingController controller = TextEditingController();
+  return showDialog<String>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(
+          title,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(message),
+            TextField(
+              controller: controller,
+              maxLength: maxLength,
+              maxLines: maxLines,
+              keyboardType: keyboardType,
+              minLines: minLines,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(controller.text),
+            child: const Text('Aceptar'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+Future<FF?> showAlertErrorDialog<FF>(
+  BuildContext context, {
+  required Object error,
+  String? title,
+  ErrorExtractor errorDetailExtractor = extractError,
+}) {
   final Error err = errorDetailExtractor(error);
-  return showAlertDialog(context, title: err.title, message: err.message);
+  return showAlertDialog(
+    context,
+    title: title ?? err.title,
+    message: err.message,
+  );
 }
 
 void showLoadingDialog(BuildContext context) {

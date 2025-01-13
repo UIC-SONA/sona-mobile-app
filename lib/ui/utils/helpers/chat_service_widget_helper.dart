@@ -39,10 +39,11 @@ class ChatRoomData {
 }
 
 mixin ChatServiceWidgetHelper on UserServiceWidgetHelper {
-  ChatService get _chatService => injector.get<ChatService>();
+  ChatService get chatService;
 
+  @protected
   Future<List<ChatRoomData>> roomsData() async {
-    final rooms = await _chatService.rooms();
+    final rooms = await chatService.rooms();
 
     final usersIds = rooms.expand((room) => room.participants).toSet().where((userId) => userId != currentUser.id).toList();
 
@@ -54,11 +55,12 @@ mixin ChatServiceWidgetHelper on UserServiceWidgetHelper {
     return await Future.wait(rooms.map((room) => _createRoomData(room, participants)));
   }
 
+  @protected
   Future<ChatRoomData> roomData({
     String? roomId,
     int? userId,
   }) async {
-    final room = await _chatService.room(roomId: roomId, userId: userId);
+    final room = await chatService.room(roomId: roomId, userId: userId);
     final participants = await findUsers(room.participants);
     return await _createRoomData(room, participants);
   }
@@ -81,7 +83,7 @@ mixin ChatServiceWidgetHelper on UserServiceWidgetHelper {
       }
     }
 
-    final lastMessage = await _chatService.lastMessage(roomId: room.id);
+    final lastMessage = await chatService.lastMessage(roomId: room.id);
     return ChatRoomData(
       room: room,
       participants: participants,

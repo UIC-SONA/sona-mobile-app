@@ -1,4 +1,3 @@
-import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/post.dart';
 import 'package:sona/shared/crud.dart';
@@ -36,15 +35,15 @@ class CommentWithUser extends Comment {
 
 mixin PostServiceWidgetHelper on UserServiceWidgetHelper {
   //
-  final _postService = injector.get<PostService>();
+  PostService get postService;
 
   Future<PostWithUser> findPostWithUser(String postId) async {
-    final post = await _postService.find(postId);
+    final post = await postService.find(postId);
     return await _findAuthors(post);
   }
 
   Future<Page<PostWithUser>> pagePostWithUser(PageQuery query) async {
-    final page = await _postService.page(query);
+    final page = await postService.page(query);
     final posts = <PostWithUser>[];
     for (final post in page.content) {
       posts.add(await _findAuthors(post));

@@ -28,40 +28,36 @@ class ForumPostCommentsScreen extends StatefulWidget {
 }
 
 class _ForumPostCommentsScreenState extends FullState<ForumPostCommentsScreen> with UserServiceWidgetHelper, PostServiceWidgetHelper {
-  final _postService = injector.get<PostService>();
-  final _userService = injector.get<UserService>();
-  final _commentController = TextEditingController();
+  @override
+  final postService = injector.get<PostService>();
+  @override
+  final userService = injector.get<UserService>();
+  final commentController = TextEditingController();
 
-  late PostWithUser post;
+  late PostWithUser post = widget.post;
   bool _sendingComment = false;
 
   @override
-  void initState() {
-    super.initState();
-    post = widget.post;
-  }
-
-  @override
   dispose() {
-    _commentController.dispose();
+    commentController.dispose();
     super.dispose();
   }
 
   Future<void> _submitComment() async {
-    if (_commentController.text.trim().isEmpty) return;
+    if (commentController.text.trim().isEmpty) return;
 
     try {
       Future<void> createComment(bool anonymous) async {
         _sendingComment = true;
         refresh();
-        await _postService.createComment(
+        await postService.createComment(
           postId: post.id,
-          content: _commentController.text,
+          content: commentController.text,
           anonymous: anonymous,
         );
       }
 
-      if (_userService.currentUser.anonymous) {
+      if (userService.currentUser.anonymous) {
         await createComment(true);
       } else {
         final anonymous = await showAlertDialog<bool>(
@@ -77,7 +73,7 @@ class _ForumPostCommentsScreenState extends FullState<ForumPostCommentsScreen> w
         await createComment(anonymous);
       }
       post = await findPostWithUser(post.id);
-      _commentController.clear();
+      commentController.clear();
     } catch (e) {
       if (!mounted) return;
       showAlertErrorDialog(context, error: e);
@@ -89,9 +85,9 @@ class _ForumPostCommentsScreenState extends FullState<ForumPostCommentsScreen> w
 
   void _toggleLike(bool isLiked, Comment comment) async {
     if (isLiked) {
-      await _postService.unlikeComment(post, comment);
+      await postService.unlikeComment(post, comment);
     } else {
-      await _postService.likeComment(post, comment);
+      await postService.likeComment(post, comment);
     }
     post = await findPostWithUser(post.id);
     refresh();
@@ -108,7 +104,7 @@ class _ForumPostCommentsScreenState extends FullState<ForumPostCommentsScreen> w
       },
     );
     if (confirmed == true) {
-      await _postService.reportComment(post, comment);
+      await postService.reportComment(post, comment);
       if (!mounted) return;
       showSnackBar(context, content: const Text('Comentario reportado'));
     }
@@ -116,7 +112,7 @@ class _ForumPostCommentsScreenState extends FullState<ForumPostCommentsScreen> w
 
   @override
   Widget build(BuildContext context) {
-    final user = _userService.currentUser;
+    final user = userService.currentUser;
 
     return PopScope(
       canPop: true,
@@ -148,13 +144,13 @@ class _ForumPostCommentsScreenState extends FullState<ForumPostCommentsScreen> w
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end, // Alinea los elementos al final
                 children: [
-                  CircleAvatar(child: buildProfilePicture(user.id)),
+                  buildProfilePicture(user.id),
                   const SizedBox(width: 12),
                   // Expanded para que el TextField tome el espacio disponible
                   Expanded(
                     child: TextField(
                       enabled: !_sendingComment,
-                      controller: _commentController,
+                      controller: commentController,
                       decoration: InputDecoration(
                           hintText: 'Agregar un comentario...',
                           suffixIcon: IconButton(
@@ -178,7 +174,7 @@ class _ForumPostCommentsScreenState extends FullState<ForumPostCommentsScreen> w
     final primaryColor = Theme.of(context).primaryColor;
 
     return comments.reversed.map((comment) {
-      final isLiked = comment.likedBy.contains(_userService.currentUser.id);
+      final isLiked = comment.likedBy.contains(userService.currentUser.id);
 
       return Padding(
         padding: const EdgeInsets.all(10),

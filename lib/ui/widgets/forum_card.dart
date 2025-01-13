@@ -22,14 +22,16 @@ class PostCard extends StatefulWidget {
 }
 
 class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, PostServiceWidgetHelper {
-  final _userService = injector.get<UserService>();
-  final _forumService = injector.get<PostService>();
+  @override
+  final userService = injector.get<UserService>();
+  @override
+  final postService = injector.get<PostService>();
 
   ValueNotifier<PostWithUser> get notifier => widget.notifier;
 
   void _toggleLike(bool isLiked) async {
     final post = notifier.value;
-    await (isLiked ? _forumService.unlikePost(post) : _forumService.likePost(post));
+    await (isLiked ? postService.unlikePost(post) : postService.likePost(post));
     notifier.value = await findPostWithUser(post.id);
   }
 
@@ -44,7 +46,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
       },
     );
     if (confirmed == true) {
-      await _forumService.reportPost(notifier.value);
+      await postService.reportPost(notifier.value);
       if (!mounted) return;
       showSnackBar(context, content: const Text('Publicación reportada'));
     }
@@ -52,7 +54,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
 
   @override
   Widget build(BuildContext context) {
-    final user = _userService.currentUser;
+    final user = userService.currentUser;
 
     return Card(
       shape: RoundedRectangleBorder(
@@ -147,7 +149,11 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
   Widget _buildAuthorAvatar() {
     final post = notifier.value;
     return CircleAvatar(
-      child: post.author != null ? buildProfilePicture(post.author!) : const Icon(Icons.person),
+      child: post.author != null
+          ? buildProfilePicture(
+              post.author!,
+            )
+          : const Icon(Icons.person),
     );
   }
 

@@ -37,8 +37,9 @@ class _TipsScreenState extends FullState<TipsScreen> {
   Future<List<Tip>> _loadPageActiveTips(int page) async {
     final result = await _tipsService.actives(PageQuery(
       page: page,
-      properties: ['createdDate'],
-      direction: Direction.desc,
+      sort: [
+        Sort('createdDate', Direction.desc),
+      ],
     ));
     return result.content;
   }

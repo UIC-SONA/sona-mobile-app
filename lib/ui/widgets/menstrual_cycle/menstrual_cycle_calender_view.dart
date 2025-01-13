@@ -95,7 +95,7 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
 
   List<Widget> calendarBuilder(PerdiodCalculatorResult result) {
     List<Widget> calendarGridItems = [];
-    List<DateTime>? calendarDays = isExpanded ? selectedMonthsDays : selectedWeekDays;
+    List<DateTime>? calendarDays = selectedMonthsDays;
 
     for (var day in formatter.weekTitles) {
       calendarGridItems.add(
@@ -283,14 +283,18 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
             builder: (context, value, child) {
               return _ExpansionCrossFade(
                 collapsed: calendarGridView(value),
-                expanded: calendarGridView(value),
+                expanded: Column(
+                  children: [
+                    calendarGridView(value),
+                    const SizedBox(height: 15),
+                    if (!widget.hideInfoView) getInformationView(widget.daySelectedColor, widget.themeColor),
+                    const SizedBox(height: 10),
+                  ],
+                ),
                 isExpanded: isExpanded,
               );
             },
           ),
-          const SizedBox(height: 15),
-          if (!widget.hideInfoView) getInformationView(widget.daySelectedColor, widget.themeColor),
-          const SizedBox(height: 10),
           if (!widget.hideBottomBar) bottomView(),
         ],
       ),

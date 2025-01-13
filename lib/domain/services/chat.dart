@@ -78,16 +78,15 @@ abstract class ChatService {
   void _removeOnReadMessageListener(OnReadMessage listener) => _onReadMessageListeners.remove(listener);
 }
 
-mixin ChatMessageListenner<T extends ChatService> {
-//
-  @protected
-  T get chatService;
+mixin ChatMessageListenner {
+  //
+  ChatService get chatService;
 
-  @protected
   String? get filterRoomId => null;
 
-  OnReceiveMessage? registerOnReceiveMessage;
-  OnReadMessage? registerOnReadMessage;
+  OnReceiveMessage? onReceiveMessageCb;
+
+  OnReadMessage? onReadMessageCb;
 
   bool _hasInit = false;
 
@@ -96,26 +95,39 @@ mixin ChatMessageListenner<T extends ChatService> {
     if (_hasInit) throw StateError('Listeners already initialized');
     _hasInit = true;
     if (filterRoomId == null) {
-      registerOnReceiveMessage = onReceiveMessage;
-      registerOnReadMessage = onReadMessage;
+      onReceiveMessageCb = onReceiveMessage;
+      onReadMessageCb = onReadMessage;
     } else {
-      registerOnReceiveMessage = (messageSent) => messageSent.roomId == filterRoomId ? onReceiveMessage(messageSent) : null;
-      registerOnReadMessage = (readMessages) => readMessages.roomId == filterRoomId ? onReadMessage(readMessages) : null;
+      onReceiveMessageCb = (messageSent) {
+        if (messageSent.roomId == filterRoomId) {
+          onReceiveMessage(messageSent);
+        }
+      };
+      onReadMessageCb = (readMessages) {
+        if (readMessages.roomId == filterRoomId) {
+          onReadMessage(readMessages);
+        }
+      };
     }
 
-    chatService._addOnReceiveMessageListener(registerOnReceiveMessage!);
-    chatService._addOnReadMessageListener(registerOnReadMessage!);
+    chatService._addOnReceiveMessageListener(onReceiveMessageCb!);
+    chatService._addOnReadMessageListener(onReadMessageCb!);
   }
 
   @protected
   void disposeMessageListeners() {
-    if (registerOnReceiveMessage != null) chatService._removeOnReceiveMessageListener(registerOnReceiveMessage!);
-    if (registerOnReadMessage != null) chatService._removeOnReadMessageListener(registerOnReadMessage!);
+    if (onReceiveMessageCb != null) {
+      chatService._removeOnReceiveMessageListener(onReceiveMessageCb!);
+    }
+    if (onReadMessageCb != null) {
+      chatService._removeOnReadMessageListener(onReadMessageCb!);
+    }
   }
 
   void onReceiveMessage(ChatMessageSent messageSent);
 
   void onReadMessage(ReadMessages readMessages);
+//
 }
 
 class ApiStompChatService extends ChatService implements WebResource {
@@ -322,10 +334,14 @@ class ApiStompChatService extends ChatService implements WebResource {
     required List<String> messagesIds,
   }) async {
     await request(
-      uri.replace(path: '$path/room/$roomId/read', queryParameters: {'messagesIds': messagesIds.join(',')}),
+      uri.replace(path: '$path/room/$roomId/read'),
       client: client,
       method: HttpMethod.put,
-      headers: commonHeaders,
+      headers: {
+        ...commonHeaders,
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(messagesIds),
     );
   }
 }

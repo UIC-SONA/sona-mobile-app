@@ -132,7 +132,7 @@ class _SonaDrawerState extends FullState<SonaDrawer> {
           ListTile(
             title: const Text('Mi perfil'),
             leading: const Icon(Icons.person),
-            onTap: () => AutoRouter.of(context).pushNamed('/profile'),
+            onTap: () => AutoRouter.of(context).push(ProfileRoute()),
           ),
           ListTile(
             title: const Text('Notificaciones'),

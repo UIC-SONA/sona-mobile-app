@@ -35,8 +35,9 @@ class _DidacticContentScreenState extends FullState<DidacticContentScreen> {
   Future<List<DidaticContent>> _loadPageDidacticContent(int page) async {
     final result = await _didacticContentService.page(PageQuery(
       page: page,
-      properties: ['createdDate'],
-      direction: Direction.desc,
+      sort: [
+        Sort('createdDate', Direction.desc),
+      ],
     ));
 
     return result.content;

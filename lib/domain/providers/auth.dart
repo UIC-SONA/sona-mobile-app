@@ -8,7 +8,6 @@ import 'package:sona/domain/models/user.dart';
 import 'package:sona/shared/constants.dart';
 import 'package:sona/shared/http/http.dart';
 
-
 abstract class AuthProvider<T extends http.Client> {
   //
   T? get client;
@@ -63,8 +62,12 @@ class KeycloakAuthProvider extends AuthProvider<oauth2.Client> {
       final credentials = _client!.credentials;
       if (credentials.isExpired) {
         if (!credentials.canRefresh) return false;
-        await _client!.refreshCredentials();
-        return true;
+        try {
+          await _client!.refreshCredentials();
+          return true;
+        } catch (e) {
+          return false;
+        }
       }
 
       var response = await http.post(

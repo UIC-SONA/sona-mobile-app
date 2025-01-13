@@ -7,7 +7,7 @@ import 'package:sona/shared/http/types.dart';
 import 'package:sona/shared/json.dart';
 import 'package:sona/shared/schemas/page.dart';
 
-final log = Logger();
+final log = Logger(level: Level.info);
 
 Future<Page<T>> _page<T>(Uri uri, String path, Map<String, String> headers, http.Client? client, [PageQuery? query]) async {
   var pageUri = uri.replace(path: path, queryParameters: query?.toQueryParameters());

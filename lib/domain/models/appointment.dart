@@ -6,7 +6,7 @@ class Appointment {
   final DateTime date;
   final int hour;
   final bool canceled;
-  final String? cancelReason;
+  final String? cancellationReason;
   final AppointmentType type;
   final User attendant;
   final User professional;
@@ -17,7 +17,7 @@ class Appointment {
     required this.date,
     required this.hour,
     required this.canceled,
-    required this.cancelReason,
+    required this.cancellationReason,
     required this.type,
     required this.attendant,
     required this.professional,
@@ -30,7 +30,7 @@ class Appointment {
       date: DateTime.parse(json['date']),
       hour: json['hour'],
       canceled: json['canceled'],
-      cancelReason: json['cancelReason'],
+      cancellationReason: json['cancellationReason'],
       type: AppointmentType.values.firstWhere((e) => e.javaName == json['type']),
       attendant: User.fromJson(json['attendant']),
       professional: User.fromJson(json['professional']),
@@ -44,7 +44,7 @@ class Appointment {
       'date': date.toIso8601String(),
       'hour': hour,
       'canceled': canceled,
-      'cancelReason': cancelReason,
+      'cancellationReason': cancellationReason,
       'type': type.toString(),
       'attendant': attendant.toJson(),
       'professional': professional.toJson(),

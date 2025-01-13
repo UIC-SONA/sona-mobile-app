@@ -342,6 +342,46 @@ class NewAppointmentRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [ProfileScreen]
+class ProfileRoute extends PageRouteInfo<ProfileRouteArgs> {
+  ProfileRoute({
+    Key? key,
+    List<PageRouteInfo>? children,
+  }) : super(
+          ProfileRoute.name,
+          args: ProfileRouteArgs(
+            key: key,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'ProfileRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<ProfileRouteArgs>();
+      return ProfileScreen(
+        key: args.key,
+      );
+    },
+  );
+}
+
+class ProfileRouteArgs {
+  const ProfileRouteArgs({
+    this.key,
+  });
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'ProfileRouteArgs{key: $key';
+  }
+}
+
+/// generated route for
 /// [ServicesOptionsScreen]
 class ServicesOptionsRoute extends PageRouteInfo<ServicesOptionsRouteArgs> {
   ServicesOptionsRoute({
@@ -358,8 +398,7 @@ class ServicesOptionsRoute extends PageRouteInfo<ServicesOptionsRouteArgs> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      final args = data.argsAs<ServicesOptionsRouteArgs>(
-          orElse: () => const ServicesOptionsRouteArgs());
+      final args = data.argsAs<ServicesOptionsRouteArgs>(orElse: () => const ServicesOptionsRouteArgs());
       return ServicesOptionsScreen(key: args.key);
     },
   );

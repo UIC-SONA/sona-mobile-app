@@ -32,15 +32,15 @@ class User {
   final bool anonymous;
 
   User({
-    required this.id,
-    required this.keycloakId,
-    required this.username,
-    required this.firstName,
-    required this.lastName,
-    required this.email,
-    required this.profilePicturePath,
-    required this.authorities,
-    required this.anonymous,
+  required this.id,
+  required this.keycloakId,
+  required this.username,
+  required this.firstName,
+  required this.lastName,
+  required this.email,
+  required this.profilePicturePath,
+  required this.authorities,
+  required this.anonymous,
   });
 
   String get fullName => '$firstName $lastName';

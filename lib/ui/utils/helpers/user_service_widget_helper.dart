@@ -1,17 +1,17 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/http/utils.dart';
 
 mixin UserServiceWidgetHelper {
-  final UserService _userService = injector.get<UserService>();
+  UserService get userService;
 
   static final _cachedUsers = <int, User>{};
   static final _cachedProfilePictures = <int, ImageProvider<Object>>{};
   static final _usersWithoutProfilePictures = <int>{};
 
-  User get currentUser => _userService.currentUser;
+  User get currentUser => userService.currentUser;
 
   @protected
   Future<User> findUser(int userId) async {
@@ -22,7 +22,7 @@ mixin UserServiceWidgetHelper {
 
     return onNotFound<User>(
       fetch: () async {
-        final user = await _userService.find(userId);
+        final user = await userService.find(userId);
         _cachedUsers[userId] = user;
         return user;
       },
@@ -30,51 +30,65 @@ mixin UserServiceWidgetHelper {
     );
   }
 
+  @protected
   Future<List<User>> findUsers(List<int> userIds) async {
-    final users = await _userService.findMany(userIds);
+    final users = await userService.findMany(userIds);
     for (final user in users) {
       _cachedUsers[user.id] = user;
     }
     return users;
   }
 
-  Widget buildProfilePicture(int userId, {double width = 30.0, double height = 30.0}) {
+  Widget buildProfilePicture(int userId, {double radius = 15.0}) {
     if (!_cachedProfilePictures.containsKey(userId)) {
-      _cachedProfilePictures[userId] = _userService.profilePicture(userId: userId);
+      _cachedProfilePictures[userId] = userService.profilePicture(userId: userId);
+      if (kDebugMode) {
+        print('Profile picture for user $userId not found in cache');
+      }
     }
     if (_usersWithoutProfilePictures.contains(userId)) {
-      return _sizedContainer(Icon(Icons.person), width, height);
+      return CircleAvatar(
+        radius: radius,
+        child: Icon(Icons.person, size: radius),
+      );
     }
-    return Image(
-      image: _cachedProfilePictures[userId]!,
-      width: width,
-      height: height,
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) {
-        if (error is NetworkImageLoadException) {
-          if (error.statusCode == 404) {
+
+    return CircleAvatar(
+      radius: radius,
+      backgroundImage: _cachedProfilePictures[userId],
+      child: _cachedProfilePictures[userId] == null ? Icon(Icons.person, size: radius) : null,
+      onBackgroundImageError: (exception, stackTrace) {
+        if (exception is NetworkImageLoadException) {
+          if (exception.statusCode == 404) {
             _usersWithoutProfilePictures.add(userId);
-            return _sizedContainer(const Icon(Icons.person), width, height);
           }
         }
-        return _sizedContainer(const Icon(Icons.error), width, height);
       },
     );
   }
 
-  Widget _sizedContainer(Widget child, double width, double height) {
-    return SizedBox(
-      width: width,
-      height: height,
-      child: Center(child: child),
-    );
+  @protected
+  void clearUserCaches() {
+    _cachedUsers.clear();
+    for (final cachedProfilePicture in _cachedProfilePictures.values) {
+      cachedProfilePicture.evict();
+    }
+    _cachedProfilePictures.clear();
+    _usersWithoutProfilePictures.clear();
   }
 
   @protected
-  void clearCaches() {
-    _cachedUsers.clear();
-    _cachedProfilePictures.clear();
-    _usersWithoutProfilePictures.clear();
+  Future<void> refreshCurrentUser() async {
+    await userService.refreshCurrentUser();
+    _refreshProfilePicture();
+  }
+
+  void _refreshProfilePicture() {
+    if (_cachedProfilePictures.containsKey(currentUser.id)) {
+      final cachedProfilePicture = _cachedProfilePictures[currentUser.id];
+      cachedProfilePicture?.evict();
+      _cachedProfilePictures[currentUser.id] = userService.profilePicture(userId: currentUser.id);
+    }
   }
 
   Widget buildUserName(int userId) {

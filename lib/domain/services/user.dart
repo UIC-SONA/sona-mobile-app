@@ -116,7 +116,7 @@ class ApiUserService extends RestReadOperations<User, int> with UserService {
       method: HttpMethod.post,
       headers: commonHeaders,
       factory: (request) async {
-        request.files.add(await MultipartFile.fromPath('file', filePath));
+        request.files.add(await MultipartFile.fromPath('photo', filePath));
       },
     );
 

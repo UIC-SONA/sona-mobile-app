@@ -8,6 +8,7 @@ import 'package:sona/shared/crud.dart';
 import 'package:sona/shared/errors.dart';
 import 'package:sona/shared/utils/deboucing.dart';
 import 'package:sona/ui/pages/routing/router.dart';
+import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/utils/helpers/chat_service_widget_helper.dart';
 import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';
 import 'package:sona/ui/utils/paging.dart';
@@ -52,7 +53,7 @@ class _ChatScreenState extends FullState<ChatScreen> {
               currentIndex: _currentPage,
               items: const [
                 BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
-                BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Usuarios'),
+                BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Profesionales'),
               ],
               onTap: (index) {
                 _controller.animateToPage(
@@ -81,16 +82,16 @@ class ChatsPageView extends StatefulWidget {
 
 class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAliveClientMixin, ChatMessageListenner, UserServiceWidgetHelper, ChatServiceWidgetHelper {
   //
-  late final _chatService = injector.get<ChatService>();
+  @override
+  final chatService = injector.get<ChatService>();
+  @override
+  final userService = injector.get<UserService>();
+
+  final listenner = ChatRoomDataListenner();
   late final _loading = loadingState(false);
 
   @override
   bool get wantKeepAlive => true;
-
-  final _listenner = ChatRoomDataListenner();
-
-  @override
-  ChatService get chatService => _chatService;
 
   @override
   void initState() {
@@ -108,8 +109,8 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
   Future<void> _loadData() async {
     await _loading.run(() async {
       final rooms = await roomsData();
-      _listenner.clearRooms();
-      _listenner.addRooms(rooms);
+      listenner.clearRooms();
+      listenner.addRooms(rooms);
     });
   }
 
@@ -119,12 +120,12 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
     final message = messageSent.message;
     final roomId = messageSent.roomId;
 
-    if (_listenner.exists(roomId)) {
-      _listenner.updateRoomLastMessage(roomId, message);
+    if (listenner.exists(roomId)) {
+      listenner.updateRoomLastMessage(roomId, message);
       return;
     }
 
-    _listenner.addRoom(await roomData(roomId: roomId));
+    listenner.addRoom(await roomData(roomId: roomId));
   }
 
   @override
@@ -134,8 +135,8 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
     final messageIds = readMessages.messageIds;
     final readBy = readMessages.readBy;
 
-    if (_listenner.exists(roomId)) {
-      final room = _listenner.value.firstWhere((room) => room.id == roomId);
+    if (listenner.exists(roomId)) {
+      final room = listenner.value.firstWhere((room) => room.id == roomId);
       final messages = room.lastMessage;
 
       if (messages != null) {
@@ -144,11 +145,11 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
 
         if (messages.readBy.any((readBy) => readBy.participantId == readBy.participantId)) return;
         messages.readBy.add(readBy);
-        _listenner.updateRoomLastMessage(roomId, messages);
+        listenner.updateRoomLastMessage(roomId, messages);
       }
     }
 
-    _listenner.addRoom(await roomData(roomId: roomId));
+    listenner.addRoom(await roomData(roomId: roomId));
   }
 
   @override
@@ -164,7 +165,7 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
 
   Widget _buildContent(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: _listenner,
+      valueListenable: listenner,
       builder: (context, value, child) {
         if (value.isEmpty) return _buildNoMessages();
         return _buildListRooms(value);
@@ -314,24 +315,27 @@ class UsersPageView extends StatefulWidget {
 
 class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAliveClientMixin, UserServiceWidgetHelper, ChatServiceWidgetHelper {
   //
-  final _userService = injector.get<UserService>();
-  final _pagingController = PagingQueryController<User>(firstPage: 0);
-  final _searchController = TextEditingController();
+  @override
+  final chatService = injector.get<ChatService>();
+  @override
+  final userService = injector.get<UserService>();
+  final pagingController = PagingQueryController<User>(firstPage: 0);
+  final searchController = TextEditingController();
 
   var _authorities = professionalAuthorities;
 
   @override
   void initState() {
     super.initState();
-    _pagingController.configurePageRequestListener(_loadPageProfessionals);
-    _searchController.addListener(Debouncing.build(const Duration(milliseconds: 500), _pagingController.refresh));
+    pagingController.configurePageRequestListener(_loadPageProfessionals);
+    searchController.addListener(Debouncing.build(const Duration(milliseconds: 500), pagingController.refresh));
   }
 
   Future<List<User>> _loadPageProfessionals(int page) async {
-    final result = await _userService.page(PageQuery(
+    final result = await userService.page(PageQuery(
       page: page,
       size: 20,
-      search: _searchController.text,
+      search: searchController.text,
       params: {
         'authorities': _authorities.map((authority) => authority.authority).toList(),
       },
@@ -353,9 +357,9 @@ class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAli
 
   Widget _buildSearchBar() {
     return TextField(
-      controller: _searchController,
+      controller: searchController,
       decoration: InputDecoration(
-        hintText: 'Buscar usuario',
+        hintText: 'Buscar profesional',
         prefixIcon: const Icon(Icons.search),
         suffixIcon: IconButton(
           onPressed: _openFilterSettings,
@@ -367,13 +371,13 @@ class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAli
 
   Widget _buildListUsers() {
     return RefreshIndicator(
-      onRefresh: () => Future.sync(_pagingController.refresh),
+      onRefresh: () => Future.sync(pagingController.refresh),
       child: PagedListView<int, User>(
-        pagingController: _pagingController,
+        pagingController: pagingController,
         builderDelegate: PagedChildBuilderDelegate<User>(
           noItemsFoundIndicatorBuilder: (context) => const Center(child: Text('No se encontraron usuarios')),
           firstPageErrorIndicatorBuilder: (context) {
-            final error = extractError(_pagingController.error);
+            final error = extractError(pagingController.error);
             final title = error.title;
             final message = error.message;
 
@@ -386,7 +390,7 @@ class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAli
                   Text(message),
                   const SizedBox(height: 10),
                   ElevatedButton(
-                    onPressed: _pagingController.refresh,
+                    onPressed: pagingController.refresh,
                     child: const Text('Reintentar'),
                   ),
                 ],
@@ -417,23 +421,16 @@ class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAli
   }
 
   _openChat(User user) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
-    );
-
+    showLoadingDialog(context);
     try {
       final room = await roomData(userId: user.id);
 
       if (!mounted) return;
       Navigator.of(context).pop();
-      AutoRouter.of(context).push(
-        ChatRoomRoute(
-          profile: currentUser,
-          roomData: room,
-        ),
-      );
+      AutoRouter.of(context).push(ChatRoomRoute(
+        profile: currentUser,
+        roomData: room,
+      ));
     } catch (error) {
       if (!mounted) return;
       Navigator.of(context).pop();
@@ -449,7 +446,7 @@ class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAli
       context: context,
       onSelected: (authorities) {
         _authorities = authorities;
-        _pagingController.refresh();
+        pagingController.refresh();
       },
     );
   }
