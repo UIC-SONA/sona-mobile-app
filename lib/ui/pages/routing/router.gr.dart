@@ -52,14 +52,12 @@ class ChatBotRoute extends PageRouteInfo<void> {
 class ChatRoomRoute extends PageRouteInfo<ChatRoomRouteArgs> {
   ChatRoomRoute({
     Key? key,
-    required User profile,
     required ChatRoomData roomData,
     List<PageRouteInfo>? children,
   }) : super(
           ChatRoomRoute.name,
           args: ChatRoomRouteArgs(
             key: key,
-            profile: profile,
             roomData: roomData,
           ),
           initialChildren: children,
@@ -73,7 +71,6 @@ class ChatRoomRoute extends PageRouteInfo<ChatRoomRouteArgs> {
       final args = data.argsAs<ChatRoomRouteArgs>();
       return ChatRoomScreen(
         key: args.key,
-        profile: args.profile,
         roomData: args.roomData,
       );
     },
@@ -83,19 +80,17 @@ class ChatRoomRoute extends PageRouteInfo<ChatRoomRouteArgs> {
 class ChatRoomRouteArgs {
   const ChatRoomRouteArgs({
     this.key,
-    required this.profile,
     required this.roomData,
   });
 
   final Key? key;
 
-  final User profile;
 
   final ChatRoomData roomData;
 
   @override
   String toString() {
-    return 'ChatRoomRouteArgs{key: $key, profile: $profile, roomData: $roomData}';
+    return 'ChatRoomRouteArgs{key: $key, roomData: $roomData}';
   }
 }
 

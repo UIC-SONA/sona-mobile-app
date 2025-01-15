@@ -7,6 +7,7 @@ import 'package:sona/domain/services/services.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/theme/backgrounds.dart';
 import 'package:sona/ui/utils/dialogs.dart';
+import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
 
 class SonaAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -74,21 +75,22 @@ class SonaDrawer extends StatefulWidget {
   State<SonaDrawer> createState() => _SonaDrawerState();
 }
 
-class _SonaDrawerState extends FullState<SonaDrawer> {
-  final _userService = injector.get<UserService>();
-  final _authProvider = injector.get<AuthProvider>();
-  late final _anonymizeState = fetchState(([positionalArguments, namedArguments]) => _anonymize(positionalArguments![0]));
+class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelper {
+  @override
+  final userService = injector.get<UserService>();
+  final authProvider = injector.get<AuthProvider>();
+  late final anonymizeState = fetchState(([positionalArguments, namedArguments]) => _anonymize(positionalArguments![0]));
 
   @override
   void initState() {
     super.initState();
-    _userService.refreshCurrentUser().whenComplete(refresh);
+    userService.refreshCurrentUser().whenComplete(refresh);
   }
 
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
-    final user = _userService.currentUser;
+    final user = userService.currentUser;
 
     return Drawer(
       child: ListView(
@@ -100,11 +102,7 @@ class _SonaDrawerState extends FullState<SonaDrawer> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircleAvatar(
-                    backgroundColor: Colors.white,
-                    radius: 50,
-                    child: Icon(Icons.person_3_rounded, size: 50, color: primaryColor),
-                  ),
+                  buildUserAvatar(user, radius: 50),
                   const SizedBox(height: 10),
                   Column(
                     children: [
@@ -123,10 +121,10 @@ class _SonaDrawerState extends FullState<SonaDrawer> {
             ),
           ),
           ListTile(
-            title: _anonymizeState.isLoading ? const Text('Cambiando...') : const Text('Modo anónimo'),
+            title: anonymizeState.isLoading ? const Text('Cambiando...') : const Text('Modo anónimo'),
             leading: Switch(
               value: user.anonymous,
-              onChanged: _anonymizeState.isLoading ? null : (value) => _anonymizeState.fetch([value]),
+              onChanged: anonymizeState.isLoading ? null : (value) => anonymizeState.fetch([value]),
             ),
           ),
           ListTile(
@@ -174,14 +172,14 @@ class _SonaDrawerState extends FullState<SonaDrawer> {
 
     if (isConfirmed != null && isConfirmed) {
       showLoadingDialog(context);
-      await _authProvider.logout();
+      await authProvider.logout();
       if (mounted) AutoRouter.of(context).replaceAll([const LoginRoute()]);
     }
   }
 
   Future<void> _anonymize(bool value) async {
-    await _userService.anonymize(value);
-    await _userService.refreshCurrentUser();
+    await userService.anonymize(value);
+    await userService.refreshCurrentUser();
   }
 }
 

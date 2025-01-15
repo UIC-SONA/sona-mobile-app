@@ -109,8 +109,8 @@ class _ProfileScreenState extends State<ProfileScreen> with UserServiceWidgetHel
                 const SizedBox(height: 24),
                 Stack(
                   children: [
-                    buildProfilePicture(
-                      user.id,
+                    buildUserAvatar(
+                      user,
                       radius: radius,
                     ),
                     Positioned(

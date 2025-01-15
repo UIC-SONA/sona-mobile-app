@@ -8,8 +8,6 @@ mixin UserServiceWidgetHelper {
   UserService get userService;
 
   static final _cachedUsers = <int, User>{};
-  static final _cachedProfilePictures = <int, ImageProvider<Object>>{};
-  static final _usersWithoutProfilePictures = <int>{};
 
   User get currentUser => userService.currentUser;
 
@@ -39,56 +37,49 @@ mixin UserServiceWidgetHelper {
     return users;
   }
 
-  Widget buildProfilePicture(int userId, {double radius = 15.0}) {
-    if (!_cachedProfilePictures.containsKey(userId)) {
-      _cachedProfilePictures[userId] = userService.profilePicture(userId: userId);
-      if (kDebugMode) {
-        print('Profile picture for user $userId not found in cache');
-      }
-    }
-    if (_usersWithoutProfilePictures.contains(userId)) {
+  Widget buildFutureUserPicture(int userId, {double radius = 20.0}) {
+    return FutureBuilder(
+      future: findUser(userId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircleAvatar(
+            radius: radius,
+            child: Icon(Icons.person),
+          );
+        }
+        if (snapshot.hasError) {
+          return CircleAvatar(
+            radius: radius,
+            child: Icon(Icons.error),
+          );
+        }
+        final user = snapshot.data as User;
+        return buildUserAvatar(user, radius: radius);
+      },
+    );
+  }
+
+  Widget buildUserAvatar(User user, {double radius = 20.0}) {
+    if (user.hasProfilePicture) {
       return CircleAvatar(
         radius: radius,
-        child: Icon(Icons.person, size: radius),
+        backgroundImage: userService.profilePicture(userId: user.id),
       );
     }
-
     return CircleAvatar(
       radius: radius,
-      backgroundImage: _cachedProfilePictures[userId],
-      child: _cachedProfilePictures[userId] == null ? Icon(Icons.person, size: radius) : null,
-      onBackgroundImageError: (exception, stackTrace) {
-        if (exception is NetworkImageLoadException) {
-          if (exception.statusCode == 404) {
-            _usersWithoutProfilePictures.add(userId);
-          }
-        }
-      },
+      child: Icon(Icons.person),
     );
   }
 
   @protected
   void clearUserCaches() {
     _cachedUsers.clear();
-    for (final cachedProfilePicture in _cachedProfilePictures.values) {
-      cachedProfilePicture.evict();
-    }
-    _cachedProfilePictures.clear();
-    _usersWithoutProfilePictures.clear();
   }
 
   @protected
   Future<void> refreshCurrentUser() async {
     await userService.refreshCurrentUser();
-    _refreshProfilePicture();
-  }
-
-  void _refreshProfilePicture() {
-    if (_cachedProfilePictures.containsKey(currentUser.id)) {
-      final cachedProfilePicture = _cachedProfilePictures[currentUser.id];
-      cachedProfilePicture?.evict();
-      _cachedProfilePictures[currentUser.id] = userService.profilePicture(userId: currentUser.id);
-    }
   }
 
   Widget buildUserName(int userId) {

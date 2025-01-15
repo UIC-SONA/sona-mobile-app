@@ -144,7 +144,7 @@ class _ForumPostCommentsScreenState extends FullState<ForumPostCommentsScreen> w
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end, // Alinea los elementos al final
                 children: [
-                  buildProfilePicture(user.id),
+                  buildUserAvatar(user),
                   const SizedBox(width: 12),
                   // Expanded para que el TextField tome el espacio disponible
                   Expanded(
@@ -182,7 +182,7 @@ class _ForumPostCommentsScreenState extends FullState<ForumPostCommentsScreen> w
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CircleAvatar(
-              child: comment.author != null ? buildProfilePicture(comment.author!) : const Icon(Icons.person),
+              child: comment.author != null ? buildFutureUserPicture(comment.author!) : const Icon(Icons.person),
             ),
             const SizedBox(width: 12),
             Expanded(

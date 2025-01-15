@@ -149,11 +149,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
   Widget _buildAuthorAvatar() {
     final post = notifier.value;
     return CircleAvatar(
-      child: post.author != null
-          ? buildProfilePicture(
-              post.author!,
-            )
-          : const Icon(Icons.person),
+      child: post.author != null ? buildFutureUserPicture(post.author!) : const Icon(Icons.person),
     );
   }
 

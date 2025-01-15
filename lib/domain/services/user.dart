@@ -28,6 +28,8 @@ mixin UserService implements ReadOperations<User, int> {
 
   ImageProvider<Object> profilePicture({int? userId});
 
+  String profilePictureUrl(int userId);
+
   Future<Message> uploadProfilePicture(String filePath);
 
   Future<Message> deleteProfilePicture();
@@ -47,9 +49,9 @@ mixin UserService implements ReadOperations<User, int> {
     username: '',
     email: '',
     keycloakId: '',
-    profilePicturePath: '',
     authorities: [],
     anonymous: false,
+    hasProfilePicture: false,
   );
 }
 
@@ -106,6 +108,11 @@ class ApiUserService extends RestReadOperations<User, int> with UserService {
       headers: commonHeaders,
       client: client,
     );
+  }
+
+  @override
+  String profilePictureUrl(int userId) {
+    return uri.replace(path: '$path/$userId/profile-picture').toString();
   }
 
   @override

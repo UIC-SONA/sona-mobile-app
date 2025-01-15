@@ -27,20 +27,20 @@ class User {
   final String firstName;
   final String lastName;
   final String email;
-  final String? profilePicturePath;
   final List<Authority> authorities;
   final bool anonymous;
+  final bool hasProfilePicture;
 
   User({
-  required this.id,
-  required this.keycloakId,
-  required this.username,
-  required this.firstName,
-  required this.lastName,
-  required this.email,
-  required this.profilePicturePath,
-  required this.authorities,
-  required this.anonymous,
+    required this.id,
+    required this.keycloakId,
+    required this.username,
+    required this.firstName,
+    required this.lastName,
+    required this.email,
+    required this.authorities,
+    required this.anonymous,
+    required this.hasProfilePicture,
   });
 
   String get fullName => '$firstName $lastName';
@@ -49,13 +49,13 @@ class User {
     return User(
       id: json['id'],
       keycloakId: json['keycloakId'],
-      profilePicturePath: json['profilePicturePath'],
       username: json['username'],
       firstName: json['firstName'],
       lastName: json['lastName'],
       email: json['email'],
       authorities: List.from(json['authorities']).map((e) => Authority.of(e)).toList(),
       anonymous: json['anonymous'],
+      hasProfilePicture: json['hasProfilePicture'],
     );
   }
 
@@ -66,15 +66,15 @@ class User {
       'username': username,
       'firstName': firstName,
       'lastName': lastName,
-      'profilePicturePath': profilePicturePath,
       'authorities': authorities,
       'anonymous': anonymous,
+      'hasProfilePicture': hasProfilePicture,
     };
   }
 
   @override
   String toString() {
-    return 'User{id: $id, keycloakId: $keycloakId, username: $username, firstName: $firstName, lastName: $lastName, email: $email, profilePicturePath: $profilePicturePath, authorities: $authorities, anonymous: $anonymous}';
+    return 'User{id: $id, keycloakId: $keycloakId, username: $username, firstName: $firstName, lastName: $lastName, email: $email, authorities: $authorities, anonymous: $anonymous}';
   }
 
   @override

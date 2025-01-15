@@ -188,12 +188,7 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
                   padding: WidgetStateProperty.all(const EdgeInsets.all(0)),
                 ),
                 onPressed: () {
-                  AutoRouter.of(context).push(
-                    ChatRoomRoute(
-                      profile: currentUser,
-                      roomData: roomData,
-                    ),
-                  );
+                  AutoRouter.of(context).push(ChatRoomRoute(roomData: roomData));
                 },
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -289,7 +284,7 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
       return const Icon(Icons.group);
     }
     final participant = state.participants.firstWhere((user) => user.id != currentUser.id);
-    return _buildAvatar(participant);
+    return buildUserAvatar(participant);
   }
 
   Widget _buildTrailing(ChatRoomData roomData) {
@@ -410,7 +405,7 @@ class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAli
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text('@${user.username}'),
-                leading: _buildAvatar(user),
+                leading: buildUserAvatar(user),
                 trailing: Icon(Icons.chat, color: Theme.of(context).primaryColor),
               ),
             );
@@ -428,7 +423,6 @@ class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAli
       if (!mounted) return;
       Navigator.of(context).pop();
       AutoRouter.of(context).push(ChatRoomRoute(
-        profile: currentUser,
         roomData: room,
       ));
     } catch (error) {
@@ -453,11 +447,4 @@ class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAli
 
   @override
   bool get wantKeepAlive => true;
-}
-
-Widget _buildAvatar(User user) {
-  return CircleAvatar(
-    backgroundImage: user.profilePicturePath != null ? NetworkImage(user.profilePicturePath!) : null,
-    child: Text(user.firstName[0]),
-  );
 }

@@ -62,6 +62,7 @@ class SonaChatView extends StatelessWidget {
       padding: padding,
       senderNameTextStyle: chatBubbleSenderNameTextStyle,
       receiptsWidgetConfig: receiptsWidgetConfig,
+
     );
 
     final outgoingChatBubbleConfig = ChatBubble(
@@ -83,7 +84,7 @@ class SonaChatView extends StatelessWidget {
         enableReactionPopup: false,
         enableDoubleTapToLike: false,
         enableOtherUserProfileAvatar: true,
-        enableCurrentUserProfileAvatar: true,
+        enableCurrentUserProfileAvatar: false,
       ),
       onSendTap: sendMessage,
       chatBackgroundConfig: const ChatBackgroundConfiguration(

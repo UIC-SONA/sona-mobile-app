@@ -119,7 +119,7 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> with UserSe
         return ListTile(
           title: Text(user.fullName),
           subtitle: Text("@${user.username}"),
-          leading: buildProfilePicture(user.id),
+          leading: buildUserAvatar(user),
         );
       },
       inputDecoration: InputDecoration(
@@ -422,7 +422,7 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> with UserSe
             children: [
               Row(
                 children: [
-                  buildProfilePicture(professional.id),
+                  buildUserAvatar(professional),
                   const SizedBox(width: 20),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

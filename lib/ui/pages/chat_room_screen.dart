@@ -14,12 +14,10 @@ import 'package:uuid/uuid.dart';
 
 @RoutePage()
 class ChatRoomScreen extends StatefulWidget {
-  final User profile;
   final ChatRoomData roomData;
 
   const ChatRoomScreen({
     super.key,
-    required this.profile,
     required this.roomData,
   });
 
@@ -31,6 +29,7 @@ final _log = Logger();
 
 class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageListenner {
   //
+  final userService = injector.get<UserService>();
   @override
   final chatService = injector.get<ChatService>();
 
@@ -50,7 +49,7 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
 
   ChatRoomData get roomData => widget.roomData;
 
-  User get profile => widget.profile;
+  User get profile => userService.currentUser;
 
   @override
   void initState() {
@@ -239,7 +238,7 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
     return ChatUser(
       id: user.id.toString(),
       name: user.firstName,
-      profilePhoto: user.profilePicturePath,
+      profilePhoto: user.hasProfilePicture ? userService.profilePictureUrl(user.id) : null,
     );
   }
 

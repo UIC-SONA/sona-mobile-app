@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/services/services.dart';
+import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';
 import 'package:sona/ui/widgets/menstrual_cycle/menstrual_cycle.dart';
 import 'package:sona/ui/widgets/menstrual_cycle/menstrual_cycle_calender_view.dart';
 
@@ -17,26 +18,26 @@ class MenstrualCalendarScreen extends StatefulWidget {
   State<MenstrualCalendarScreen> createState() => _MenstrualCalendarScreenState();
 }
 
-class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
-  final _menstrualCycleService = injector.get<MenstrualCycleService>();
+class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> with UserServiceWidgetHelper {
+  @override
+  final userService = injector.get<UserService>();
+  final menstrualCycleService = injector.get<MenstrualCycleService>();
+  final calendarController = BasicPeriodCalculatorController();
 
-  final _calendarController = BasicPeriodCalculatorController();
-
-  var cycleLength = 28;
-  var periodLength = 5;
-
+  var _cycleLength = 28;
+  var _periodLength = 5;
   var _selectedDate = DateTime.now();
   CycleDayType? _selectedDateDayType;
 
   updateMenstrualData() async {
-    await _menstrualCycleService.saveCycleDetails(
-      periodDuration: periodLength,
-      cycleLength: cycleLength,
+    await menstrualCycleService.saveCycleDetails(
+      periodDuration: _periodLength,
+      cycleLength: _cycleLength,
     );
 
-    _calendarController.changeData(
-      cycleLength: cycleLength,
-      periodLength: periodLength,
+    calendarController.changeData(
+      cycleLength: _cycleLength,
+      periodLength: _periodLength,
     );
   }
 
@@ -47,14 +48,14 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
   }
 
   Future<void> _loadData() async {
-    final cycleData = await _menstrualCycleService.getCycleData();
+    final cycleData = await menstrualCycleService.getCycleData();
     setState(() {
-      cycleLength = cycleData.cycleLength;
-      periodLength = cycleData.periodDuration;
+      _cycleLength = cycleData.cycleLength;
+      _periodLength = cycleData.periodDuration;
     });
-    _calendarController.changeData(
-      cycleLength: cycleLength,
-      periodLength: periodLength,
+    calendarController.changeData(
+      cycleLength: _cycleLength,
+      periodLength: _periodLength,
       pastPeriodDays: cycleData.periodDates,
     );
   }
@@ -62,6 +63,10 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
+    final profile = userService.currentUser;
+    final nextPeriod = calendarController.futurePeriodDays.firstOrNull;
+    final daysToNextPeriod = nextPeriod?.difference(DateTime.now()).inDays;
+    final locale = Localizations.localeOf(context).languageCode;
 
     return SonaScaffold(
       actionButton: SonaActionButton.options(),
@@ -72,25 +77,57 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    buildUserAvatar(profile, radius: 35),
+                    const SizedBox(width: 10),
+                    Text(
+                      profile.firstName,
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (nextPeriod != null) ...[
+                      Text(
+                        "Faltan $daysToNextPeriod días",
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                      Text("Próximo periodo: ${DateFormat('d MMM', locale).format(nextPeriod)}"),
+                    ]
+                  ],
+                ),
+              ],
+            ),
+          ),
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Center(
-                child: MenstrualCycleCalendarView(
-                  controller: _calendarController,
-                  themeColor: primaryColor,
-                  editPeriodText: "EDITAR",
-                  daySelectedColor: Colors.greenAccent,
-                  hideInfoView: false,
-                  onDataChanged: () {
-                    _menstrualCycleService.savePeriodDates(_calendarController.pastPeriodDays);
-                  },
-                  onDateSelected: (date, dayType) {
-                    setState(() {
-                      _selectedDate = date;
-                      _selectedDateDayType = dayType;
-                    });
-                  },
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(
+                  child: MenstrualCycleCalendarView(
+                    controller: calendarController,
+                    themeColor: primaryColor,
+                    editPeriodText: "EDITAR",
+                    daySelectedColor: Colors.greenAccent,
+                    hideInfoView: false,
+                    onDataChanged: () {
+                      menstrualCycleService.savePeriodDates(calendarController.pastPeriodDays);
+                    },
+                    onDateSelected: (date, dayType) {
+                      setState(() {
+                        _selectedDate = date;
+                        _selectedDateDayType = dayType;
+                      });
+                    },
+                  ),
                 ),
               ),
             ),
@@ -164,7 +201,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
                             color: Colors.white, // Background color
                           ),
                           child: DropdownButton<int>(
-                            value: cycleLength,
+                            value: _cycleLength,
                             items: List<int>.generate(31, (index) => (15 + index)).map((value) {
                               return DropdownMenuItem<int>(
                                 value: value,
@@ -174,7 +211,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
                             onChanged: (newValue) async {
                               if (newValue == null) return;
                               setState(() {
-                                cycleLength = newValue;
+                                _cycleLength = newValue;
                               });
                               updateMenstrualData();
                             },
@@ -203,7 +240,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
                             color: Colors.white, // Background color
                           ),
                           child: DropdownButton<int>(
-                            value: periodLength,
+                            value: _periodLength,
                             items: List<int>.generate(8, (index) => (2 + index)).map((value) {
                               return DropdownMenuItem<int>(
                                 value: value,
@@ -213,7 +250,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> {
                             onChanged: (newValue) async {
                               if (newValue == null) return;
                               setState(() {
-                                periodLength = newValue;
+                                _periodLength = newValue;
                               });
                               updateMenstrualData();
                             },

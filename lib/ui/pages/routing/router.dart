@@ -14,7 +14,7 @@ import 'package:sona/ui/pages/navigation/splash_screen.dart';
 import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/ui/pages/chat_screen.dart';
 import 'package:sona/ui/pages/chat_bot_screen.dart';
-import 'package:sona/ui/pages/menstrual_calendar_screens.dart';
+import 'package:sona/ui/pages/menstrual_calendar_screen.dart';
 import 'package:sona/ui/pages/profile_screen.dart';
 import 'package:sona/ui/pages/tips_screen.dart';
 import 'package:sona/ui/pages/forum_screen.dart';
