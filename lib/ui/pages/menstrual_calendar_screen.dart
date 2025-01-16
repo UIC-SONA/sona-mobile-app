@@ -39,6 +39,8 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
       cycleLength: _cycleLength,
       periodLength: _periodLength,
     );
+
+    if (mounted) setState(() {});
   }
 
   @override
@@ -58,6 +60,8 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
       periodLength: _periodLength,
       pastPeriodDays: cycleData.periodDates,
     );
+
+    if (mounted) setState(() {});
   }
 
   @override
@@ -95,15 +99,88 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    if (nextPeriod != null) ...[
+                    Builder(
+                      builder: (context) {
+                        if (calendarController.pastPeriodDays.isEmpty) {
+                          return const Text(
+                            "Sin datos registrados",
+                            style: const TextStyle(
+                              fontSize: 20,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }
+
+                        final now = DateTime.now();
+                        int? currentPeriodDay;
+
+                        for (var date in calendarController.pastPeriodDays) {
+                          final difference = now.difference(date).inDays;
+                          if (difference >= 0 && difference < _periodLength) {
+                            currentPeriodDay = difference;
+                            break;
+                          }
+                        }
+
+                        if (currentPeriodDay != null) {
+                          return Text(
+                            "Día ${currentPeriodDay + 1} del periodo",
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }
+
+                        if (nextPeriod == null) {
+                          return const Text(
+                            "Sin predicción disponible",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }
+
+                        final difference = nextPeriod.difference(now).inDays;
+                        if (difference < 0) {
+                          final lastPeriod = calendarController.pastPeriodDays.reduce((a, b) => a.isAfter(b) ? a : b);
+                          final daysSinceLastPeriod = now.difference(lastPeriod).inDays;
+                          if (daysSinceLastPeriod > _cycleLength) {
+                            return Text(
+                              "${-difference} días de retraso",
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            );
+                          }
+                        }
+
+                        return Text(
+                          "Faltan $difference días",
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        );
+                      },
+                    ),
+                    if (nextPeriod != null)
                       Text(
-                        "Faltan $daysToNextPeriod días",
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        "Próximo periodo: ${DateFormat('d MMM', locale).format(nextPeriod)}",
+                        style: const TextStyle(
+                          fontSize: 14,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      Text("Próximo periodo: ${DateFormat('d MMM', locale).format(nextPeriod)}"),
-                    ]
                   ],
                 ),
+
               ],
             ),
           ),
@@ -118,8 +195,9 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
                     editPeriodText: "EDITAR",
                     daySelectedColor: Colors.greenAccent,
                     hideInfoView: false,
-                    onDataChanged: () {
-                      menstrualCycleService.savePeriodDates(calendarController.pastPeriodDays);
+                    onDataChanged: () async {
+                      await menstrualCycleService.savePeriodDates(calendarController.pastPeriodDays);
+                      if (mounted) setState(() {});
                     },
                     onDateSelected: (date, dayType) {
                       setState(() {
