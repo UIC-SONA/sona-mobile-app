@@ -96,20 +96,22 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
                     ),
                   ],
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    _buildProfileCalendar(nextPeriod),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      _buildProfileCalendar(nextPeriod),
 
-                    if (nextPeriod != null)
-                      Text(
-                        "Próximo periodo: ${DateFormat('d MMM', locale).format(nextPeriod)}",
-                        style: const TextStyle(
-                          fontSize: 14,
-                          overflow: TextOverflow.ellipsis,
+                      if (nextPeriod != null)
+                        Text(
+                          "Próximo periodo: ${DateFormat('d MMM', locale).format(nextPeriod)}",
+                          style: const TextStyle(
+                            fontSize: 14,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
 
               ],
@@ -117,26 +119,23 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
           ),
           Expanded(
             child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Center(
-                  child: MenstrualCycleCalendarView(
-                    controller: calendarController,
-                    themeColor: primaryColor,
-                    editPeriodText: "EDITAR",
-                    daySelectedColor: Colors.greenAccent,
-                    hideInfoView: false,
-                    onDataChanged: () async {
-                      await menstrualCycleService.savePeriodDates(calendarController.pastPeriodDays);
-                      if (mounted) setState(() {});
-                    },
-                    onDateSelected: (date, dayType) {
-                      setState(() {
-                        _selectedDate = date;
-                        _selectedDateDayType = dayType;
-                      });
-                    },
-                  ),
+              child: Center(
+                child: MenstrualCycleCalendarView(
+                  controller: calendarController,
+                  themeColor: primaryColor,
+                  editPeriodText: "EDITAR",
+                  daySelectedColor: Colors.greenAccent,
+                  hideInfoView: false,
+                  onDataChanged: () async {
+                    await menstrualCycleService.savePeriodDates(calendarController.pastPeriodDays);
+                    if (mounted) setState(() {});
+                  },
+                  onDateSelected: (date, dayType) {
+                    setState(() {
+                      _selectedDate = date;
+                      _selectedDateDayType = dayType;
+                    });
+                  },
                 ),
               ),
             ),
@@ -156,9 +155,9 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
               "Sin datos registrados",
               style: const TextStyle(
                 fontSize: 20,
-                //overflow: TextOverflow.,
+                fontWeight: FontWeight.bold,
               ),
-              //textAlign: TextAlign.start,
+              textAlign: TextAlign.end,
               //softWrap: true,
             ),
           ]
