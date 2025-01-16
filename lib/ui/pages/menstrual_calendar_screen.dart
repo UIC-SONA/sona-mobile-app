@@ -99,77 +99,8 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Builder(
-                      builder: (context) {
-                        if (calendarController.pastPeriodDays.isEmpty) {
-                          return const Text(
-                            "Sin datos registrados",
-                            style: const TextStyle(
-                              fontSize: 20,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          );
-                        }
+                    _buildProfileCalendar(nextPeriod),
 
-                        final now = DateTime.now();
-                        int? currentPeriodDay;
-
-                        for (var date in calendarController.pastPeriodDays) {
-                          final difference = now.difference(date).inDays;
-                          if (difference >= 0 && difference < _periodLength) {
-                            currentPeriodDay = difference;
-                            break;
-                          }
-                        }
-
-                        if (currentPeriodDay != null) {
-                          return Text(
-                            "Día ${currentPeriodDay + 1} del periodo",
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          );
-                        }
-
-                        if (nextPeriod == null) {
-                          return const Text(
-                            "Sin predicción disponible",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          );
-                        }
-
-                        final difference = nextPeriod.difference(now).inDays;
-                        if (difference < 0) {
-                          final lastPeriod = calendarController.pastPeriodDays.reduce((a, b) => a.isAfter(b) ? a : b);
-                          final daysSinceLastPeriod = now.difference(lastPeriod).inDays;
-                          if (daysSinceLastPeriod > _cycleLength) {
-                            return Text(
-                              "${-difference} días de retraso",
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          }
-                        }
-
-                        return Text(
-                          "Faltan $difference días",
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        );
-                      },
-                    ),
                     if (nextPeriod != null)
                       Text(
                         "Próximo periodo: ${DateFormat('d MMM', locale).format(nextPeriod)}",
@@ -216,6 +147,82 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
     );
   }
 
+  Widget _buildProfileCalendar(DateTime? nextPeriod){
+
+      if (calendarController.pastPeriodDays.isEmpty) {
+        return Wrap(
+          children: [
+            const Text(
+              "Sin datos registrados",
+              style: const TextStyle(
+                fontSize: 20,
+                //overflow: TextOverflow.,
+              ),
+              //textAlign: TextAlign.start,
+              //softWrap: true,
+            ),
+          ]
+        );
+      }
+
+      final now = DateTime.now();
+      int? currentPeriodDay;
+
+      for (var date in calendarController.pastPeriodDays) {
+        final difference = now.difference(date).inDays;
+        if (difference >= 0 && difference < _periodLength) {
+          currentPeriodDay = difference;
+          break;
+        }
+      }
+
+      if (currentPeriodDay != null) {
+        return Text(
+          "Día ${currentPeriodDay + 1} del periodo",
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            overflow: TextOverflow.ellipsis,
+          ),
+        );
+      }
+
+      if (nextPeriod == null) {
+        return const Text(
+          "Sin predicción disponible",
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            overflow: TextOverflow.ellipsis,
+          ),
+        );
+      }
+
+      final difference = nextPeriod.difference(now).inDays;
+      if (difference < 0) {
+        final lastPeriod = calendarController.pastPeriodDays.reduce((a, b) => a.isAfter(b) ? a : b);
+        final daysSinceLastPeriod = now.difference(lastPeriod).inDays;
+        if (daysSinceLastPeriod > _cycleLength) {
+          return Text(
+            "${-difference} días de retraso",
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              overflow: TextOverflow.ellipsis,
+            ),
+          );
+        }
+      }
+
+      return Text(
+        "Faltan $difference días",
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          overflow: TextOverflow.ellipsis,
+        ),
+      );
+  }
   Widget _buildDetailsSection() {
     final formattedDate = DateFormat('MMMM d, y', Localizations.localeOf(context).languageCode).format(_selectedDate);
     final capitalizedDate = formattedDate[0].toUpperCase() + formattedDate.substring(1);
