@@ -54,10 +54,10 @@ flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
   remove_alpha_ios: true
-  image_path: "assets/images/only_logo.png"
+  image_path: "assets/images/sona_logo_install.png"
   min_sdk_android: 24 # android min sdk min:16, default 21
-  adaptive_icon_background: "#ffffff" # You can use a color or image for the background
-  adaptive_icon_foreground: "assets/images/only_logo.png" # For adaptive icons on Android
+  adaptive_icon_background: "#003F37" # You can use a color or image for the background
+  adaptive_icon_foreground: "assets/images/sona_logo_install.png" # For adaptive icons on Android
 
 flutter:
   assets:
