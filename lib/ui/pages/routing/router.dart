@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'package:sona/domain/models/models.dart';
 import 'package:sona/ui/pages/chat_room_screen.dart';
 import 'package:sona/ui/pages/my_appointments_screen.dart';
 import 'package:sona/ui/pages/navigation/appointment_menu_screen.dart';
@@ -10,7 +9,6 @@ import 'package:sona/ui/pages/navigation/login_screen.dart';
 import 'package:sona/ui/pages/navigation/menu_options_screen.dart';
 import 'package:sona/ui/pages/navigation/sign_up_screen.dart';
 import 'package:sona/ui/pages/navigation/services_options_screen.dart';
-import 'package:sona/ui/pages/navigation/splash_screen.dart';
 import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/ui/pages/chat_screen.dart';
 import 'package:sona/ui/pages/chat_bot_screen.dart';
@@ -40,9 +38,8 @@ class AppRouter extends RootStackRouter {
 
   @override
   List<AutoRoute> get routes => [
-        AutoRoute(path: "/", page: SplashRoute.page, initial: true),
+        AutoRoute(path: "/", page: HomeRoute.page),
         AutoRoute(path: "/login", page: LoginRoute.page),
-        AutoRoute(path: "/home", page: HomeRoute.page),
         AutoRoute(path: "/profile", page: ProfileRoute.page),
         AutoRoute(path: "/register", page: SignUpRoute.page),
         AutoRoute(path: "/menstrual", page: MenstrualCalendarRoute.page),
@@ -98,11 +95,6 @@ class AuthGuard extends AutoRouteGuard {
     }
 
     final isAuthenticated = _cachedIsAuthenticated!;
-
-    if (currentRouteName == SplashRoute.name) {
-      resolver.next(true);
-      return;
-    }
 
     if (isAuthenticated) {
       if (unauthenticatedRoutes.contains(currentRouteName)) {

@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
-import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';

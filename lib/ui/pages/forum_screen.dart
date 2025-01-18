@@ -1,6 +1,5 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart' hide Page;
-import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/crud.dart';

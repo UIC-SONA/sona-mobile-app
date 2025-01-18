@@ -1,0 +1,21 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "elated-cathode-438218-g7",
+          "appId": "1:52775469826:android:a51e5f4ea2dcd073f9381b",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "elated-cathode-438218-g7",
+          "configurations": {
+            "android": "1:52775469826:android:a51e5f4ea2dcd073f9381b"
+          }
+        }
+      }
+    }
+  }
+}

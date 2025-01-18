@@ -32,6 +32,8 @@ Future<void> setupDependencies() async {
   final authProvider = injector.get<AuthProvider>();
 
 //Services
+  injector.registerSingleton<FirebaseService>(() => FirebaseService());
+
   injector.registerSingleton<UserService>(() => ApiUserService(authProvider: authProvider, localeProvider: localeProvider));
   final userService = injector.get<UserService>();
 
@@ -48,7 +50,10 @@ Future<void> setupDependencies() async {
   injector.registerSingleton<AppointmentService>(() => ApiAppointmentService(authProvider: authProvider, localeProvider: localeProvider));
   injector.registerSingleton<ProfessionalScheduleService>(() => ApiProfessionalScheduleService(authProvider: authProvider, localeProvider: localeProvider));
 
-//Router
+  //Router
   injector.registerSingleton<AuthGuard>(() => AuthGuard(authProvider: authProvider));
   injector.registerSingleton<AppRouter>(() => AppRouter(guards: [injector.get<AuthGuard>()]));
+
+  final firebaseService = injector.get<FirebaseService>();
+  await firebaseService.initNotifications();
 }

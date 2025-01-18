@@ -7,3 +7,4 @@ export 'professional_schedule.dart';
 export 'menstrual_cycle.dart';
 export 'tip.dart';
 export 'user.dart';
+export 'firebase_service.dart';
