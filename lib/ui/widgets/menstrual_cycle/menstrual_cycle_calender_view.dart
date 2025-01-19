@@ -70,12 +70,12 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
     selectedWeekDays = dtu.daysInRange(_firstDayOfWeek(selectedDateTime), _lastDayOfWeek(selectedDateTime)).toList();
   }
 
-  Widget calendarGridView(PerdiodCalculatorResult result) {
+  Widget calendarGridView(PeriodCalculatorResult result) {
     return SimpleGestureDetector(
       onSwipeUp: _onSwipeUp,
       onSwipeDown: _onSwipeDown,
-      onSwipeLeft: _onSwipeLeft,
-      onSwipeRight: _onSwipeRight,
+      onSwipeLeft: nextMonth,
+      onSwipeRight: previousMonth,
       swipeConfig: const SimpleSwipeConfig(
         verticalThreshold: 10.0,
         horizontalThreshold: 40.0,
@@ -93,7 +93,7 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
     );
   }
 
-  List<Widget> calendarBuilder(PerdiodCalculatorResult result) {
+  List<Widget> calendarBuilder(PeriodCalculatorResult result) {
     List<Widget> calendarGridItems = [];
     List<DateTime>? calendarDays = selectedMonthsDays;
 
@@ -169,46 +169,44 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
   }
 
   Widget bottomView() {
-    if (isExpandable) {
-      return GestureDetector(
-        onTap: toggleExpanded,
-        child: Container(
-          height: 40,
-          padding: const EdgeInsets.all(0),
-          decoration: BoxDecoration(
-            color: widget.backgroundColor,
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(12),
-              bottomRight: Radius.circular(12),
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              if (!widget.hideLogPeriodButton)
-                Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: OutlinedButton(
-                    onPressed: _onTapEditPeriod,
-                    child: Text(
-                      widget.editPeriodText,
-                      style: TextStyle(color: widget.themeColor, fontSize: 11),
-                    ),
-                  ),
-                ),
-              IconButton(
-                onPressed: toggleExpanded,
-                iconSize: 25.0,
-                padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-                icon: Icon(isExpanded ? Icons.arrow_drop_up : Icons.arrow_drop_down, color: widget.themeColor),
-              ),
-            ],
+    if (!isExpandable) return const SizedBox();
+
+    return GestureDetector(
+      onTap: toggleExpanded,
+      child: Container(
+        height: 40,
+        padding: const EdgeInsets.all(0),
+        decoration: BoxDecoration(
+          color: widget.backgroundColor,
+          borderRadius: const BorderRadius.only(
+            bottomLeft: Radius.circular(12),
+            bottomRight: Radius.circular(12),
           ),
         ),
-      );
-    } else {
-      return const SizedBox();
-    }
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            if (!widget.hideLogPeriodButton)
+              Padding(
+                padding: const EdgeInsets.all(4),
+                child: OutlinedButton(
+                  onPressed: _onTapEditPeriod,
+                  child: Text(
+                    widget.editPeriodText,
+                    style: TextStyle(color: widget.themeColor, fontSize: 11),
+                  ),
+                ),
+              ),
+            IconButton(
+              onPressed: toggleExpanded,
+              iconSize: 25.0,
+              padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+              icon: Icon(isExpanded ? Icons.arrow_drop_up : Icons.arrow_drop_down, color: widget.themeColor),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -261,14 +259,14 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   IconButton(
-                    onPressed: isExpanded ? previousMonth : previousWeek,
+                    onPressed: previousMonth,
                     icon: Icon(
                       Icons.chevron_left,
                       color: widget.themeColor,
                     ),
                   ),
                   IconButton(
-                    onPressed: isExpanded ? nextMonth : nextWeek,
+                    onPressed: nextMonth,
                     icon: Icon(
                       Icons.chevron_right,
                       color: widget.themeColor,
@@ -342,32 +340,6 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
     // _launchDateSelectionCallback(selectedDateTime);
   }
 
-  void nextWeek() {
-    setState(() {
-      selectedDateTime = dtu.nextWeek(selectedDateTime);
-      var firstDayOfCurrentWeek = _firstDayOfWeek(selectedDateTime);
-      var lastDayOfCurrentWeek = _lastDayOfWeek(selectedDateTime);
-      updateSelectedRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek);
-      selectedWeekDays = dtu.daysInRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek).toList();
-      var monthFormat = formatter.formatMonthYear(selectedDateTime);
-
-      displayMonth = "${monthFormat[0].toUpperCase()}${monthFormat.substring(1)}";
-    });
-  }
-
-  void previousWeek() {
-    setState(() {
-      selectedDateTime = dtu.previousWeek(selectedDateTime);
-      var firstDayOfCurrentWeek = _firstDayOfWeek(selectedDateTime);
-      var lastDayOfCurrentWeek = _lastDayOfWeek(selectedDateTime);
-      updateSelectedRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek);
-      selectedWeekDays = dtu.daysInRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek).toList();
-      var monthFormat = formatter.formatMonthYear(selectedDateTime);
-
-      displayMonth = "${monthFormat[0].toUpperCase()}${monthFormat.substring(1)}";
-    });
-  }
-
   void updateSelectedRange(DateTime start, DateTime end) {}
 
   void _onTapEditPeriod() async {
@@ -393,22 +365,6 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
 
   void _onSwipeDown() {
     if (!isExpanded) toggleExpanded();
-  }
-
-  void _onSwipeRight() {
-    if (isExpanded) {
-      previousMonth();
-    } else {
-      previousWeek();
-    }
-  }
-
-  void _onSwipeLeft() {
-    if (isExpanded) {
-      nextMonth();
-    } else {
-      nextWeek();
-    }
   }
 
   void toggleExpanded() {

@@ -101,10 +101,11 @@ class KeycloakAuthProvider extends AuthProvider<oauth2.Client> {
     );
 
     await _saveCredentials(newClient.credentials);
+    _client = newClient;
     for (var listener in _loginListeners) {
       listener();
     }
-    return _client = newClient;
+    return _client!;
   }
 
   @override
@@ -115,11 +116,11 @@ class KeycloakAuthProvider extends AuthProvider<oauth2.Client> {
     } catch (e) {
       // Ignorar errores
     } finally {
-      _client = null;
       await storage.delete(key: credentialsKey);
       for (var listener in _logoutListeners) {
         listener();
       }
+      _client = null;
     }
   }
 

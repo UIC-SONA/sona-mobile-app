@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:sona/config/dependency_injection.dart';
@@ -46,15 +47,25 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
   @override
   void initState() {
     super.initState();
+    // Escucha los cambios en el calendario y programa las notificaciones correspondientes
+    calendarController.addListener(() {
+      if (kDebugMode) print("Programming schedule notifications");
+      NotificationScheduler.scheduleNotifications(calendarController.value);
+    });
+    // Cargar los datos iniciales
     _loadData();
   }
 
   Future<void> _loadData() async {
     final cycleData = await menstrualCycleService.getCycleData();
+
+    // Actualizar el estado
     setState(() {
       _cycleLength = cycleData.cycleLength;
       _periodLength = cycleData.periodDuration;
     });
+
+    // Cambiar los datos del calendario
     calendarController.changeData(
       cycleLength: _cycleLength,
       periodLength: _periodLength,
@@ -69,7 +80,6 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
     final primaryColor = Theme.of(context).primaryColor;
     final profile = userService.currentUser;
     final nextPeriod = calendarController.futurePeriodDays.firstOrNull;
-    final daysToNextPeriod = nextPeriod?.difference(DateTime.now()).inDays;
     final locale = Localizations.localeOf(context).languageCode;
 
     return SonaScaffold(
@@ -101,7 +111,6 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       _buildProfileCalendar(nextPeriod),
-
                       if (nextPeriod != null)
                         Text(
                           "Próximo periodo: ${DateFormat('d MMM', locale).format(nextPeriod)}",
@@ -113,7 +122,6 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
                     ],
                   ),
                 ),
-
               ],
             ),
           ),
@@ -146,38 +154,61 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
     );
   }
 
-  Widget _buildProfileCalendar(DateTime? nextPeriod){
+  Widget _buildProfileCalendar(DateTime? nextPeriod) {
+    if (calendarController.pastPeriodDays.isEmpty) {
+      return Wrap(children: [
+        const Text(
+          "Sin datos registrados",
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.end,
+          //softWrap: true,
+        ),
+      ]);
+    }
 
-      if (calendarController.pastPeriodDays.isEmpty) {
-        return Wrap(
-          children: [
-            const Text(
-              "Sin datos registrados",
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.end,
-              //softWrap: true,
-            ),
-          ]
-        );
+    final now = DateTime.now();
+    int? currentPeriodDay;
+
+    for (var date in calendarController.pastPeriodDays) {
+      final difference = now.difference(date).inDays;
+      if (difference >= 0 && difference < _periodLength) {
+        currentPeriodDay = difference;
+        break;
       }
+    }
 
-      final now = DateTime.now();
-      int? currentPeriodDay;
+    if (currentPeriodDay != null) {
+      return Text(
+        "Día ${currentPeriodDay + 1} del periodo",
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          overflow: TextOverflow.ellipsis,
+        ),
+      );
+    }
 
-      for (var date in calendarController.pastPeriodDays) {
-        final difference = now.difference(date).inDays;
-        if (difference >= 0 && difference < _periodLength) {
-          currentPeriodDay = difference;
-          break;
-        }
-      }
+    if (nextPeriod == null) {
+      return const Text(
+        "Sin predicción disponible",
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          overflow: TextOverflow.ellipsis,
+        ),
+      );
+    }
 
-      if (currentPeriodDay != null) {
+    final difference = nextPeriod.difference(now).inDays;
+    if (difference < 0) {
+      final lastPeriod = calendarController.pastPeriodDays.reduce((a, b) => a.isAfter(b) ? a : b);
+      final daysSinceLastPeriod = now.difference(lastPeriod).inDays;
+      if (daysSinceLastPeriod > _cycleLength) {
         return Text(
-          "Día ${currentPeriodDay + 1} del periodo",
+          "${-difference} días de retraso",
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -185,43 +216,18 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
           ),
         );
       }
+    }
 
-      if (nextPeriod == null) {
-        return const Text(
-          "Sin predicción disponible",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            overflow: TextOverflow.ellipsis,
-          ),
-        );
-      }
-
-      final difference = nextPeriod.difference(now).inDays;
-      if (difference < 0) {
-        final lastPeriod = calendarController.pastPeriodDays.reduce((a, b) => a.isAfter(b) ? a : b);
-        final daysSinceLastPeriod = now.difference(lastPeriod).inDays;
-        if (daysSinceLastPeriod > _cycleLength) {
-          return Text(
-            "${-difference} días de retraso",
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              overflow: TextOverflow.ellipsis,
-            ),
-          );
-        }
-      }
-
-      return Text(
-        "Faltan $difference días",
-        style: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          overflow: TextOverflow.ellipsis,
-        ),
-      );
+    return Text(
+      "Faltan $difference días",
+      style: const TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
   }
+
   Widget _buildDetailsSection() {
     final formattedDate = DateFormat('MMMM d, y', Localizations.localeOf(context).languageCode).format(_selectedDate);
     final capitalizedDate = formattedDate[0].toUpperCase() + formattedDate.substring(1);

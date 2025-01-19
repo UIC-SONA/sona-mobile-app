@@ -14,6 +14,7 @@ import 'package:sona/ui/pages/chat_screen.dart';
 import 'package:sona/ui/pages/chat_bot_screen.dart';
 import 'package:sona/ui/pages/menstrual_calendar_screen.dart';
 import 'package:sona/ui/pages/profile_screen.dart';
+import 'package:sona/ui/pages/schedule_push_screen.dart';
 import 'package:sona/ui/pages/tips_screen.dart';
 import 'package:sona/ui/pages/forum_screen.dart';
 import 'package:sona/ui/pages/forum_new_post_screen.dart';
@@ -56,6 +57,7 @@ class AppRouter extends RootStackRouter {
         AutoRoute(path: "/appointment", page: AppointmentMenuRoute.page),
         AutoRoute(path: "/appointment/new", page: NewAppointmentRoute.page),
         AutoRoute(path: "/appointment/my", page: MyAppointmentsRoute.page),
+        AutoRoute(path: "/schedule-push-route", page: SchedulePushRoute.page),
       ];
 
   @override

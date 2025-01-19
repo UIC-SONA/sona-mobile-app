@@ -13,7 +13,7 @@ import 'package:sona/ui/widgets/menstrual_cycle/menstrual_cycle.dart';
 final dateFormat = DateFormat('yyyy-MM-dd');
 
 abstract class MenstrualCycleService {
-  UserService get userService;
+//  UserService get userService;
 
   Future<CycleData> getCycleData();
 
@@ -23,7 +23,7 @@ abstract class MenstrualCycleService {
 }
 
 class MenstrualCycleServiceImpl extends MenstrualCycleService implements WebResource {
-  @override
+//
   final UserService userService;
   final AuthProvider authProvider;
   final LocaleProvider localeProvider;

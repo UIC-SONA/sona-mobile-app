@@ -1,18 +1,24 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/config/json_codecs.dart';
-import 'package:sona/domain/services/firebase_service.dart';
+import 'package:sona/domain/services/services.dart';
 import 'package:sona/firebase_options.dart';
+import 'package:sona/local_notifications.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/theme/theme.dart';
+import 'package:sona/ui/utils/dialogs.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
+  await LocalNotifications.initialize();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  tz.initializeTimeZones();
   setupJsonCodecs();
   await setupDependencies();
   runApp(SonaApp());
@@ -38,22 +44,22 @@ class SonaApp extends StatelessWidget {
       locale: const Locale('es'),
       title: 'SONA',
       theme: theme,
-      builder: (context, child) => AppInitializer(child: child!),
+      builder: (context, child) => Initializer(child: child!),
     );
   }
 }
 
-class AppInitializer extends StatefulWidget {
+class Initializer extends StatefulWidget {
   final Widget child;
 
-  const AppInitializer({required this.child, super.key});
+  const Initializer({required this.child, super.key});
 
   @override
-  State<AppInitializer> createState() => _AppInitializerState();
+  State<Initializer> createState() => _InitializerState();
 }
 
-class _AppInitializerState extends State<AppInitializer> {
-  final firbaseService = injector.get<FirebaseService>();
+class _InitializerState extends State<Initializer> {
+  final notificationService = injector.get<NotificationService>();
 
   @override
   void initState() {
@@ -64,7 +70,16 @@ class _AppInitializerState extends State<AppInitializer> {
   }
 
   void _onAppReady() {
-    firbaseService.initPushNotifications();
+    notificationService.listen((message) {
+      try {
+        if (message == null) return;
+        if (kDebugMode) {
+          print("Notification receive: $message");
+        }
+      } catch (e) {
+        showAlertErrorDialog(context, error: e);
+      }
+    });
   }
 
   @override
