@@ -1,6 +1,8 @@
 import 'package:chatview/chatview.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sona/ui/theme/colors.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SonaChatView extends StatelessWidget {
   final ChatController chatController;
@@ -62,7 +64,6 @@ class SonaChatView extends StatelessWidget {
       padding: padding,
       senderNameTextStyle: chatBubbleSenderNameTextStyle,
       receiptsWidgetConfig: receiptsWidgetConfig,
-
     );
 
     final outgoingChatBubbleConfig = ChatBubble(
@@ -108,6 +109,11 @@ class SonaChatView extends StatelessWidget {
         inComingChatBubbleConfig: inComingChatBubbleConfig,
         outgoingChatBubbleConfig: outgoingChatBubbleConfig,
       ),
+      messageConfig: MessageConfiguration(
+        imageMessageConfig: ImageMessageConfiguration(
+          onTap: _onTapImage,
+        ),
+      ),
       sendMessageConfig: SendMessageConfiguration(
         replyTitleColor: primaryColor,
         enableCameraImagePicker: enableCameraImagePicker,
@@ -138,5 +144,23 @@ class SonaChatView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _onTapImage(Message message) async {
+    final imageUrl = message.message;
+
+    try {
+      // Para Android necesitas definir esto en el AndroidManifest.xml
+      if (await canLaunchUrl(Uri.parse(imageUrl))) {
+        await launchUrl(
+          Uri.parse(imageUrl),
+          mode: LaunchMode.externalApplication,
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error al abrir la imagen: $e');
+      }
+    }
   }
 }

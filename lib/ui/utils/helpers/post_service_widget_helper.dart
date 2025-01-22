@@ -17,6 +17,7 @@ class PostWithUser extends Post {
     required super.likedBy,
     required super.createdAt,
     required super.author,
+    required super.iAmAuthor,
   });
 }
 
@@ -77,6 +78,7 @@ mixin PostServiceWidgetHelper on UserServiceWidgetHelper {
       likedBy: post.likedBy,
       createdAt: post.createdAt,
       author: post.author,
+      iAmAuthor: post.iAmAuthor,
     );
   }
 }

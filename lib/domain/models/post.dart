@@ -4,6 +4,7 @@ class Post extends ByAuthor<int> {
   final List<Comment> comments;
   final List<int> likedBy;
   final DateTime createdAt;
+  final bool iAmAuthor;
 
   Post({
     required this.id,
@@ -12,6 +13,7 @@ class Post extends ByAuthor<int> {
     required this.likedBy,
     required this.createdAt,
     required int? author,
+    required this.iAmAuthor,
   }) : super(author);
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,7 @@ class Post extends ByAuthor<int> {
       likedBy: List<int>.from(json['likedBy']),
       createdAt: DateTime.parse(json['createdAt']),
       author: json['author'],
+      iAmAuthor: json['iamAuthor'],
     );
   }
 
@@ -33,6 +36,7 @@ class Post extends ByAuthor<int> {
       'likedBy': likedBy,
       'createdAt': createdAt.toIso8601String(),
       'author': author,
+      'iAmAuthor': iAmAuthor,
     };
   }
 

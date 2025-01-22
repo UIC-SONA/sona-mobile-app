@@ -5,6 +5,7 @@ import 'package:logger/logger.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
+import 'package:sona/shared/constants.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/utils/helpers/chat_service_widget_helper.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
@@ -177,6 +178,7 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
       messageType: messageType,
       status: MessageStatus.pending,
     );
+    _log.i("message: $message, replyMessage: $replyMessage, messageType: $messageType");
     chatController.addMessage(newMessage);
     _setChatViewStateHasMessages();
 
@@ -199,7 +201,9 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
 
   void _setChatViewStateHasMessages() {
     if (_chatViewState == ChatViewState.noData) {
-      _chatViewState = ChatViewState.hasMessages;
+      setState(() {
+        _chatViewState = ChatViewState.hasMessages;
+      });
     }
   }
 
@@ -221,12 +225,27 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
   }
 
   Message _mapMessage(ChatMessage message) {
+    final type = switch (message.type) {
+      ChatMessageType.image => MessageType.image,
+      ChatMessageType.text => MessageType.text,
+      ChatMessageType.voice => MessageType.voice,
+      ChatMessageType.custom => MessageType.custom,
+    };
+
+    final isResource = type == MessageType.image || type == MessageType.voice;
+
     return Message(
       id: message.id,
-      message: message.message,
+      message: isResource
+          ? apiUri.replace(
+              path: '/chat/resource',
+              queryParameters: {'id': message.message},
+            ).toString()
+          : message.message,
       sentBy: message.sentBy.toString(),
       createdAt: message.createdAt,
       status: solveMessageStatus(roomData.room, message, profile.id),
+      messageType: type,
     );
   }
 

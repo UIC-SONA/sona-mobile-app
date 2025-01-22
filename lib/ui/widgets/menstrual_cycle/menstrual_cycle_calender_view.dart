@@ -98,15 +98,13 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
     List<DateTime>? calendarDays = selectedMonthsDays;
 
     for (var day in formatter.weekTitles) {
-      calendarGridItems.add(
-        Container(
-          alignment: Alignment.center,
-          child: Text(
-            day,
-            style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.w800, fontSize: 11),
-          ),
+      calendarGridItems.add(Container(
+        alignment: Alignment.center,
+        child: Text(
+          day,
+          style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.w800, fontSize: 11),
         ),
-      );
+      ));
     }
 
     bool monthStarted = false;

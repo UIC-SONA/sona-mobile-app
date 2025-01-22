@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/services/services.dart';
+import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';
 import 'package:sona/ui/widgets/menstrual_cycle/menstrual_cycle.dart';
 import 'package:sona/ui/widgets/menstrual_cycle/menstrual_cycle_calender_view.dart';
@@ -83,10 +84,9 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
     final locale = Localizations.localeOf(context).languageCode;
 
     return SonaScaffold(
-      actionButton: SonaActionButton.options(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _settingsPeriod,
-        child: const Icon(Icons.settings),
+      actionButton: SonaActionButton(
+        text: 'Opciones',
+        onPressed: (context) => _settingsPeriod(),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,7 +132,6 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
                   controller: calendarController,
                   themeColor: primaryColor,
                   editPeriodText: "EDITAR",
-                  daySelectedColor: Colors.greenAccent,
                   hideInfoView: false,
                   onDataChanged: () async {
                     await menstrualCycleService.savePeriodDates(calendarController.pastPeriodDays);
@@ -148,7 +147,10 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
               ),
             ),
           ),
-          _buildDetailsSection(),
+          SizedBox(
+            width: MediaQuery.of(context).size.height,
+            child: _buildDetailsSection(),
+          ),
         ],
       ),
     );
@@ -239,7 +241,10 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
           children: [
             Text(
               capitalizedDate,
-              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 19,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             switch (_selectedDateDayType) {
@@ -267,13 +272,22 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Actualizar configuración de periodo",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () => AutoRouter.of(context).push(const MenuOptionsRoute()),
+                        icon: const Icon(
+                          Icons.water_drop_sharp,
+                          color: defaultMenstruationColor,
+                        ),
+                      ),
+                      const Text(
+                        "Actualizar configuración de periodo",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
-                  const SizedBox(
-                    height: 15,
-                  ),
+                  const SizedBox(height: 15),
                   Row(
                     children: [
                       const Text("Duración del ciclo menstrual"),
@@ -285,13 +299,12 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey),
-                            // Border color
                             borderRadius: BorderRadius.circular(12),
-                            // Rounded corners
                             color: Colors.white, // Background color
                           ),
                           child: DropdownButton<int>(
                             value: _cycleLength,
+                            menuMaxHeight: 250,
                             items: List<int>.generate(31, (index) => (15 + index)).map((value) {
                               return DropdownMenuItem<int>(
                                 value: value,
@@ -312,9 +325,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
                       )
                     ],
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
                       const Text("Duración del periodo menstrual"),
@@ -331,6 +342,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
                           ),
                           child: DropdownButton<int>(
                             value: _periodLength,
+                            menuMaxHeight: 250,
                             items: List<int>.generate(8, (index) => (2 + index)).map((value) {
                               return DropdownMenuItem<int>(
                                 value: value,

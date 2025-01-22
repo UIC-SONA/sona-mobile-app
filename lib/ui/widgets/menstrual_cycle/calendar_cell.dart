@@ -39,13 +39,13 @@ class _CustomizedCalendarCellState extends State<CustomizedCalendarCell> {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return GestureDetector(
       onTap: widget.onTapDay,
       child: Column(
         children: [
           Container(
-            height: 30,
-            width: 30,
+            height: 25,
+            width: 25,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: _resolverColor(),
@@ -59,7 +59,7 @@ class _CustomizedCalendarCellState extends State<CustomizedCalendarCell> {
           ),
           if (widget.dayType != null)
             SizedBox(
-              height: 15,
+              height: 10,
               child: _buildDayTypeWidget(widget.dayType!),
             ),
         ],
@@ -83,7 +83,7 @@ class _CustomizedCalendarCellState extends State<CustomizedCalendarCell> {
       padding: const EdgeInsets.only(top: 5),
       child: Icon(
         config.icon,
-        size: 16,
+        size: 12,
         color: config.iconColor,
       ),
     );

@@ -132,20 +132,20 @@ class LocalNotifications {
           );
         }
 
-        return ListView.builder(
-          itemCount: notifications.length,
-          itemBuilder: (context, index) {
-            final notification = notifications[index];
-            return Row(
-              children: [
-                ListTile(
-                  title: Text(notification.title ?? 'Sin título'),
-                  subtitle: Text(notification.body ?? 'Sin contenido'),
-                  trailing: Text('ID: ${notification.id}'),
-                ),
-              ],
-            );
-          },
+        return Expanded(
+          child: ListView.builder(
+            shrinkWrap: true, // Añade esto
+            physics: NeverScrollableScrollPhysics(), // Añade esto si quieres deshabilitar el scroll
+            itemCount: notifications.length,
+            itemBuilder: (context, index) {
+              final notification = notifications[index];
+              return ListTile(
+                title: Text(notification.title ?? 'Sin título'),
+                subtitle: Text(notification.body ?? 'Sin contenido'),
+                trailing: Text('ID: ${notification.id}'),
+              );
+            },
+          ),
         );
       },
     );

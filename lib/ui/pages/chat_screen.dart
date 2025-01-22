@@ -265,12 +265,17 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
   }
 
   Widget _buildSubtitle(ChatRoomData room) {
-    var lastMessage = room.lastMessage;
+    final lastMessage = room.lastMessage;
     if (lastMessage == null) return const SizedBox();
+    final message = switch (lastMessage.type) {
+      ChatMessageType.image => 'Imagen',
+      ChatMessageType.voice => 'Mensaje de voz',
+      _ => lastMessage.message,
+    };
     return SizedBox(
       width: 250.0, // Ancho fijo para el subtítulo
       child: Text(
-        lastMessage.sentBy == currentUser.id ? 'Tú: ${lastMessage.message}' : lastMessage.message,
+        lastMessage.sentBy == currentUser.id ? 'Tú: $message' : message,
         style: const TextStyle(color: Colors.grey),
         overflow: TextOverflow.ellipsis, // Trunca el texto si es demasiado largo
         maxLines: 1, // Solo una línea

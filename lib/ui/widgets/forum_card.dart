@@ -27,6 +27,8 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
   @override
   final postService = injector.get<PostService>();
 
+  var deleted = false;
+
   ValueNotifier<PostWithUser> get notifier => widget.notifier;
 
   void _toggleLike(bool isLiked) async {
@@ -54,12 +56,13 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
 
   @override
   Widget build(BuildContext context) {
+    if (deleted) {
+      return const SizedBox();
+    }
     final user = userService.currentUser;
-
+    final post = notifier.value;
     return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       margin: const EdgeInsets.all(8.0),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -76,12 +79,18 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
                     children: [
                       _buildAuthorName(),
                       Text(
-                        formatDate(notifier.value.createdAt),
+                        formatDate(post.createdAt),
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: 12),
+                if (post.iAmAuthor)
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => _deletePost(post),
+                  ),
               ],
             ),
             const SizedBox(height: 12),
@@ -168,5 +177,30 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
         fontWeight: FontWeight.bold,
       ),
     );
+  }
+
+  void _deletePost(PostWithUser post) async {
+    final isConfimed = await showAlertDialog<bool>(
+      context,
+      title: 'Eliminar publicación',
+      message: '¿Estás seguro de que deseas eliminar esta publicación?',
+      actions: {
+        'Cancelar': () => Navigator.of(context).pop(false),
+        'Eliminar': () => Navigator.of(context).pop(true),
+      },
+    );
+    if (!mounted || isConfimed == null || isConfimed == false) return;
+    try {
+      showLoadingDialog(context);
+      await postService.delete(post.id);
+      if (!mounted) return;
+      showSnackBar(context, content: const Text('Publicación eliminada'));
+      deleted = true;
+    } catch (e) {
+      showAlertErrorDialog(context, error: e);
+    } finally {
+      Navigator.of(context).pop();
+      refresh();
+    }
   }
 }

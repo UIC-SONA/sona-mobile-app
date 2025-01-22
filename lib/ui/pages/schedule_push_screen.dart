@@ -28,7 +28,11 @@ class _SchedulePushScreenState extends FullState<SchedulePushScreen> {
   Widget build(BuildContext context) {
     return SonaScaffold(
       actionButton: SonaActionButton.home(),
-      body: LocalNotifications.buildScheduledNotificationsList(),
+      body: Column(
+        children: [
+          LocalNotifications.buildScheduledNotificationsList(),
+        ],
+      ),
     );
   }
 }
