@@ -5,9 +5,9 @@ class Tip {
   final String description;
   final List<String> tags;
   final bool active;
-  final int? myValuation;
-  final double averageValuation;
-  final int totalValuations;
+  final int? myRate;
+  final double averageRate;
+  final int totalRate;
 
   Tip({
     required this.id,
@@ -16,9 +16,9 @@ class Tip {
     required this.description,
     required this.tags,
     required this.active,
-    this.myValuation,
-    required this.averageValuation,
-    required this.totalValuations,
+    this.myRate,
+    required this.averageRate,
+    required this.totalRate,
   });
 
   factory Tip.fromJson(Map<String, dynamic> json) {
@@ -29,9 +29,9 @@ class Tip {
       description: json['description'],
       tags: List<String>.from(json['tags']),
       active: json['active'],
-      myValuation: json['myValuation'],
-      averageValuation: json['averageValuation'] ?? 0.0,
-      totalValuations: json['totalValuations'] ?? 0,
+      myRate: json['myRate'],
+      averageRate: json['averageRate'] ?? 0.0,
+      totalRate: json['totalRate'] ?? 0,
     );
   }
 
@@ -43,9 +43,9 @@ class Tip {
       'description': description,
       'tags': tags,
       'active': active,
-      'myValuation': myValuation,
-      'averageValuation': averageValuation,
-      'totalValuations': totalValuations,
+      'myValuation': myRate,
+      'averageValuation': averageRate,
+      'totalValuations': totalRate,
     };
   }
 }

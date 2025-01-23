@@ -31,7 +31,7 @@ class _TipDetailsScreenState extends State<TipDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    _ratingNotifier = ValueNotifier(widget.tip.myValuation?.toDouble() ?? 0);
+    _ratingNotifier = ValueNotifier(widget.tip.myRate?.toDouble() ?? 0);
     _ratingNotifier.addListener(_rateTip);
   }
 
@@ -141,12 +141,12 @@ class _TipDetailsScreenState extends State<TipDetailsScreen> {
                               children: [
                                 _statItem(
                                   label: 'Valoración promedio',
-                                  value: tip.averageValuation.toStringAsFixed(1),
+                                  value: tip.averageRate.toStringAsFixed(1),
                                 ),
                                 const SizedBox(width: 20),
                                 _statItem(
                                   label: 'Total valoraciones',
-                                  value: tip.totalValuations.toString(),
+                                  value: tip.totalRate.toString(),
                                 ),
                               ],
                             )

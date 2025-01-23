@@ -125,7 +125,7 @@ class _TipCard extends StatelessWidget {
                           const Icon(Icons.star, color: Colors.amber, size: 20),
                           const SizedBox(width: 4),
                           Text(
-                            '${tip.averageValuation.toStringAsFixed(1)} (${tip.totalValuations})',
+                            '${tip.averageRate.toStringAsFixed(1)} (${tip.totalRate})',
                             style: TextStyle(
                               color: Colors.grey.shade700,
                               fontSize: 14,

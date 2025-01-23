@@ -184,7 +184,7 @@ class _ForumPostCommentsScreenState extends FullState<ForumPostCommentsScreen> w
             CircleAvatar(
               child: comment.author != null ? buildFutureUserPicture(comment.author!) : const Icon(Icons.person),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 7),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

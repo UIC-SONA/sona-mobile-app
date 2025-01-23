@@ -4,6 +4,7 @@ import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/utils/dialogs.dart';
+import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
 import 'package:sona/ui/widgets/image_builder.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
@@ -16,9 +17,10 @@ class ForumNewPostScreen extends StatefulWidget {
   State<ForumNewPostScreen> createState() => _ForumNewPostScreenState();
 }
 
-class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> {
-  final _postService = injector.get<PostService>();
-  final _userService = injector.get<UserService>();
+class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> with UserServiceWidgetHelper {
+  final postService = injector.get<PostService>();
+  @override
+  final userService = injector.get<UserService>();
 
   bool? _anonymous;
 
@@ -26,7 +28,7 @@ class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> {
 
   bool get anonymous {
     if (_anonymous == null) {
-      return _userService.currentUser.anonymous;
+      return userService.currentUser.anonymous;
     }
     return _anonymous!;
   }
@@ -87,6 +89,7 @@ class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> {
         ],
       ),
       appBarTittle: Row(
+        spacing: 10,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (anonymous) ...const [
@@ -96,15 +99,9 @@ class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
             ),
           ] else ...[
-            CircleAvatar(
-              radius: 20,
-              child: ImageBuilder(
-                provider: _userService.profilePicture(),
-                errorBuilder: (context, error, stackTrace) => const Icon(Icons.person),
-              ),
-            ),
+            buildFutureUserPicture(userService.currentUser.id),
             Text(
-              _userService.currentUser.username,
+              userService.currentUser.username,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
             ),
           ],
@@ -124,7 +121,7 @@ class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> {
     _showLoadingDialog();
     try {
       var dto = PostDto(anonymous: anonymous, content: _controller.text);
-      await _postService.create(dto);
+      await postService.create(dto);
       if (!mounted) return;
       AutoRouter.of(context).popUntil((route) => route.settings.name == ForumRoute.name);
     } catch (e) {
