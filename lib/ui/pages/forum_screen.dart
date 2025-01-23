@@ -31,10 +31,10 @@ class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHel
   @override
   void initState() {
     super.initState();
-    pagingController.configurePageRequestListener(_loadPagePostWihtUser);
+    pagingController.configurePageRequestListener(_loadPagePostWithUser);
   }
 
-  Future<List<PostWithUser>> _loadPagePostWihtUser(int page) async {
+  Future<List<PostWithUser>> _loadPagePostWithUser(int page) async {
     final result = await pagePostWithUser(PageQuery(
       page: page,
       sort: [

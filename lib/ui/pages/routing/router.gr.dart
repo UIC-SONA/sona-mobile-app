@@ -29,6 +29,25 @@ class AppointmentMenuRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [ChangePasswordScreen]
+class ChangePasswordRoute extends PageRouteInfo<void> {
+  const ChangePasswordRoute({List<PageRouteInfo>? children})
+      : super(
+          ChangePasswordRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'ChangePasswordRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const ChangePasswordScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [ChatBotScreen]
 class ChatBotRoute extends PageRouteInfo<void> {
   const ChatBotRoute({List<PageRouteInfo>? children})
@@ -355,6 +374,25 @@ class ProfileRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [ResetPasswordScreen]
+class ResetPasswordRoute extends PageRouteInfo<void> {
+  const ResetPasswordRoute({List<PageRouteInfo>? children})
+      : super(
+          ResetPasswordRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'ResetPasswordRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const ResetPasswordScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [SchedulePushScreen]
 class SchedulePushRoute extends PageRouteInfo<void> {
   const SchedulePushRoute({List<PageRouteInfo>? children})
@@ -390,8 +428,7 @@ class ServicesOptionsRoute extends PageRouteInfo<ServicesOptionsRouteArgs> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      final args = data.argsAs<ServicesOptionsRouteArgs>(
-          orElse: () => const ServicesOptionsRouteArgs());
+      final args = data.argsAs<ServicesOptionsRouteArgs>(orElse: () => const ServicesOptionsRouteArgs());
       return ServicesOptionsScreen(key: args.key);
     },
   );
@@ -425,6 +462,58 @@ class SignUpRoute extends PageRouteInfo<void> {
       return const SignUpScreen();
     },
   );
+}
+
+/// generated route for
+/// [TipDetailsScreen]
+class TipDetailsRoute extends PageRouteInfo<TipDetailsRouteArgs> {
+  TipDetailsRoute({
+    Key? key,
+    required Tip tip,
+    required ValueNotifier<Tip> notifier,
+    List<PageRouteInfo>? children,
+  }) : super(
+          TipDetailsRoute.name,
+          args: TipDetailsRouteArgs(
+            key: key,
+            tip: tip,
+            notifier: notifier,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'TipDetailsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<TipDetailsRouteArgs>();
+      return TipDetailsScreen(
+        key: args.key,
+        tip: args.tip,
+        notifier: args.notifier,
+      );
+    },
+  );
+}
+
+class TipDetailsRouteArgs {
+  const TipDetailsRouteArgs({
+    this.key,
+    required this.tip,
+    required this.notifier,
+  });
+
+  final Key? key;
+
+  final Tip tip;
+
+  final ValueNotifier<Tip> notifier;
+
+  @override
+  String toString() {
+    return 'TipDetailsRouteArgs{key: $key, tip: $tip, notifier: $notifier}';
+  }
 }
 
 /// generated route for

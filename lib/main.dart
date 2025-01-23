@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/config/json_codecs.dart';
 import 'package:sona/domain/services/services.dart';
@@ -36,6 +37,7 @@ class SonaApp extends StatelessWidget {
       localizationsDelegates: const [
         ...GlobalMaterialLocalizations.delegates,
         GlobalWidgetsLocalizations.delegate,
+        FormBuilderLocalizations.delegate,
       ],
       supportedLocales: const [
         Locale('es'),

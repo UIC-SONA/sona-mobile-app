@@ -38,6 +38,10 @@ mixin UserService implements ReadOperations<User, int> {
 
   Future<Message> anonymize(bool anonymize);
 
+  Future<Message> changePassword({required String newPassword});
+
+  Future<Message> resetPassword({required String emailOrUsername});
+
   Future<void> refreshCurrentUser() async {
     _currentUser = await profile();
   }
@@ -161,6 +165,37 @@ class ApiUserService extends RestReadOperations<User, int> with UserService {
       method: HttpMethod.post,
       headers: commonHeaders,
       body: {'anonymize': anonymize.toString()},
+    );
+
+    return response.getBody<Message>();
+  }
+
+  @override
+  Future<Message> changePassword({required String newPassword}) async {
+    print("Headers: $commonHeaders");
+    final response = await request(
+      uri.replace(path: '$path/password'),
+      client: client,
+      method: HttpMethod.put,
+      headers: {
+        ...commonHeaders,
+      },
+      body: {'newPassword': newPassword},
+    );
+
+    return response.getBody<Message>();
+  }
+
+  @override
+  Future<Message> resetPassword({required String emailOrUsername}) async {
+    final response = await request(
+      uri.replace(path: '$path/password-reset'),
+      client: client,
+      method: HttpMethod.post,
+      headers: {
+        ...commonHeaders,
+      },
+      body: {'emailOrUsername': emailOrUsername},
     );
 
     return response.getBody<Message>();

@@ -21,6 +21,7 @@ Future<void> setupDependencies() async {
   );
   var credentials = await storage.read(key: credentialsKey);
   final localeProvider = SystemLocaleProvider();
+  localeProvider.locale = "es";
   final authProvider = KeycloakAuthProvider(
     storage: storage,
     credentialsKey: credentialsKey,

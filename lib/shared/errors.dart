@@ -16,6 +16,13 @@ class Error {
 
 ErrorExtractorNullable defaultErrorExtractor = (e) => Error('Error', e.toString());
 
+ErrorExtractorNullable problemDetailsErrorExtractor = (e) {
+  if (e is ProblemDetails) {
+    return Error(e.title, e.detail);
+  }
+  return null;
+};
+
 ErrorExtractorNullable httpErrorExtractor = (e) {
   if (e is HttpException) {
     final response = e.response;
@@ -26,7 +33,6 @@ ErrorExtractorNullable httpErrorExtractor = (e) {
       } catch (e) {
         return Error(response.status.message, response.body);
       }
-
     }
     return Error('Error', e.message);
   }
@@ -34,6 +40,7 @@ ErrorExtractorNullable httpErrorExtractor = (e) {
 };
 
 List<ErrorExtractorNullable> errorExtractors = [
+  problemDetailsErrorExtractor,
   httpErrorExtractor,
   defaultErrorExtractor,
 ];
@@ -44,4 +51,12 @@ Error extractError(Object e) {
     if (error != null) return error;
   }
   throw Exception('Error detail extractor not found');
+}
+
+void forEachValidationError(List<dynamic> errors, void Function(String field, List<String> messages) callback) {
+  for (var error in errors) {
+    final field = error['field'] as String;
+    final messages = (error['messages'] as List<dynamic>).map((e) => e as String).toList();
+    callback(field, messages);
+  }
 }

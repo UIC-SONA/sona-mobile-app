@@ -52,6 +52,14 @@ final theme = ThemeData(
       borderRadius: borderRadius,
     ),
     outlineBorder: BorderSide(color: hintColor, width: 1),
+    errorBorder: OutlineInputBorder(
+      borderSide: BorderSide(color: Colors.red, width: 2),
+      borderRadius: borderRadius,
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderSide: BorderSide(color: Colors.red, width: 2),
+      borderRadius: borderRadius,
+    ),
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ButtonStyle(

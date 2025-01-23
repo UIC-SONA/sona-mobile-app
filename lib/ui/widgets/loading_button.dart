@@ -65,17 +65,9 @@ class _LoadingButtonState extends State<LoadingButton> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (widget.icon != null) ...[
-                      loadingWidget,
-                      const SizedBox(width: 8),
-                      widget.child,
-                    ] else ...[
-                      loadingWidget,
-                      Opacity(
-                        opacity: 0.0, // Hace invisible el child
-                        child: widget.child,
-                      ),
-                    ]
+                    loadingWidget,
+                    const SizedBox(width: 8),
+                    widget.child,
                   ],
                 ),
               ],

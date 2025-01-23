@@ -1,8 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/domain/services/services.dart';
+import 'package:sona/shared/validation/forms.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/theme/backgrounds.dart';
 import 'package:sona/ui/theme/colors.dart';
@@ -19,27 +22,13 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
+const invalidGrantError = 'OAuth authorization error (invalid_grant):';
+
 class _LoginScreenState extends FullState<LoginScreen> {
-  final _authProvider = injector.get<AuthProvider>();
-
-  late final _login = fetchState(([positionalArguments, namedArguments]) => _authProvider.login(
-        positionalArguments![0],
-        positionalArguments[1],
-      ));
-
-  final _formKey = GlobalKey<FormState>();
-
-  final _emailOrUsernameController = TextEditingController();
-  final _passwordController = TextEditingController();
-
+  final authProvider = injector.get<AuthProvider>();
+  final formKey = GlobalKey<FormBuilderState>();
+  var _loading = false;
   var _obscurePasswordText = true;
-
-  @override
-  void dispose() {
-    _emailOrUsernameController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +60,7 @@ class _LoginScreenState extends FullState<LoginScreen> {
                     children: [
                       Container(
                         decoration: const BoxDecoration(
-                          gradient: bgGradientMagenta, // Asegúrate de definir bgGradientMagenta
+                          gradient: bgGradientMagenta, // Define bgGradientMagenta
                           borderRadius: borderRadius,
                         ),
                       ),
@@ -121,23 +110,23 @@ class _LoginScreenState extends FullState<LoginScreen> {
   }
 
   Widget _buildForm() {
-    return Form(
-      key: _formKey,
+    return FormBuilder(
+      key: formKey,
       child: Column(
         children: [
-          TextFormField(
-            controller: _emailOrUsernameController,
+          FormBuilderTextField(
+            name: 'emailOrUsername',
             decoration: InputDecoration(
               labelText: 'Correo o usuario',
-              enabled: !_login.isLoading,
+              enabled: !_loading,
               prefixIcon: const Icon(Icons.email),
             ),
+            validator: FormBuilderValidators.required(),
           ),
           const SizedBox(height: 10),
-          TextFormField(
-            controller: _passwordController,
+          FormBuilderTextField(
+            name: 'password',
             obscureText: _obscurePasswordText,
-            enabled: !_login.isLoading,
             decoration: InputDecoration(
               labelText: 'Contraseña',
               prefixIcon: const Icon(Icons.lock),
@@ -146,12 +135,13 @@ class _LoginScreenState extends FullState<LoginScreen> {
                 icon: Icon(_obscurePasswordText ? Icons.visibility : Icons.visibility_off),
               ),
             ),
+            validator: FormBuilderValidators.required(),
           ),
           const SizedBox(height: 30),
           LoadingButton(
             icon: const Icon(Icons.login),
             onPressed: _loginUser,
-            loading: _login.isLoading,
+            loading: _loading,
             child: const Text(
               'Ingresar',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -172,9 +162,9 @@ class _LoginScreenState extends FullState<LoginScreen> {
         ),
         SizedTextbutton(
           'Recuperar contraseña',
-          onPressed: () {},
+          onPressed: () => AutoRouter.of(context).push(const ResetPasswordRoute()),
           height: 30,
-          enabled: !_login.isLoading,
+          enabled: !_loading,
         ),
         const SizedBox(height: 10),
         const Text(
@@ -185,47 +175,45 @@ class _LoginScreenState extends FullState<LoginScreen> {
           'Crear cuenta',
           onPressed: () => AutoRouter.of(context).push(const SignUpRoute()),
           height: 30,
-          enabled: !_login.isLoading,
+          enabled: !_loading,
         ),
       ],
     );
   }
 
   Future<void> _loginUser() async {
-    if (!_formKey.currentState!.validate()) {
+    if (!formKey.currentState!.saveAndValidate()) {
       return;
     }
 
-    final email = _emailOrUsernameController.text.trim();
-    final password = _passwordController.text;
+    final formState = formKey.currentState!;
 
-    await _login.fetch([email, password]);
+    setState(() => _loading = true);
+    final formData = formState.value;
+    final email = formData['emailOrUsername'];
+    final password = formData['password'];
 
-    if (!mounted) return;
-
-    if (_login.hasError) {
-      final error = _login.error!;
-      final message = error.toString();
-      if (message.contains('invalid_grant')) {
-        showAlertDialog(context, title: 'Error', message: 'Credenciales inválidas');
-      } else {
-        showAlertErrorDialog(context, error: error);
+    try {
+      await authProvider.login(email, password);
+      await injector.get<UserService>().refreshCurrentUser();
+      if (mounted) {
+        AutoRouter.of(context).replaceAll([const HomeRoute()]);
       }
-      return;
+    } catch (error) {
+      if (!mounted) return;
+      final message = error.toString();
+      if (message.contains(invalidGrantError)) {
+        showAlertDialog(context, title: 'Error', message: message.split(invalidGrantError)[1]);
+      } else {
+        formStateInvalidator(context, formState: formState, error: error);
+      }
+      setState(() => _loading = false);
     }
-
-    await _onLoginSuccess();
-    if (mounted) {
-      AutoRouter.of(context).replaceAll([const HomeRoute()]);
-    }
-  }
-
-  Future<void> _onLoginSuccess() async {
-    await injector.get<UserService>().refreshCurrentUser();
   }
 
   void _togglePasswordVisibility() {
-    _obscurePasswordText = !_obscurePasswordText;
-    refresh();
+    setState(() {
+      _obscurePasswordText = !_obscurePasswordText;
+    });
   }
 }

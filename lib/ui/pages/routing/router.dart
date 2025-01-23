@@ -1,12 +1,15 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
+import 'package:sona/domain/models/models.dart';
+import 'package:sona/ui/pages/change_password_screen.dart';
 import 'package:sona/ui/pages/chat_room_screen.dart';
 import 'package:sona/ui/pages/my_appointments_screen.dart';
 import 'package:sona/ui/pages/navigation/appointment_menu_screen.dart';
 import 'package:sona/ui/pages/navigation/home_screen.dart';
 import 'package:sona/ui/pages/navigation/login_screen.dart';
 import 'package:sona/ui/pages/navigation/menu_options_screen.dart';
+import 'package:sona/ui/pages/navigation/reset_password_screen.dart';
 import 'package:sona/ui/pages/navigation/sign_up_screen.dart';
 import 'package:sona/ui/pages/navigation/services_options_screen.dart';
 import 'package:sona/domain/providers/auth.dart';
@@ -15,6 +18,7 @@ import 'package:sona/ui/pages/chat_bot_screen.dart';
 import 'package:sona/ui/pages/menstrual_calendar_screen.dart';
 import 'package:sona/ui/pages/profile_screen.dart';
 import 'package:sona/ui/pages/schedule_push_screen.dart';
+import 'package:sona/ui/pages/tip_details_screen.dart';
 import 'package:sona/ui/pages/tips_screen.dart';
 import 'package:sona/ui/pages/forum_screen.dart';
 import 'package:sona/ui/pages/forum_new_post_screen.dart';
@@ -48,6 +52,7 @@ class AppRouter extends RootStackRouter {
         AutoRoute(path: "/services", page: ServicesOptionsRoute.page),
         AutoRoute(path: "/chatbot", page: ChatBotRoute.page),
         AutoRoute(path: "/tips", page: TipsRoute.page),
+        AutoRoute(path: "/tip-details", page: TipDetailsRoute.page),
         AutoRoute(path: "/chat", page: ChatRoute.page),
         AutoRoute(path: "/chat-room", page: ChatRoomRoute.page),
         AutoRoute(path: "/forum", page: ForumRoute.page),
@@ -58,13 +63,19 @@ class AppRouter extends RootStackRouter {
         AutoRoute(path: "/appointment/new", page: NewAppointmentRoute.page),
         AutoRoute(path: "/appointment/my", page: MyAppointmentsRoute.page),
         AutoRoute(path: "/schedule-push-route", page: SchedulePushRoute.page),
+        AutoRoute(path: "/change-password", page: ChangePasswordRoute.page),
+        AutoRoute(path: "/reset-password", page: ResetPasswordRoute.page),
       ];
 
   @override
   List<AutoRouteGuard> get guards => _guards;
 }
 
-final List<String> unauthenticatedRoutes = [LoginRoute.name, SignUpRoute.name];
+final List<String> unauthenticatedRoutes = [
+  LoginRoute.name,
+  SignUpRoute.name,
+  ResetPasswordRoute.name,
+];
 
 class AuthGuard extends AutoRouteGuard {
   final AuthProvider authProvider;

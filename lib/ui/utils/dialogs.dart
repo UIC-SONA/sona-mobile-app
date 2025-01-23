@@ -45,7 +45,7 @@ Future<FF?> showAlertDialog<FF>(BuildContext context, {required String title, re
             fontWeight: FontWeight.bold,
           ),
         ),
-        content: Text(message),
+        content: Text(message, textAlign: TextAlign.center),
         actions: [
           for (final entry in actions?.entries ?? [MapEntry('OK', () => Navigator.of(context).pop())])
             TextButton(

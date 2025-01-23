@@ -6,17 +6,21 @@ import 'package:sona/domain/providers/locale.dart';
 import 'package:sona/shared/constants.dart';
 import 'package:sona/shared/crud.dart';
 import 'package:sona/shared/http/http.dart';
+import 'package:sona/shared/rest_crud.dart';
+import 'package:sona/shared/schemas/message.dart';
 import 'package:sona/shared/schemas/page.dart';
 
 import '../providers/auth.dart';
 
-abstract class TipService {
+abstract class TipService implements ReadOperations<Tip, String> {
   Future<Page<Tip>> actives([PageQuery? query]);
 
   ImageProvider<Object> image(Tip tip);
+
+  Future<Message> rate(Tip tip, int value);
 }
 
-class ApiTipService implements TipService, WebResource {
+class ApiTipService extends RestReadOperations<Tip, String> implements TipService, WebResource {
   //
   final AuthProvider authProvider;
   final LocaleProvider localeProvider;
@@ -56,5 +60,20 @@ class ApiTipService implements TipService, WebResource {
       headers: commonHeaders,
       client: client,
     );
+  }
+
+  @override
+  Future<Message> rate(Tip tip, int value) async {
+    final response = await request(
+      uri.replace(path: '$path/rate/${tip.id}'),
+      client: client,
+      method: HttpMethod.post,
+      headers: commonHeaders,
+      body: {
+        'value': value.toString(),
+      },
+    );
+
+    return response.getBody<Message>();
   }
 }

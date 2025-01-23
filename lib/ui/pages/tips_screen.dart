@@ -1,17 +1,13 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:sona/config/dependency_injection.dart';
-
 import 'package:sona/domain/models/tip.dart';
 import 'package:sona/domain/services/tip.dart';
 import 'package:sona/shared/crud.dart';
 import 'package:sona/shared/schemas/direction.dart';
+import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/utils/paging.dart';
-
-import 'package:sona/ui/widgets/full_state_widget.dart';
-import 'package:sona/ui/widgets/image_builder.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
 
 @RoutePage()
@@ -22,11 +18,9 @@ class TipsScreen extends StatefulWidget {
   State<TipsScreen> createState() => _TipsScreenState();
 }
 
-class _TipsScreenState extends FullState<TipsScreen> {
+class _TipsScreenState extends State<TipsScreen> {
   final _tipsService = injector.get<TipService>();
   final _pagingController = PagingQueryController<Tip>(firstPage: 0);
-
-  Tip? selectedTip;
 
   @override
   void initState() {
@@ -44,161 +38,109 @@ class _TipsScreenState extends FullState<TipsScreen> {
     return result.content;
   }
 
-  void _clearSelection() {
-    selectedTip = null;
-    refresh();
+  @override
+  Widget build(BuildContext context) {
+    return SonaScaffold(
+      actionButton: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        child: const Text(
+          'Tips',
+          style: TextStyle(
+            fontSize: 35,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      body: RefreshIndicator(
+        onRefresh: () => Future.sync(_pagingController.refresh),
+        child: PagedListView<int, Tip>(
+          pagingController: _pagingController,
+          builderDelegate: PagedChildBuilderDelegate<Tip>(
+            noItemsFoundIndicatorBuilder: (context) => const Center(child: Text('No se encontraron tips.')),
+            itemBuilder: (context, tip, index) {
+              final notifier = ValueNotifier(tip);
+              return _TipCard(notifier: notifier);
+            },
+          ),
+        ),
+      ),
+    );
   }
+}
 
-  void _selectTip(Tip tip) {
-    selectedTip = tip;
-    refresh();
-  }
+class _TipCard extends StatelessWidget {
+  final ValueNotifier<Tip> notifier;
+
+  const _TipCard({required this.notifier});
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: selectedTip == null,
-      onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) _clearSelection();
-      },
-      child: SonaScaffold(
-        actionButton: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 20),
-          child: const Text(
-            'Tips',
-            style: TextStyle(
-              fontSize: 35,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        body: selectedTip == null ? _buildTipsList() : _buildTipDetails(selectedTip!),
-      ),
-    );
-  }
-
-  Widget _buildTipsList() {
-    return RefreshIndicator(
-      onRefresh: () => Future.sync(_pagingController.refresh),
-      child: PagedListView<int, Tip>(
-        pagingController: _pagingController,
-        builderDelegate: PagedChildBuilderDelegate<Tip>(
-          noItemsFoundIndicatorBuilder: (context) => const Center(child: Text('No se encontraron tips.')),
-          itemBuilder: _tipBuilder,
-        ),
-      ),
-    );
-  }
-
-  Widget _tipBuilder(context, tip, index) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Row(
-          children: [
-            Expanded(
-              child: ListTile(
-                contentPadding: const EdgeInsets.all(0),
-                title: Text(
-                  tip.title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
-                subtitle: Text(
-                  tip.summary,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.justify,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child: ElevatedButton(
-                onPressed: () => _selectTip(tip),
-                child: const Text('Ver más'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTipDetails(Tip tip) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
+    return ValueListenableBuilder<Tip>(
+      valueListenable: notifier,
+      builder: (context, tip, child) {
+        return Card(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Column(
-                      children: [
-                        Text(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.all(0),
+                        title: Text(
                           tip.title,
                           style: const TextStyle(
-                            fontSize: 24,
                             fontWeight: FontWeight.bold,
+                            fontSize: 18,
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        MarkdownBody(
-                          data: tip.description,
-                          styleSheet: MarkdownStyleSheet(textAlign: WrapAlignment.spaceEvenly, p: const TextStyle(fontSize: 15)),
+                        subtitle: Text(
+                          tip.summary,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.justify,
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Center(
-                    child: ImageBuilder(
-                      provider: _tipsService.image(tip),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: ElevatedButton(
+                        onPressed: () => context.router.push(TipDetailsRoute(
+                          tip: tip,
+                          notifier: notifier,
+                        )),
+                        child: const Text('Ver más'),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Wrap(
-                    spacing: 6.0,
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      for (final tag in tip.tags) Chip(label: Text(tag)),
+                      Row(
+                        children: [
+                          const Icon(Icons.star, color: Colors.amber, size: 20),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${tip.averageValuation.toStringAsFixed(1)} (${tip.totalValuations})',
+                            style: TextStyle(
+                              color: Colors.grey.shade700,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+        );
+      },
     );
   }
-
-// Widget _buildImage(Tip tip) {
-//   return FutureBuilder<Uint8List>(
-//     future: _service.tipImage(tip.id),
-//     builder: (context, snapshot) {
-//       if (snapshot.connectionState == ConnectionState.waiting) {
-//         return const Center(child: CircularProgressIndicator());
-//       }
-//       if (snapshot.hasError) {
-//         return Text(
-//           'Error al cargar la imagen: ${snapshot.error}',
-//           style: const TextStyle(color: Colors.red),
-//         );
-//       }
-//       if (snapshot.hasData && snapshot.data != null) {
-//         return Image.memory(
-//           snapshot.data!,
-//           fit: BoxFit.cover,
-//         );
-//       }
-//       return const Text('No se pudo cargar la imagen.');
-//     },
-//   );
-// }
 }

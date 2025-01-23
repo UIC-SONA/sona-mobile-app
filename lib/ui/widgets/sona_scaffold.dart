@@ -147,7 +147,7 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
           ListTile(
             title: const Text('Cambiar contraseña'),
             leading: const Icon(Icons.lock),
-            onTap: () => AutoRouter.of(context).pushNamed('/change-password'),
+            onTap: () => AutoRouter.of(context).push(ChangePasswordRoute()),
           ),
           ListTile(
             title: const Text('Cerrar sesión'),
