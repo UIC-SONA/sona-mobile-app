@@ -12,6 +12,7 @@ import 'package:sona/ui/theme/icons.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class SonaAppBar extends StatelessWidget implements PreferredSizeWidget {
   //
@@ -162,6 +163,11 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
                   onTap: () => AutoRouter.of(context).push(ChangePasswordRoute()),
                 ),
                 ListTile(
+                  title: const Text('911'),
+                  leading: Icon(Icons.phone),
+                  onTap: _openTel911,
+                ),
+                ListTile(
                   title: const Text('Cerrar sesión'),
                   leading: Icon(SonaIcons.back),
                   onTap: _showLogoutConfirmDialog,
@@ -172,6 +178,13 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
         ],
       ),
     );
+  }
+
+  Future<void> _openTel911() async {
+    const url = 'tel:911';
+    if (await canLaunchUrlString(url)) {
+      launchUrlString(url);
+    }
   }
 
   Future<void> _showLogoutConfirmDialog() async {
