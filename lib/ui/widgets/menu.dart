@@ -29,7 +29,7 @@ class GridMenu extends StatelessWidget {
 class MenuButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final String label;
-  final IconData icon;
+  final dynamic icon;
   final String? description;
   final Gradient? gradient;
 
@@ -40,7 +40,7 @@ class MenuButton extends StatefulWidget {
     required this.icon,
     this.description,
     this.gradient,
-  });
+  }) : assert(icon is IconData || icon is Widget);
 
   @override
   State<MenuButton> createState() => _MenuButtonState();
@@ -100,11 +100,14 @@ class _MenuButtonState extends FullState<MenuButton> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                if (widget.icon is IconData)
+                  Icon(
+                    widget.icon,
+                    color: Colors.white,
+                    size: 80,
+                  )
+                else
                   widget.icon,
-                  color: Colors.white,
-                  size: 80,
-                ),
                 const SizedBox(height: 10),
                 Text(
                   widget.label,
