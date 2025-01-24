@@ -7,6 +7,7 @@ import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/theme/backgrounds.dart';
+import 'package:sona/ui/theme/colors.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
@@ -28,6 +29,11 @@ class SonaAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       toolbarHeight: preferredSize.height,
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          gradient: bgGradientAppBar,
+        ),
+      ),
       leading: showLeading
           ? Builder(
               builder: (context) {
@@ -90,16 +96,18 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
     final user = userService.currentUser;
 
     return Drawer(
-      child: ListView(
+      child: Column(
         children: [
           SizedBox(
-            height: 210,
+            height: 240,
+            width: double.infinity,
             child: DrawerHeader(
-              decoration: BoxDecoration(color: primaryColor),
+              decoration: BoxDecoration(
+                gradient: bgGradientAppBar,
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -121,38 +129,44 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
               ),
             ),
           ),
-          ListTile(
-            title: anonymizeState.isLoading ? const Text('Cambiando...') : const Text('Modo anónimo'),
-            leading: Switch(
-              value: user.anonymous,
-              onChanged: anonymizeState.isLoading ? null : (value) => anonymizeState.fetch([value]),
+          Expanded(
+            child: ListView(
+              children: [
+                ListTile(
+                  title: anonymizeState.isLoading ? const Text('Cambiando...') : const Text('Modo anónimo'),
+                  leading: Switch(
+                    value: user.anonymous,
+                    onChanged: anonymizeState.isLoading ? null : (value) => anonymizeState.fetch([value]),
+                  ),
+                ),
+                ListTile(
+                  title: const Text('Mi perfil'),
+                  leading: const Icon(Icons.person),
+                  onTap: () => AutoRouter.of(context).push(ProfileRoute()),
+                ),
+                if (kDebugMode)
+                  ListTile(
+                    title: const Text('Notificaciones'),
+                    leading: const Icon(Icons.notifications),
+                    onTap: () => AutoRouter.of(context).push(SchedulePushRoute()),
+                  ),
+                ListTile(
+                  title: const Text('Acerca de'),
+                  leading: const Icon(Icons.info),
+                  onTap: () => AutoRouter.of(context).pushNamed('/about'),
+                ),
+                ListTile(
+                  title: const Text('Cambiar contraseña'),
+                  leading: const Icon(Icons.lock),
+                  onTap: () => AutoRouter.of(context).push(ChangePasswordRoute()),
+                ),
+                ListTile(
+                  title: const Text('Cerrar sesión'),
+                  leading: const Icon(Icons.logout),
+                  onTap: _showLogoutConfirmDialog,
+                ),
+              ],
             ),
-          ),
-          ListTile(
-            title: const Text('Mi perfil'),
-            leading: const Icon(Icons.person),
-            onTap: () => AutoRouter.of(context).push(ProfileRoute()),
-          ),
-          if (kDebugMode)
-            ListTile(
-              title: const Text('Notificaciones'),
-              leading: const Icon(Icons.notifications),
-              onTap: () => AutoRouter.of(context).push(SchedulePushRoute()),
-            ),
-          ListTile(
-            title: const Text('Acerca de'),
-            leading: const Icon(Icons.info),
-            onTap: () => AutoRouter.of(context).pushNamed('/about'),
-          ),
-          ListTile(
-            title: const Text('Cambiar contraseña'),
-            leading: const Icon(Icons.lock),
-            onTap: () => AutoRouter.of(context).push(ChangePasswordRoute()),
-          ),
-          ListTile(
-            title: const Text('Cerrar sesión'),
-            leading: const Icon(Icons.logout),
-            onTap: _showLogoutConfirmDialog,
           ),
         ],
       ),
@@ -242,6 +256,8 @@ class SonaScaffold extends StatelessWidget {
   final Widget? floatingActionButton;
   final Widget? bottomNavigationBar;
   final double padding;
+  final Gradient? bgGradient;
+  final bool hideBgLogo;
 
   const SonaScaffold({
     super.key,
@@ -252,6 +268,8 @@ class SonaScaffold extends StatelessWidget {
     this.bottomNavigationBar,
     this.padding = 10,
     this.appBarTittle,
+    this.bgGradient,
+    this.hideBgLogo = false,
   });
 
   @override
@@ -264,6 +282,8 @@ class SonaScaffold extends StatelessWidget {
       ),
       drawer: showLeading ? const SonaDrawer() : null,
       body: Background(
+        gradient: bgGradient ?? bgGradientLight,
+        hideLogo: hideBgLogo,
         child: SafeArea(
           child: Padding(
             padding: EdgeInsets.all(padding),

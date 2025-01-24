@@ -6,7 +6,6 @@ import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
-import 'package:sona/ui/widgets/image_builder.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
 
 @RoutePage()

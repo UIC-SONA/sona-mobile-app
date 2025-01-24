@@ -44,6 +44,7 @@ class _LoginScreenState extends FullState<LoginScreen> {
 
     return Scaffold(
       body: Background(
+        gradient: bgGradientLight,
         child: CustomScrollView(
           slivers: [
             SliverAppBar(

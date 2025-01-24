@@ -17,6 +17,7 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  intl: any
   chatview: ^2.4.0
   cupertino_icons: ^1.0.8
   http: ^1.2.2
@@ -75,6 +76,9 @@ flutter:
   uses-material-design: true
 
   fonts:
+    - family: SonaIcons
+      fonts:
+        - asset: assets/SonaIcons.ttf
     - family: Raleway
       fonts:
         - asset: fonts/Raleway-Regular.ttf

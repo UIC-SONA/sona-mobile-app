@@ -5,6 +5,7 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/ui/theme/backgrounds.dart';
+import 'package:sona/ui/theme/colors.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/widgets/loading_button.dart';
 
@@ -25,6 +26,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Background(
+        gradient: bgGradientLight,
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
           child: FormBuilder(

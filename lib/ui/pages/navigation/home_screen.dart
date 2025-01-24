@@ -18,6 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Background(
+        gradient: bgGradientLight,
         child: SafeArea(
           child: Center(
             child: Padding(
@@ -34,11 +35,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       MenuButton(
                         label: 'Calendario Menstrual',
                         icon: Icons.calendar_today,
+                        gradient: bgGradientButton1,
                         onPressed: () => AutoRouter.of(context).push(const MenstrualCalendarRoute()),
                       ),
                       MenuButton(
                         label: 'Contenido Didáctico',
                         icon: Icons.menu_book,
+                        gradient: bgGradientButton1,
                         onPressed: () => AutoRouter.of(context).push(const DidacticContentRoute()),
                       ),
                     ],

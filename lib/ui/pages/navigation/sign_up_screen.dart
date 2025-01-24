@@ -7,6 +7,7 @@ import 'package:sona/domain/services/user.dart';
 import 'package:sona/shared/validation/forms.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/theme/backgrounds.dart';
+import 'package:sona/ui/theme/colors.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/widgets/loading_button.dart';
 import 'package:sona/ui/widgets/sized_text_button.dart';
@@ -31,6 +32,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Background(
+        gradient: bgGradientLight,
         child: SafeArea(
           child: Center(
             child: Padding(

@@ -291,7 +291,7 @@ DateTime? getNextClosestDate(List<DateTime> dates, DateTime currentDateTime) {
   return futureDates.first;
 }
 
-class NotificationScheduler {
+class CalendarNotificationScheduler {
   //
   static Future<void> clear() async {
     await LocalNotifications.cancelMultiple([1, 2, 3, 4]);

@@ -51,7 +51,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
     // Escucha los cambios en el calendario y programa las notificaciones correspondientes
     calendarController.addListener(() {
       if (kDebugMode) print("Programming schedule notifications");
-      NotificationScheduler.scheduleNotifications(calendarController.value);
+      CalendarNotificationScheduler.scheduleNotifications(calendarController.value);
     });
     // Cargar los datos iniciales
     _loadData();
@@ -84,9 +84,9 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
     final locale = Localizations.localeOf(context).languageCode;
 
     return SonaScaffold(
-      actionButton: SonaActionButton(
-        text: 'Opciones',
-        onPressed: (context) => _settingsPeriod(),
+      actionButton: IconButton(
+        icon: const Icon(Icons.settings),
+        onPressed: _settingsPeriod,
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,6 +273,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       IconButton(
                         onPressed: () => AutoRouter.of(context).push(const MenuOptionsRoute()),
@@ -281,9 +282,15 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
                           color: defaultMenstruationColor,
                         ),
                       ),
-                      const Text(
-                        "Actualizar configuración de periodo",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      Flexible(
+                        child: Text(
+                          "Actualizar configuración de periodo",
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          softWrap: true,
+                        ),
                       ),
                     ],
                   ),

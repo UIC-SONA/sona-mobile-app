@@ -6,6 +6,7 @@ import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/constants.dart';
+import 'package:sona/ui/theme/colors.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/utils/helpers/chat_service_widget_helper.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
@@ -210,7 +211,9 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
   @override
   Widget build(BuildContext context) {
     return SonaScaffold(
+      bgGradient: bgGradientBackProfesional,
       showLeading: false,
+      hideBgLogo: true,
       actionButton: SonaActionButton.home(),
       padding: 0,
       body: SonaChatView(

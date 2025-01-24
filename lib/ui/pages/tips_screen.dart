@@ -8,6 +8,7 @@ import 'package:sona/shared/crud.dart';
 import 'package:sona/shared/schemas/direction.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/utils/paging.dart';
+import 'package:sona/ui/widgets/rounded_button_widget.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
 
 @RoutePage()
@@ -84,57 +85,68 @@ class _TipCard extends StatelessWidget {
             child: Column(
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Expanded(
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(0),
-                        title: Text(
-                          tip.title,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        subtitle: Text(
-                          tip.summary,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.justify,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10),
-                      child: ElevatedButton(
-                        onPressed: () => context.router.push(TipDetailsRoute(
-                          tip: tip,
-                          notifier: notifier,
-                        )),
-                        child: const Text('Ver más'),
-                      ),
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
+                      child: Column(
                         children: [
-                          const Icon(Icons.star, color: Colors.amber, size: 20),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${tip.averageRate.toStringAsFixed(1)} (${tip.totalRate})',
-                            style: TextStyle(
-                              color: Colors.grey.shade700,
-                              fontSize: 14,
+                          ListTile(
+                            contentPadding: const EdgeInsets.all(0),
+                            title: Text(
+                              tip.title,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            subtitle: Text(
+                              tip.summary,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.justify,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.star, color: Colors.amber, size: 20),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${tip.averageRate.toStringAsFixed(1)} (${tip.totalRate})',
+                                      style: TextStyle(
+                                        color: Colors.grey.shade700,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 10),
+                    RoundedButtonWidget(
+                      onPressed: () => context.router.push(
+                        TipDetailsRoute(
+                          tip: tip,
+                          notifier: notifier,
+                        ),
+                      ),
+                      child: Text(
+                        'Ver más',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

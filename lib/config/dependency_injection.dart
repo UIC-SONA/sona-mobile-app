@@ -39,7 +39,7 @@ Future<void> setupDependencies() async {
     await userService.refreshCurrentUser();
     await notificationService.suscribe();
   }
-  authProvider.addLogoutListener(NotificationScheduler.clear);
+  authProvider.addLogoutListener(CalendarNotificationScheduler.clear);
   authProvider.addLogoutListener(notificationService.unsuscribe);
   authProvider.addLoginListener(notificationService.suscribe);
 

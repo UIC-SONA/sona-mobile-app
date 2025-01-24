@@ -172,7 +172,6 @@ class ApiUserService extends RestReadOperations<User, int> with UserService {
 
   @override
   Future<Message> changePassword({required String newPassword}) async {
-    print("Headers: $commonHeaders");
     final response = await request(
       uri.replace(path: '$path/password'),
       client: client,

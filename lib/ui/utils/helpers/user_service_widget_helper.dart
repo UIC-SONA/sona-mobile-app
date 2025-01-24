@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/http/utils.dart';
+import 'package:sona/ui/theme/colors.dart';
 
 mixin UserServiceWidgetHelper {
   UserService get userService;
@@ -67,7 +68,16 @@ mixin UserServiceWidgetHelper {
     }
     return CircleAvatar(
       radius: radius,
-      child: Icon(Icons.person),
+      backgroundColor: Colors.transparent,
+      child: Container(
+        width: radius * 2,
+        height: radius * 2,
+        decoration: BoxDecoration(
+          gradient: bgGradientButton1,
+          borderRadius: BorderRadius.circular(radius),
+        ),
+        child: Icon(Icons.person),
+      ),
     );
   }
 

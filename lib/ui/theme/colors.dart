@@ -46,8 +46,8 @@ const bgGradientLight = LinearGradient(
 //GRADIENT BUTTON 1
 const bgGradientButton1 = LinearGradient(
   colors: [
-    Color(0x00BC308C),
-    Color(0x00FF00AB),
+    Color(0xFFBC308C),
+    Color(0xFFFF00AB),
   ],
   //Falta 100% angulo 45
   begin: Alignment.bottomLeft,
@@ -57,8 +57,8 @@ const bgGradientButton1 = LinearGradient(
 //GRADIENT BUTTON 2
 const bgGradientButton2 = LinearGradient(
   colors: [
-    Color(0x00FFD2FF),
-    Color(0x00E3FFCA),
+    Color(0xFFFFD2FF),
+    Color(0xFFE3FFCA),
   ],
   //Falta 100% angulo 45
   begin: Alignment.bottomLeft,
@@ -66,10 +66,10 @@ const bgGradientButton2 = LinearGradient(
 );
 
 //GRADIENT HEADER
-const bgGradientHeader = LinearGradient(
+const bgGradientAppBar = LinearGradient(
   colors: [
-    Color(0x00FF00AE),
-    Color(0x0094005A),
+    Color(0xFFFF00AE),
+    Color(0xFF94005A),
   ],
   //Falta 100% angulo 0
   begin: Alignment.bottomLeft,
@@ -79,7 +79,7 @@ const bgGradientHeader = LinearGradient(
 //GRADIENT NOTIFICATION
 const bgGradientNotification = LinearGradient(
   colors: [
-    Color(0x00FFFFFF),
+    Color(0xFFFFFFFF),
   ],
   //Falta 33%
   begin: Alignment.bottomLeft,
@@ -89,8 +89,8 @@ const bgGradientNotification = LinearGradient(
 //GRADIENT BACK PROFESIONAL
 const bgGradientBackProfesional = LinearGradient(
   colors: [
-    Color(0x008AB7AC),
-    Color(0x00A5E5C8)
+    Color(0xFF8AB7AC),
+    Color(0xFFA5E5C8)
   ],
   //Falta angulo 0
   begin: Alignment.bottomLeft,
@@ -100,8 +100,8 @@ const bgGradientBackProfesional = LinearGradient(
 //GRADIENT BACK CHATBOT
 const bgGradientBackChatbot = LinearGradient(
   colors: [
-    Color(0x00964578),
-    Color(0x00F285CA)
+    Color(0xFF964578),
+    Color(0xFFF285CA)
   ],
   //Falta angulo 0
   begin: Alignment.bottomLeft,

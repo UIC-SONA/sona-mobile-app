@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/services/chat_bot.dart';
+import 'package:sona/ui/theme/colors.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
 import 'package:sona/ui/widgets/sona_chat_view.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
@@ -85,7 +86,9 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
   @override
   Widget build(BuildContext context) {
     return SonaScaffold(
+      bgGradient: bgGradientBackChatbot,
       showLeading: false,
+      hideBgLogo: true,
       actionButton: SonaActionButton.home(),
       padding: 0,
       body: SonaChatView(

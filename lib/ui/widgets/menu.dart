@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sona/ui/theme/colors.dart';
 
 import 'full_state_widget.dart';
 
@@ -30,6 +31,7 @@ class MenuButton extends StatefulWidget {
   final String label;
   final IconData icon;
   final String? description;
+  final Gradient? gradient;
 
   const MenuButton({
     super.key,
@@ -37,6 +39,7 @@ class MenuButton extends StatefulWidget {
     required this.label,
     required this.icon,
     this.description,
+    this.gradient,
   });
 
   @override
@@ -72,46 +75,59 @@ class _MenuButtonState extends FullState<MenuButton> {
         duration: const Duration(milliseconds: 100), // Duración de la animación
         child: ElevatedButton(
           style: ButtonStyle(
-              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(20)),
-                  side: BorderSide(color: Colors.white, width: 2),
-                ),
+            padding: WidgetStateProperty.all(EdgeInsets.zero), // Elimina el padding interno
+            shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+              const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20)),
+                side: BorderSide(color: Colors.white, width: 2),
               ),
-              backgroundColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.disabled)) {
-                  return Colors.grey;
-                }
-                return null;
-              })),
+            ),
+          ),
           onPressed: widget.onPressed,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Icon(widget.icon, color: Colors.white, size: 80),
-              const SizedBox(height: 10),
-              Text(
-                widget.label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+          child: Ink(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            width: double.infinity,
+            decoration: widget.gradient != null
+                ? BoxDecoration(
+                    gradient: widget.gradient,
+                    borderRadius: BorderRadius.circular(20),
+                  )
+                : BoxDecoration(
+                    color: deepMagenta,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  widget.icon,
                   color: Colors.white,
+                  size: 80,
                 ),
-              ),
-              if (widget.description != null) ...[
                 const SizedBox(height: 10),
                 Text(
-                  widget.description!,
+                  widget.label,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
+                if (widget.description != null) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    widget.description!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

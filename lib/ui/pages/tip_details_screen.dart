@@ -90,10 +90,23 @@ class _TipDetailsScreenState extends State<TipDetailsScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Etiquetas:',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
                     Wrap(
                       spacing: 6.0,
                       children: [
-                        for (final tag in tip.tags) Chip(label: Text(tag)),
+                        for (final tag in tip.tags)
+                          Chip(
+                            label: Text(tag),
+                          ),
                       ],
                     ),
                     const SizedBox(height: 20),
