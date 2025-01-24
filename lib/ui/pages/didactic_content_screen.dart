@@ -8,6 +8,7 @@ import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/crud.dart';
 import 'package:sona/shared/schemas/direction.dart';
+import 'package:sona/ui/theme/icons.dart';
 import 'package:sona/ui/utils/paging.dart';
 
 import 'package:sona/ui/widgets/full_state_widget.dart';
@@ -159,7 +160,7 @@ class _DidacticContentExpansionTileState extends State<DidacticContentExpansionT
                     color: Colors.white,
                     onPressed: _toggleExpand,
                     icon: Icon(
-                      _isExpanded ? Icons.visibility_off : Icons.visibility,
+                      _isExpanded ? SonaIcons.eyeOff : SonaIcons.eye,
                     ),
                   ),
                 ),

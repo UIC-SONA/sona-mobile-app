@@ -8,6 +8,7 @@ import 'package:sona/domain/services/services.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/theme/backgrounds.dart';
 import 'package:sona/ui/theme/colors.dart';
+import 'package:sona/ui/theme/icons.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
@@ -40,7 +41,7 @@ class SonaAppBar extends StatelessWidget implements PreferredSizeWidget {
                 return IconButton(
                   padding: const EdgeInsets.all(0),
                   onPressed: Scaffold.of(context).openDrawer,
-                  icon: const Icon(Icons.menu),
+                  icon: Icon(SonaIcons.menu),
                 );
               },
             )
@@ -141,7 +142,7 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
                 ),
                 ListTile(
                   title: const Text('Mi perfil'),
-                  leading: const Icon(Icons.person),
+                  leading: Icon(SonaIcons.user),
                   onTap: () => AutoRouter.of(context).push(ProfileRoute()),
                 ),
                 if (kDebugMode)
@@ -152,17 +153,17 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
                   ),
                 ListTile(
                   title: const Text('Acerca de'),
-                  leading: const Icon(Icons.info),
+                  leading: Icon(SonaIcons.warning),
                   onTap: () => AutoRouter.of(context).pushNamed('/about'),
                 ),
                 ListTile(
                   title: const Text('Cambiar contraseña'),
-                  leading: const Icon(Icons.lock),
+                  leading: Icon(SonaIcons.reloadPadlock),
                   onTap: () => AutoRouter.of(context).push(ChangePasswordRoute()),
                 ),
                 ListTile(
                   title: const Text('Cerrar sesión'),
-                  leading: const Icon(Icons.logout),
+                  leading: Icon(SonaIcons.back),
                   onTap: _showLogoutConfirmDialog,
                 ),
               ],

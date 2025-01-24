@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/utils/time_formatters.dart';
+import 'package:sona/ui/theme/icons.dart';
 import 'package:sona/ui/utils/helpers/post_service_widget_helper.dart';
 import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';
 import 'package:sona/ui/utils/dialogs.dart';
@@ -88,7 +89,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
                 const SizedBox(width: 12),
                 if (post.iAmAuthor)
                   IconButton(
-                    icon: const Icon(Icons.delete),
+                    icon: Icon(SonaIcons.trash),
                     onPressed: () => _deletePost(post),
                   ),
               ],
@@ -131,7 +132,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
                   builder: (context, post, _) {
                     return TextButton.icon(
                       onPressed: widget.onComment,
-                      icon: const Icon(Icons.comment_outlined),
+                      icon: Icon(SonaIcons.message),
                       label: Text('${post.comments.length}'),
                     );
                   },
@@ -142,7 +143,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
                   builder: (context, post, _) {
                     return IconButton(
                       color: Theme.of(context).primaryColor,
-                      icon: const Icon(Icons.flag_outlined),
+                      icon: Icon(SonaIcons.forbidden),
                       onPressed: _reportPost,
                     );
                   },

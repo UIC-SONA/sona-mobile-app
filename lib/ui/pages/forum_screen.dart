@@ -13,6 +13,8 @@ import 'package:sona/ui/widgets/full_state_widget.dart';
 import 'package:sona/ui/widgets/post_paged_list.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
 
+import '../theme/icons.dart';
+
 @RoutePage()
 class ForumScreen extends StatefulWidget {
   const ForumScreen({super.key});
@@ -63,7 +65,7 @@ class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHel
           await context.router.push(const ForumNewPostRoute());
           pagingController.refresh();
         },
-        child: const Icon(Icons.add),
+        child: Icon(SonaIcons.plusSquare),
       ),
     );
   }

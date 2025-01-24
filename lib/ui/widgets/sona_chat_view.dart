@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:sona/ui/theme/colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../theme/icons.dart';
+
 class SonaChatView extends StatelessWidget {
   final ChatController chatController;
   final ChatViewState chatViewState;
@@ -120,7 +122,7 @@ class SonaChatView extends StatelessWidget {
         enableGalleryImagePicker: enableGalleryImagePicker,
         allowRecordingVoice: allowRecordingVoice,
         sendButtonIcon: Icon(
-          Icons.send,
+          SonaIcons.send,
           color: primaryColor,
         ),
         textFieldConfig: TextFieldConfiguration(

@@ -3,6 +3,7 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/validation/forms.dart';
+import 'package:sona/ui/theme/icons.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/widgets/loading_button.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
@@ -49,7 +50,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   prefixIcon: const Icon(Icons.lock),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                      _obscurePassword ? SonaIcons.eye : SonaIcons.eyeOff,
                     ),
                     onPressed: () => setState(() {
                       _obscurePassword = !_obscurePassword;
@@ -74,7 +75,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   prefixIcon: const Icon(Icons.lock),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
+                      _obscureConfirmPassword ? SonaIcons.eye : SonaIcons.eyeOff,
                     ),
                     onPressed: () => setState(() {
                       _obscureConfirmPassword = !_obscureConfirmPassword;
