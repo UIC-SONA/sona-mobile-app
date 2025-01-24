@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
@@ -26,19 +27,19 @@ class ServicesOptionsScreen extends StatelessWidget {
             buttons: [
               MenuButton(
                 label: 'Chatbot',
-                icon: Icons.android,
+                icon: SvgPicture.asset('assets/icons/ICON4.svg', height: 90,),
                 onPressed: () => AutoRouter.of(context).push(const ChatBotRoute()),
                 gradient: bgGradientButton1,
               ),
               MenuButton(
                 label: isProfessional ? 'Chat' : 'Chat con Profesionales',
-                icon: Icons.chat,
+                icon: SvgPicture.asset('assets/icons/ICON5.svg', height: 90,),
                 onPressed: () => AutoRouter.of(context).push(const ChatRoute()),
                 gradient: bgGradientButton1,
               ),
               MenuButton(
                 label: 'Agendamiento de Citas',
-                icon: Icons.calendar_today,
+                icon: SvgPicture.asset('assets/icons/ICON6.svg', height: 90,),
                 onPressed: () => AutoRouter.of(context).push(const AppointmentMenuRoute()),
                 gradient: bgGradientButton1,
               ),

@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/theme/backgrounds.dart';
 import 'package:sona/ui/theme/colors.dart';
@@ -34,13 +35,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     buttons: [
                       MenuButton(
                         label: 'Calendario Menstrual',
-                        icon: Icons.calendar_today,
+                        icon: SvgPicture.asset('assets/icons/ICON1.svg', height: 80,),
                         gradient: bgGradientButton1,
                         onPressed: () => AutoRouter.of(context).push(const MenstrualCalendarRoute()),
                       ),
                       MenuButton(
                         label: 'Contenido Didáctico',
-                        icon: Icons.menu_book,
+                        icon: SvgPicture.asset('assets/icons/ICON2.svg', height: 80,),
                         gradient: bgGradientButton1,
                         onPressed: () => AutoRouter.of(context).push(const DidacticContentRoute()),
                       ),
