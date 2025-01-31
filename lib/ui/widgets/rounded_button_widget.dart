@@ -4,18 +4,20 @@ import 'package:sona/ui/theme/colors.dart';
 class RoundedButtonWidget extends StatelessWidget {
   final Widget child;
   final VoidCallback onPressed;
+  final Gradient gradient;
 
   const RoundedButtonWidget({
     super.key,
     required this.child,
     required this.onPressed,
+    this.gradient = bgGradientAppBar,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: bgGradientAppBar,
+        gradient: gradient,
         borderRadius: BorderRadius.circular(15),
       ),
       child: ElevatedButton(

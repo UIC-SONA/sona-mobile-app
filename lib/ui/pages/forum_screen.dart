@@ -49,16 +49,7 @@ class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHel
   @override
   Widget build(BuildContext context) {
     return SonaScaffold(
-      actionButton: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20),
-        child: const Text(
-          'Foro',
-          style: TextStyle(
-            fontSize: 35,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
+      actionButton: SonaActionButton.home(),
       body: PostListView(controller: pagingController),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {

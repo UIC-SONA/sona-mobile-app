@@ -5,6 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/domain/services/services.dart';
+import 'package:sona/shared/constants.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/theme/backgrounds.dart';
 import 'package:sona/ui/theme/colors.dart';
@@ -12,6 +13,7 @@ import 'package:sona/ui/theme/icons.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
+import 'package:sona/ui/widgets/rounded_button_widget.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class SonaAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -113,7 +115,7 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  buildUserAvatar(user, radius: 50),
+                  buildProfilePicture(radius: 50),
                   const SizedBox(height: 10),
                   Column(
                     children: [
@@ -155,7 +157,7 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
                 ListTile(
                   title: const Text('Acerca de'),
                   leading: Icon(SonaIcons.warning),
-                  onTap: () => AutoRouter.of(context).pushNamed('/about'),
+                  onTap: _openAboutUs,
                 ),
                 ListTile(
                   title: const Text('Cambiar contraseña'),
@@ -178,6 +180,13 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
         ],
       ),
     );
+  }
+
+  Future<void> _openAboutUs() async {
+    final url = apiUri.replace(path: '/docs/about-us.pdf').toString();
+    if (await canLaunchUrlString(url)) {
+      launchUrlString(url);
+    }
   }
 
   Future<void> _openTel911() async {
@@ -326,18 +335,16 @@ class SonaActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10),
-      child: ElevatedButton(
-        style: ButtonStyle(
-          padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 10)),
-          backgroundColor: WidgetStateProperty.all(Colors.white),
-          foregroundColor: WidgetStateProperty.all(Colors.black),
-        ),
-        onPressed: () {
-          onPressed(context);
-        },
+      child: RoundedButtonWidget(
+        onPressed: () => onPressed(context),
+        gradient: bgGradientButton2,
         child: Text(
           text,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
         ),
       ),
     );

@@ -4,6 +4,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/services/user.dart';
+import 'package:sona/shared/constants.dart';
 import 'package:sona/shared/validation/forms.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/theme/backgrounds.dart';
@@ -11,6 +12,7 @@ import 'package:sona/ui/theme/colors.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/widgets/loading_button.dart';
 import 'package:sona/ui/widgets/sized_text_button.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 @RoutePage()
 class SignUpScreen extends StatefulWidget {
@@ -68,6 +70,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Widget _buildForm() {
+    const errorMaxLines = 5;
+
     return FormBuilder(
       key: formKey,
       child: Column(
@@ -77,6 +81,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             decoration: const InputDecoration(
               labelText: 'Nombre',
               prefixIcon: Icon(Icons.person),
+              errorMaxLines: errorMaxLines,
             ),
             validator: FormBuilderValidators.required(),
           ),
@@ -86,6 +91,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             decoration: const InputDecoration(
               labelText: 'Apellido',
               prefixIcon: Icon(Icons.person),
+              errorMaxLines: errorMaxLines,
             ),
             validator: FormBuilderValidators.required(),
           ),
@@ -95,6 +101,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             decoration: const InputDecoration(
               labelText: 'Nombre de usuario',
               prefixIcon: Icon(Icons.person),
+              errorMaxLines: errorMaxLines,
             ),
             validator: FormBuilderValidators.required(),
           ),
@@ -104,6 +111,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             decoration: const InputDecoration(
               labelText: 'Email',
               prefixIcon: Icon(Icons.email),
+              errorMaxLines: errorMaxLines,
             ),
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(),
@@ -121,10 +129,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 onPressed: _togglePasswordVisibility,
                 icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
               ),
+              errorMaxLines: errorMaxLines,
             ),
             validator: FormBuilderValidators.password(
               checkNullOrEmpty: true,
-              minLength: 6,
+              minLength: 12,
               minLowercaseCount: 1,
               minUppercaseCount: 1,
               minSpecialCharCount: 1,
@@ -142,6 +151,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 onPressed: _toggleConfirmPasswordVisibility,
                 icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off),
               ),
+              errorMaxLines: errorMaxLines,
             ),
             validator: (value) {
               if (value != formKey.currentState?.fields['password']?.value) {
@@ -150,6 +160,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
               return null;
             },
           ),
+          const SizedBox(height: 30),
+          _buildeTermsOfService(),
           const SizedBox(height: 30),
           LoadingButton(
             icon: const Icon(Icons.person_add),
@@ -163,6 +175,39 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildeTermsOfService() {
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      alignment: WrapAlignment.center,
+      spacing: 4.0, // Espacio entre los elementos
+      children: [
+        const Text(
+          'Al registrarse usted está aceptando los ',
+          style: TextStyle(fontWeight: FontWeight.w500),
+        ),
+        SizedTextbutton(
+          'Términos y Condiciones',
+          onPressed: _isLoading ? null : _openTermsOfService,
+          height: 20,
+        ),
+      ],
+    );
+  }
+
+  Future<void> _openTermsOfService() async {
+    final url = apiUri.replace(path: '/docs/terms.pdf');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      if (!mounted) return;
+      showAlertDialog(
+        context,
+        title: 'Error',
+        message: 'No se pudo abrir el archivo',
+      );
+    }
   }
 
   Future<void> _signUp() async {

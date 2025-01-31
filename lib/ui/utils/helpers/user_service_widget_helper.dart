@@ -3,6 +3,7 @@ import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/http/utils.dart';
 import 'package:sona/ui/theme/colors.dart';
+import 'package:uuid/uuid.dart';
 
 mixin UserServiceWidgetHelper {
   UserService get userService;
@@ -59,11 +60,11 @@ mixin UserServiceWidgetHelper {
     );
   }
 
-  Widget buildUserAvatar(User user, {double radius = 20.0}) {
+  Widget buildUserAvatar(User user, {double radius = 20.0, String? cacheBuster}) {
     if (user.hasProfilePicture) {
       return CircleAvatar(
         radius: radius,
-        backgroundImage: userService.profilePicture(userId: user.id),
+        backgroundImage: userService.profilePicture(userId: user.id, cacheBuster: cacheBuster),
       );
     }
     return CircleAvatar(
@@ -81,13 +82,21 @@ mixin UserServiceWidgetHelper {
     );
   }
 
+  var cacheBusterProfilePicture = Uuid().v4();
+
+  Widget buildProfilePicture({double radius = 20.0}) {
+    return buildUserAvatar(currentUser, radius: radius, cacheBuster: cacheBusterProfilePicture);
+  }
+
   @protected
   void clearUserCaches() {
+    cacheBusterProfilePicture = Uuid().v4();
     _cachedUsers.clear();
   }
 
   @protected
   Future<void> refreshCurrentUser() async {
+    cacheBusterProfilePicture = Uuid().v4();
     await userService.refreshCurrentUser();
   }
 

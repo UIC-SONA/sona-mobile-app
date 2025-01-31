@@ -98,7 +98,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
               children: [
                 Row(
                   children: [
-                    buildUserAvatar(profile, radius: 35),
+                    buildProfilePicture(radius: 35),
                     const SizedBox(width: 10),
                     Text(
                       profile.firstName,
@@ -249,7 +249,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
             const SizedBox(height: 8),
             switch (_selectedDateDayType) {
               CycleDayType.ovulationPrediction => const Text('Alta probabilidad de quedarse embarazada'),
-              CycleDayType.periodPrediction || CycleDayType.period => const Text('Probabilidad media de quedarse embarazada'),
+              CycleDayType.periodPrediction || CycleDayType.period => const Text('Probabilidad baja de quedarse embarazada'),
               null => const Text('Baja probabilidad de quedarse embarazada'),
             }
           ],

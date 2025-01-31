@@ -102,6 +102,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
                   post.content,
                   maxLines: null,
                   softWrap: true,
+                  textAlign: TextAlign.justify,
                 );
               },
             ),
@@ -115,12 +116,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
                     final isLiked = post.likedBy.contains(user.id);
                     return TextButton.icon(
                       onPressed: () => _toggleLike(isLiked),
-                      icon: isLiked
-                          ? const Icon(Icons.thumb_up)
-                          : const Icon(
-                              Icons.thumb_up_outlined,
-                              color: Colors.black,
-                            ),
+                      icon: isLiked ? const Icon(Icons.thumb_up) : const Icon(Icons.thumb_up_outlined),
                       label: Text('${post.likedBy.length}'),
                     );
                   },

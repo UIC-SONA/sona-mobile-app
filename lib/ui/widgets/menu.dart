@@ -78,8 +78,7 @@ class _MenuButtonState extends FullState<MenuButton> {
             padding: WidgetStateProperty.all(EdgeInsets.zero), // Elimina el padding interno
             shape: WidgetStateProperty.all<RoundedRectangleBorder>(
               const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(20)),
-                side: BorderSide(color: Colors.white, width: 2),
+                borderRadius: BorderRadius.all(Radius.circular(35)),
               ),
             ),
           ),
@@ -90,11 +89,11 @@ class _MenuButtonState extends FullState<MenuButton> {
             decoration: widget.gradient != null
                 ? BoxDecoration(
                     gradient: widget.gradient,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(35),
                   )
                 : BoxDecoration(
                     color: deepMagenta,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(35),
                   ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,

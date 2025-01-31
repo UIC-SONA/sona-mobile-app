@@ -26,6 +26,7 @@ class DidacticContentScreen extends StatefulWidget {
 class _DidacticContentScreenState extends FullState<DidacticContentScreen> {
   final _didacticContentService = injector.get<DidacticContentService>();
   final _pagingController = PagingQueryController<DidaticContent>(firstPage: 0);
+  String? _expandedTileId;
 
   @override
   void initState() {
@@ -42,6 +43,12 @@ class _DidacticContentScreenState extends FullState<DidacticContentScreen> {
     ));
 
     return result.content;
+  }
+
+  void _handleTileExpansion(String tileId) {
+    setState(() {
+      _expandedTileId = _expandedTileId == tileId ? null : tileId;
+    });
   }
 
   @override
@@ -69,6 +76,8 @@ class _DidacticContentScreenState extends FullState<DidacticContentScreen> {
           itemBuilder: (context, didaticContent, index) {
             return DidacticContentExpansionTile(
               didaticContent: didaticContent,
+              isExpanded: _expandedTileId == didaticContent.id,
+              onToggle: () => _handleTileExpansion(didaticContent.id),
             );
           },
         ),
@@ -79,10 +88,14 @@ class _DidacticContentScreenState extends FullState<DidacticContentScreen> {
 
 class DidacticContentExpansionTile extends StatefulWidget {
   final DidaticContent didaticContent;
+  final bool isExpanded;
+  final VoidCallback onToggle;
 
   const DidacticContentExpansionTile({
     super.key,
     required this.didaticContent,
+    required this.isExpanded,
+    required this.onToggle,
   });
 
   @override
@@ -92,7 +105,6 @@ class DidacticContentExpansionTile extends StatefulWidget {
 class _DidacticContentExpansionTileState extends State<DidacticContentExpansionTile> with SingleTickerProviderStateMixin {
   final _didacticContentService = injector.get<DidacticContentService>();
   late AnimationController _iconController;
-  bool _isExpanded = false;
 
   @override
   void initState() {
@@ -104,20 +116,21 @@ class _DidacticContentExpansionTileState extends State<DidacticContentExpansionT
   }
 
   @override
-  void dispose() {
-    _iconController.dispose();
-    super.dispose();
-  }
-
-  void _toggleExpand() {
-    setState(() {
-      _isExpanded = !_isExpanded;
-      if (_isExpanded) {
+  void didUpdateWidget(DidacticContentExpansionTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isExpanded != oldWidget.isExpanded) {
+      if (widget.isExpanded) {
         _iconController.forward();
       } else {
         _iconController.reverse();
       }
-    });
+    }
+  }
+
+  @override
+  void dispose() {
+    _iconController.dispose();
+    super.dispose();
   }
 
   @override
@@ -127,7 +140,6 @@ class _DidacticContentExpansionTileState extends State<DidacticContentExpansionT
       margin: const EdgeInsets.only(bottom: 20),
       child: Column(
         children: [
-          // Header
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: Center(
@@ -142,7 +154,6 @@ class _DidacticContentExpansionTileState extends State<DidacticContentExpansionT
               ),
             ),
           ),
-          // Content preview row
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
@@ -158,22 +169,21 @@ class _DidacticContentExpansionTileState extends State<DidacticContentExpansionT
                   ),
                   child: IconButton(
                     color: Colors.white,
-                    onPressed: _toggleExpand,
+                    onPressed: widget.onToggle,
                     icon: Icon(
-                      _isExpanded ? SonaIcons.eyeOff : SonaIcons.eye,
+                      widget.isExpanded ? SonaIcons.eyeOff : SonaIcons.eye,
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          // Expandable content
           AnimatedCrossFade(
             firstChild: const SizedBox.shrink(),
             secondChild: Padding(
               padding: const EdgeInsets.all(20.0),
               child: MarkdownBody(
-                data: _isExpanded ? widget.didaticContent.content : '',
+                data: widget.isExpanded ? widget.didaticContent.content : '',
                 styleSheet: MarkdownStyleSheet(
                   textAlign: WrapAlignment.spaceEvenly,
                   p: const TextStyle(fontFamily: fontFamily, fontSize: 16),
@@ -184,7 +194,7 @@ class _DidacticContentExpansionTileState extends State<DidacticContentExpansionT
                 ),
               ),
             ),
-            crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+            crossFadeState: widget.isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
             duration: const Duration(milliseconds: 300),
           ),
         ],

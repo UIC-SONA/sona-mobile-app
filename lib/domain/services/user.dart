@@ -26,7 +26,7 @@ mixin UserService implements ReadOperations<User, int> {
     required String email,
   });
 
-  ImageProvider<Object> profilePicture({int? userId});
+  ImageProvider<Object> profilePicture({int? userId, String? cacheBuster});
 
   String profilePictureUrl(int userId);
 
@@ -106,9 +106,12 @@ class ApiUserService extends RestReadOperations<User, int> with UserService {
   }
 
   @override
-  ImageProvider<Object> profilePicture({int? userId}) {
+  ImageProvider<Object> profilePicture({int? userId, String? cacheBuster}) {
     return HttpImageProvider(
-      uri.replace(path: userId != null ? '$path/$userId/profile-picture' : '$path/profile-picture'),
+      uri.replace(
+        path: userId != null ? '$path/$userId/profile-picture' : '$path/profile-picture',
+        queryParameters: cacheBuster != null ? {'cacheBuster': cacheBuster} : null,
+      ),
       headers: commonHeaders,
       client: client,
     );

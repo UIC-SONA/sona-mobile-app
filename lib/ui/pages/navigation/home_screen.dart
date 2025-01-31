@@ -35,13 +35,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     buttons: [
                       MenuButton(
                         label: 'Calendario Menstrual',
-                        icon: SvgPicture.asset('assets/icons/ICON1.svg', height: 80,),
+                        icon: SvgPicture.asset(
+                          'assets/icons/ICON1.svg',
+                          height: 80,
+                        ),
                         gradient: bgGradientButton1,
                         onPressed: () => AutoRouter.of(context).push(const MenstrualCalendarRoute()),
                       ),
                       MenuButton(
                         label: 'Contenido Didáctico',
-                        icon: SvgPicture.asset('assets/icons/ICON2.svg', height: 80,),
+                        icon: SvgPicture.asset(
+                          'assets/icons/ICON2.svg',
+                          height: 80,
+                        ),
                         gradient: bgGradientButton1,
                         onPressed: () => AutoRouter.of(context).push(const DidacticContentRoute()),
                       ),
@@ -61,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          '¡Bienvenido a ',
+          '¡Bienvenida ',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
         ),
         Text(

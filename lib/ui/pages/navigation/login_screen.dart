@@ -1,8 +1,10 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:sona/config/dependency_injection.dart';
+import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/validation/forms.dart';
@@ -196,7 +198,13 @@ class _LoginScreenState extends FullState<LoginScreen> {
 
     try {
       await authProvider.login(email, password);
-      await injector.get<UserService>().refreshCurrentUser();
+      final userService = injector.get<UserService>();
+      await userService.refreshCurrentUser();
+      final currentUser = userService.currentUser;
+      if (!currentUser.authorities.contains(Authority.user)) {
+        throw 'No tienes permisos para acceder a la aplicación';
+      }
+
       if (mounted) {
         AutoRouter.of(context).replaceAll([const HomeRoute()]);
       }
@@ -204,7 +212,12 @@ class _LoginScreenState extends FullState<LoginScreen> {
       if (!mounted) return;
       final message = error.toString();
       if (message.contains(invalidGrantError)) {
-        showAlertDialog(context, title: 'Error', message: message.split(invalidGrantError)[1]);
+        final error = message.split(invalidGrantError)[1].trim();
+        if (error == 'Invalid user credentials.') {
+          showAlertDialog(context, title: 'Error', message: 'Usuario o contraseña incorrectos');
+        } else {
+          showAlertDialog(context, title: 'Error', message: error);
+        }
       } else {
         formStateInvalidator(context, formState: formState, error: error);
       }
