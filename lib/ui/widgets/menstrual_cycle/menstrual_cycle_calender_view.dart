@@ -12,9 +12,8 @@ class MenstrualCycleCalendarView extends StatefulWidget {
   final Color themeColor;
   final Color backgroundColor;
   final String editPeriodText;
-  final bool hideInfoView;
   final bool hideBottomBar;
-  final bool hideLogPeriodButton;
+  final bool hideEditPeriod;
   final bool isExpanded;
 
   // CALLBACKS AND REFRESHER
@@ -29,9 +28,8 @@ class MenstrualCycleCalendarView extends StatefulWidget {
     this.themeColor = Colors.black,
     this.backgroundColor = Colors.white,
     this.editPeriodText = "EDIT",
-    this.hideInfoView = false,
     this.hideBottomBar = false,
-    this.hideLogPeriodButton = false,
+    this.hideEditPeriod = false,
     this.isExpanded = false,
     this.onDateSelected,
     this.onDataChanged,
@@ -184,7 +182,7 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            if (!widget.hideLogPeriodButton)
+            if (!widget.hideEditPeriod)
               Padding(
                 padding: const EdgeInsets.all(4),
                 child: OutlinedButton(
@@ -195,11 +193,26 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
                   ),
                 ),
               ),
-            IconButton(
-              onPressed: toggleExpanded,
-              iconSize: 25.0,
-              padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-              icon: Icon(isExpanded ? Icons.arrow_drop_up : Icons.arrow_drop_down, color: widget.themeColor),
+            Row(
+              children: [
+                Text(
+                  isExpanded ? "Ver menos" : "Ver más",
+                  style: TextStyle(
+                    color: widget.themeColor,
+                    fontSize: 11,
+                  ),
+                ),
+                IconButton(
+                  onPressed: toggleExpanded,
+                  iconSize: 25.0,
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.all(0),
+                  icon: Icon(
+                    isExpanded ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                    color: widget.themeColor,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -278,12 +291,17 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
             valueListenable: widget.controller,
             builder: (context, value, child) {
               return _ExpansionCrossFade(
-                collapsed: calendarGridView(value),
+                collapsed: Column(
+                  children: [
+                    calendarGridView(value),
+                    getInformationView(widget.daySelectedColor, widget.themeColor, items: 1),
+                    const SizedBox(height: 10),
+                  ],
+                ),
                 expanded: Column(
                   children: [
                     calendarGridView(value),
-                    const SizedBox(height: 15),
-                    if (!widget.hideInfoView) getInformationView(widget.daySelectedColor, widget.themeColor),
+                    getInformationView(widget.daySelectedColor, widget.themeColor),
                     const SizedBox(height: 10),
                   ],
                 ),
@@ -346,7 +364,6 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
         builder: (context) => MenstrualCycleCalendarEditableView(
           controller: widget.controller,
           themeColor: widget.themeColor,
-          hideInfoView: widget.hideInfoView,
           isShowCloseIcon: true,
           onDataChanged: widget.onDataChanged,
           formatter: formatter,
@@ -421,7 +438,15 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
   }
 }
 
-Widget getInformationView(Color daySelectedColor, Color themeColor) {
+final List<Map<String, dynamic>> informationItems = [
+  {"icon": Icons.water_drop_sharp, "color": defaultMenstruationColor, "text": "Período"},
+  {"icon": Icons.favorite_border, "color": defaultOvulationColor, "text": "Predicción de ovulación"},
+  {"icon": Icons.water_drop_outlined, "color": defaultMenstruationColor, "text": "Predicción de periodo"},
+  {"icon": Icons.circle, "color": Colors.grey, "text": "Día seleccionado"},
+  {"icon": Icons.circle, "color": Colors.black, "text": "Hoy"},
+];
+
+Widget getInformationView(Color daySelectedColor, Color themeColor, {int items = 5}) {
   const double fontSize = 13;
   const double iconSize = 13;
 
@@ -447,17 +472,7 @@ Widget getInformationView(Color daySelectedColor, Color themeColor) {
     child: Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        buildRow(Icons.water_drop_sharp, defaultMenstruationColor, "Período"),
-        const SizedBox(height: 5),
-        buildRow(Icons.favorite_border, defaultOvulationColor, "Predicción de ovulación"),
-        const SizedBox(height: 5),
-        buildRow(Icons.water_drop_outlined, defaultMenstruationColor, "Predicción de periodo"),
-        const SizedBox(height: 5),
-        buildRow(Icons.circle, daySelectedColor, "Día seleccionado"),
-        const SizedBox(height: 5),
-        buildRow(Icons.circle, themeColor, "Hoy"),
-      ],
+      children: informationItems.sublist(0, items).map((item) => buildRow(item["icon"], item["color"], item["text"] as String)).toList(),
     ),
   );
 }

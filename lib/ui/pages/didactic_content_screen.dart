@@ -7,6 +7,7 @@ import 'package:sona/domain/models/models.dart';
 
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/crud.dart';
+import 'package:sona/shared/errors.dart';
 import 'package:sona/shared/schemas/direction.dart';
 import 'package:sona/ui/theme/icons.dart';
 import 'package:sona/ui/utils/paging.dart';
@@ -160,6 +161,23 @@ class _DidacticContentExpansionTileState extends State<DidacticContentExpansionT
               children: [
                 ImageBuilder(
                   provider: _didacticContentService.image(widget.didaticContent.id),
+                  errorBuilder: (context, error, stackTrace) {
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error),
+                        const SizedBox(height: 10),
+                        Text(
+                          extractError(error).message,
+                          style: const TextStyle(
+                            fontFamily: fontFamily,
+                            fontSize: 10,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    );
+                  },
                 ),
                 const SizedBox(height: 10),
                 Container(

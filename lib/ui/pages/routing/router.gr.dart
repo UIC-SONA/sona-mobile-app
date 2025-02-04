@@ -10,6 +10,25 @@
 part of 'router.dart';
 
 /// generated route for
+/// [AboutUsScreen]
+class AboutUsRoute extends PageRouteInfo<void> {
+  const AboutUsRoute({List<PageRouteInfo>? children})
+      : super(
+          AboutUsRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'AboutUsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AboutUsScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [AppointmentMenuScreen]
 class AppointmentMenuRoute extends PageRouteInfo<void> {
   const AppointmentMenuRoute({List<PageRouteInfo>? children})

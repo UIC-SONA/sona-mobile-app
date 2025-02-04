@@ -157,7 +157,7 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
                 ListTile(
                   title: const Text('Acerca de'),
                   leading: Icon(SonaIcons.warning),
-                  onTap: _openAboutUs,
+                  onTap: () => AutoRouter.of(context).push(AboutUsRoute()),
                 ),
                 ListTile(
                   title: const Text('Cambiar contraseña'),
@@ -180,13 +180,6 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
         ],
       ),
     );
-  }
-
-  Future<void> _openAboutUs() async {
-    final url = apiUri.replace(path: '/docs/about-us.pdf').toString();
-    if (await canLaunchUrlString(url)) {
-      launchUrlString(url);
-    }
   }
 
   Future<void> _openTel911() async {

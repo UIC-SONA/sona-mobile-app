@@ -132,7 +132,6 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
                   controller: calendarController,
                   themeColor: primaryColor,
                   editPeriodText: "EDITAR",
-                  hideInfoView: false,
                   onDataChanged: () async {
                     await menstrualCycleService.savePeriodDates(calendarController.pastPeriodDays);
                     if (mounted) setState(() {});
@@ -231,7 +230,12 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
   }
 
   Widget _buildDetailsSection() {
-    final formattedDate = DateFormat('MMMM d, y', Localizations.localeOf(context).languageCode).format(_selectedDate);
+    //
+    final formattedDate = DateFormat(
+      'MMMM d, y',
+      Localizations.localeOf(context).languageCode,
+    ).format(_selectedDate);
+
     final capitalizedDate = formattedDate[0].toUpperCase() + formattedDate.substring(1);
     return Card(
       child: Padding(
@@ -266,7 +270,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
           builder: (context, setState) {
             return Container(
               height: 150.0,
-              margin: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 20),
+              margin: const EdgeInsets.all(20),
               color: Colors.transparent,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,

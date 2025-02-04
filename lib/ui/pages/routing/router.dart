@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:sona/domain/models/models.dart';
+import 'package:sona/ui/pages/about_us_screen.dart';
 import 'package:sona/ui/pages/change_password_screen.dart';
 import 'package:sona/ui/pages/chat_room_screen.dart';
 import 'package:sona/ui/pages/my_appointments_screen.dart';
@@ -65,6 +66,7 @@ class AppRouter extends RootStackRouter {
         AutoRoute(path: "/schedule-push-route", page: SchedulePushRoute.page),
         AutoRoute(path: "/change-password", page: ChangePasswordRoute.page),
         AutoRoute(path: "/reset-password", page: ResetPasswordRoute.page),
+        AutoRoute(path: "/about-us", page: AboutUsRoute.page),
       ];
 
   @override
