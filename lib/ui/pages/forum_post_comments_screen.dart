@@ -12,6 +12,8 @@ import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
 
+import '../theme/icons.dart';
+
 @RoutePage()
 class ForumPostCommentsScreen extends StatefulWidget {
   final PostWithUser post;
@@ -225,7 +227,7 @@ class _ForumPostCommentsScreenState extends FullState<ForumPostCommentsScreen> w
                             onPressed: () => _toggleLike(isLiked, comment),
                             iconSize: 20,
                             padding: const EdgeInsets.all(0),
-                            icon: isLiked ? Icon(Icons.thumb_up, color: primaryColor) : const Icon(Icons.thumb_up_outlined),
+                            icon: isLiked ? Icon(SonaIcons.likeFill, color: primaryColor) : Icon(SonaIcons.like),
                           ),
                           Text(comment.likedBy.length.toString()),
                         ],
@@ -234,7 +236,7 @@ class _ForumPostCommentsScreenState extends FullState<ForumPostCommentsScreen> w
                         onPressed: () => _reportComment(comment),
                         iconSize: 20,
                         padding: const EdgeInsets.all(0),
-                        icon: const Icon(Icons.flag_outlined),
+                        icon: Icon(SonaIcons.flag),
                       ),
                     ],
                   )

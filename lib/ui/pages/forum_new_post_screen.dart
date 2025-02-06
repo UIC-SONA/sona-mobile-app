@@ -8,6 +8,8 @@ import 'package:sona/ui/utils/helpers/user_service_widget_helper.dart';
 import 'package:sona/ui/widgets/full_state_widget.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
 
+import '../theme/icons.dart';
+
 @RoutePage()
 class ForumNewPostScreen extends StatefulWidget {
   const ForumNewPostScreen({super.key});
@@ -91,8 +93,8 @@ class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> with UserSe
         spacing: 10,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          if (anonymous) ...const [
-            Icon(Icons.person),
+          if (anonymous) ... [
+            Icon(SonaIcons.fillUser),
             Text(
               "Anónimo",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
@@ -159,7 +161,7 @@ class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> with UserSe
     showAlertDialog(
       context,
       title: anonymous ? '¿Quieres publicar como usuario?' : '¿Quieres publicar como anónimo?',
-      message: anonymous ? 'Estás a punto de compartir contenido bajo tu nombre de usuario registrado. Tu identidad será visible para los demás usuarios.' : 'Este espacio garantiza la protección total de tu identidad. Toda la información que compartas aquí será completamente anonima.',
+      message: anonymous ? 'Estás a punto de compartir contenido bajo tu nombre de usuario registrado. Tu identidad será visible para los demás usuarios.' : 'Este espacio garantiza la protección total de tu identidad. Toda la información que compartas aquí será completamente anónima.',
       actions: {
         'Cancelar': () => Navigator.of(context).pop(),
         'Aceptar': () {

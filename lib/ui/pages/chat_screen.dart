@@ -16,6 +16,8 @@ import 'package:sona/ui/widgets/full_state_widget.dart';
 import 'package:sona/ui/widgets/professional_botton_sheet.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
 
+import '../theme/icons.dart';
+
 @RoutePage()
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -51,9 +53,9 @@ class _ChatScreenState extends FullState<ChatScreen> {
           ? null
           : BottomNavigationBar(
               currentIndex: _currentPage,
-              items: const [
-                BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
-                BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Profesionales'),
+              items: [
+                BottomNavigationBarItem(icon: Icon(SonaIcons.chat), label: 'Chat'),
+                BottomNavigationBarItem(icon: Icon(SonaIcons.professional), label: 'Profesionales'),
               ],
               onTap: (index) {
                 _controller.animateToPage(
@@ -360,10 +362,10 @@ class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAli
       controller: searchController,
       decoration: InputDecoration(
         hintText: 'Buscar profesional',
-        prefixIcon: const Icon(Icons.search),
+        prefixIcon: Icon(SonaIcons.search),
         suffixIcon: IconButton(
           onPressed: _openFilterSettings,
-          icon: const Icon(Icons.filter_alt_rounded),
+          icon: Icon(SonaIcons.filter),
         ),
       ),
     );

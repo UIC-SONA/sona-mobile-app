@@ -12,6 +12,8 @@ import 'package:sona/ui/widgets/menstrual_cycle/menstrual_cycle_calender_view.da
 import 'package:sona/ui/widgets/full_state_widget.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
 
+import '../theme/icons.dart';
+
 @RoutePage()
 class MenstrualCalendarScreen extends StatefulWidget {
   const MenstrualCalendarScreen({super.key});
@@ -281,8 +283,8 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
                     children: [
                       IconButton(
                         onPressed: () => AutoRouter.of(context).push(const MenuOptionsRoute()),
-                        icon: const Icon(
-                          Icons.water_drop_sharp,
+                        icon: Icon(
+                          SonaIcons.drop,
                           color: defaultMenstruationColor,
                         ),
                       ),
