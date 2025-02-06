@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:sona/ui/widgets/menstrual_cycle/calendar_cell.dart';
 import 'package:sona/ui/widgets/menstrual_cycle/calendar_date_tools.dart';
 import 'package:sona/ui/widgets/menstrual_cycle/menstrual_cycle.dart';
-import 'package:sona/ui/widgets/menstrual_cycle/menstrual_cycle_calender_view.dart';
 import 'package:sona/ui/widgets/scroll_to_index.dart';
 import 'package:sona/ui/utils/date_time.dart' as dtu;
 
@@ -240,11 +239,11 @@ class _MenstrualCycleCalendarEditableViewState extends State<MenstrualCycleCalen
                   color: widget.themeColor,
                 ),
               ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: getInformationView(widget.daySelectedColor, widget.themeColor),
-            ),
-            Divider(color: widget.themeColor),
+            // Padding(
+            //   padding: const EdgeInsets.all(8.0),
+            //   child: getInformationView(widget.daySelectedColor, widget.themeColor),
+            // ),
+            // Divider(color: widget.themeColor),
             GridView.count(
               childAspectRatio: 1.5,
               primary: false,
