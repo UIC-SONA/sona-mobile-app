@@ -182,17 +182,27 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            if (!widget.hideEditPeriod)
-              Padding(
-                padding: const EdgeInsets.all(4),
-                child: OutlinedButton(
-                  onPressed: _onTapEditPeriod,
-                  child: Text(
-                    widget.editPeriodText,
-                    style: TextStyle(color: widget.themeColor, fontSize: 11),
+            Row(
+              children: [
+                if (!widget.hideEditPeriod)
+                  Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: OutlinedButton(
+                      onPressed: _onTapEditPeriod,
+                      child: Text(
+                        widget.editPeriodText,
+                        style: TextStyle(color: widget.themeColor, fontSize: 11),
+                      ),
+                    ),
                   ),
+                IconButton(
+                  onPressed: _showModalInfo,
+                  icon: Icon(Icons.info_outline, color: widget.themeColor),
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.all(0),
                 ),
-              ),
+              ],
+            ),
             Row(
               children: [
                 Text(
@@ -312,6 +322,29 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
           if (!widget.hideBottomBar) bottomView(),
         ],
       ),
+    );
+  }
+
+  Future<void> _showModalInfo() async {
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Información'),
+          content: Text(
+            "Las fechas proporcionadas por el calendario menstrual son aproximaciones basadas en la información ingresada. La precisión puede variar según tu ciclo individual y otros factores externos.",
+            style: TextStyle(fontSize: 12),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Ok'),
+            ),
+          ],
+        );
+      },
     );
   }
 
