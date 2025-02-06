@@ -1,11 +1,9 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/domain/services/services.dart';
-import 'package:sona/shared/constants.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/theme/backgrounds.dart';
 import 'package:sona/ui/theme/colors.dart';
@@ -148,12 +146,12 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
                   leading: Icon(SonaIcons.user),
                   onTap: () => AutoRouter.of(context).push(ProfileRoute()),
                 ),
-                if (kDebugMode)
-                  ListTile(
-                    title: const Text('Notificaciones'),
-                    leading: const Icon(Icons.notifications),
-                    onTap: () => AutoRouter.of(context).push(SchedulePushRoute()),
-                  ),
+                // if (kDebugMode)
+                //   ListTile(
+                //     title: const Text('Notificaciones'),
+                //     leading: const Icon(Icons.notifications),
+                //     onTap: () => AutoRouter.of(context).push(SchedulePushRoute()),
+                //   ),
                 ListTile(
                   title: const Text('Acerca de'),
                   leading: Icon(SonaIcons.warning),

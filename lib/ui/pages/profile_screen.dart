@@ -169,6 +169,18 @@ class _ProfileScreenState extends State<ProfileScreen> with UserServiceWidgetHel
                   ),
                   const SizedBox(height: 14),
                 ],
+                const Divider(),
+                SizedBox(
+                  width: double.infinity,
+                  child: Text(
+                    'Tus publicaciones',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+                const SizedBox(height: 14),
               ],
             ),
           ),
@@ -189,11 +201,15 @@ class _ProfileScreenState extends State<ProfileScreen> with UserServiceWidgetHel
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+            SizedBox(
+              width: double.infinity,
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
             ),
             Divider(color: Colors.grey[300]),
             ...children,
