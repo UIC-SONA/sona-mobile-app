@@ -42,10 +42,10 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
                   const Text(
                     """
 “Sona" significa "mujer" en tsáfiqui, un nombre que refleja nuestra misión de empoderar a todas las mujeres. Sona App es una herramienta pensada especialmente para ti, con el objetivo de ofrecerte apoyo y recursos enfocados en tu salud, tu bienestar y tu educación.
-Aquí encontrarás:
-Calendario Menstrual: Lleva un registro preciso de tu ciclo menstrual, para que puedas entender mejor tu cuerpo y anticipar los cambios que experimentas cada mes. La app te proporciona alertas sobre tus días fértiles, la ovulación y el inicio de tu período, ayudándote a cuidar tu salud.
-Contenido Didáctico: Accede a una amplia variedad de artículos, videos y recursos educativos sobre salud femenina, sexualidad, autoestima, derechos y más. Aquí encontrarás información confiable para empoderarte, tomar decisiones informadas y cuidar de ti misma.
-Sona App es mucho más que una simple aplicación: es un espacio para que cada mujer encuentre el conocimiento y el acompañamiento necesario para vivir de manera plena y saludable. Porque entendemos que tu bienestar es lo más importante, te brindamos herramientas que te apoyen en cada etapa de tu vida.
+\nAquí encontrarás:\n
+Calendario Menstrual: Lleva un registro preciso de tu ciclo menstrual, para que puedas entender mejor tu cuerpo y anticipar los cambios que experimentas cada mes. La app te proporciona alertas sobre tus días fértiles, la ovulación y el inicio de tu período, ayudándote a cuidar tu salud.\n
+Contenido Didáctico: Accede a una amplia variedad de artículos, videos y recursos educativos sobre salud femenina, sexualidad, autoestima, derechos y más. Aquí encontrarás información confiable para empoderarte, tomar decisiones informadas y cuidar de ti misma.\n
+Sona es mucho más que una simple aplicación: es un espacio para que cada mujer encuentre el conocimiento y el acompañamiento necesario para vivir de manera plena y saludable. Porque entendemos que tu bienestar es lo más importante, te brindamos herramientas que te apoyen en cada etapa de tu vida.
 """,
                     textAlign: TextAlign.justify,
                     style: TextStyle(fontSize: 13),

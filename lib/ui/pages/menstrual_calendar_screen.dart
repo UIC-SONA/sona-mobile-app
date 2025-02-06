@@ -87,7 +87,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
 
     return SonaScaffold(
       actionButton: IconButton(
-        icon: const Icon(Icons.settings),
+        icon: Icon(SonaIcons.settings),
         onPressed: _settingsPeriod,
       ),
       body: Column(

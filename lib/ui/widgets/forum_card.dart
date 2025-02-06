@@ -121,7 +121,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
                     final isLiked = post.likedBy.contains(user.id);
                     return TextButton.icon(
                       onPressed: () => _toggleLike(isLiked),
-                      icon: isLiked ? const Icon(Icons.thumb_up) : const Icon(Icons.thumb_up_outlined),
+                      icon: isLiked ? Icon(SonaIcons.likeFill) : Icon(SonaIcons.like),
                       label: Text('${post.likedBy.length}'),
                     );
                   },

@@ -68,11 +68,14 @@ class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHel
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('IMPORTANTE'),
+          title: const Text('IMPORTANTE',
+            style: TextStyle(fontWeight: FontWeight.bold),),
           content: Column(
             mainAxisSize: MainAxisSize.min, // Ajusta el tamaño del contenido para evitar el desbordamiento
             children: [
-              const Text('Este foro es un espacio de apoyo y respeto mutuo. No se permitirán insultos, acoso, contenido discriminatorio o comentarios ofensivos de ningún tipo. Las publicaciones que no cumplan con estas normas serán eliminadas y los usuarios pueden ser sancionados.'),
+              const Text('Este foro es un espacio de apoyo y respeto mutuo. No se permitirán insultos, acoso, contenido discriminatorio o comentarios ofensivos de ningún tipo. Las publicaciones que no cumplan con estas normas serán eliminadas y los usuarios pueden ser sancionados.',
+                textAlign: TextAlign.justify,
+                style: TextStyle(fontSize: 14),),
               const SizedBox(height: 12), // Espacio entre el texto y el checkbox
               Row(
                 children: [

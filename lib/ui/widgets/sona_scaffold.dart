@@ -143,7 +143,7 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
                 ),
                 ListTile(
                   title: const Text('Mi perfil'),
-                  leading: Icon(SonaIcons.user),
+                  leading: Icon(SonaIcons.emptyUser),
                   onTap: () => AutoRouter.of(context).push(ProfileRoute()),
                 ),
                 // if (kDebugMode)
@@ -164,7 +164,7 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
                 ),
                 ListTile(
                   title: const Text('911'),
-                  leading: Icon(Icons.phone),
+                  leading: Icon(SonaIcons.phone),
                   onTap: _openTel911,
                 ),
                 ListTile(

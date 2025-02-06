@@ -36,10 +36,12 @@ class MenstrualCycleCalendarView extends StatefulWidget {
   });
 
   @override
-  State<MenstrualCycleCalendarView> createState() => _MenstrualCycleCalendarViewState();
+  State<MenstrualCycleCalendarView> createState() =>
+      _MenstrualCycleCalendarViewState();
 }
 
-class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView> {
+class _MenstrualCycleCalendarViewState
+    extends State<MenstrualCycleCalendarView> {
   List<DateTime>? selectedMonthsDays;
   List<DateTime>? selectedWeekDays;
   DateTime selectedDateTime = DateTime.now();
@@ -51,7 +53,8 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
   CalenderDateFormatter? _formatter;
 
   CalenderDateFormatter get formatter {
-    return _formatter ??= CalenderDateFormatter(Localizations.localeOf(context));
+    return _formatter ??=
+        CalenderDateFormatter(Localizations.localeOf(context));
   }
 
   @override
@@ -65,7 +68,10 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
     super.initState();
     selectedDateTime = DateTime.now();
     selectedMonthsDays = _daysInMonth(selectedDateTime);
-    selectedWeekDays = dtu.daysInRange(_firstDayOfWeek(selectedDateTime), _lastDayOfWeek(selectedDateTime)).toList();
+    selectedWeekDays = dtu
+        .daysInRange(
+            _firstDayOfWeek(selectedDateTime), _lastDayOfWeek(selectedDateTime))
+        .toList();
   }
 
   Widget calendarGridView(PeriodCalculatorResult result) {
@@ -100,7 +106,10 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
         alignment: Alignment.center,
         child: Text(
           day,
-          style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.w800, fontSize: 11),
+          style: TextStyle(
+              color: widget.themeColor,
+              fontWeight: FontWeight.w800,
+              fontSize: 11),
         ),
       ));
     }
@@ -137,7 +146,9 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
         themeColor: widget.themeColor,
         selectedColor: widget.daySelectedColor,
         todayColor: widget.themeColor,
-        dayTextStyle: isToday ? const TextStyle(color: Colors.white, fontWeight: FontWeight.bold) : configureDateStyle(monthStarted, monthEnded),
+        dayTextStyle: isToday
+            ? const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+            : configureDateStyle(monthStarted, monthEnded),
         isSelected: dtu.isSameDay(selectedDateTime, day),
         isToday: isToday,
       ));
@@ -154,10 +165,12 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
   }
 
   TextStyle configureDateStyle(monthStarted, monthEnded) {
-    TextStyle normalTextStyle = TextStyle(color: widget.themeColor, fontWeight: FontWeight.normal);
+    TextStyle normalTextStyle =
+        TextStyle(color: widget.themeColor, fontWeight: FontWeight.normal);
 
     if (isExpanded) {
-      final TextStyle body1StyleDisabled = normalTextStyle.copyWith(color: Colors.grey);
+      final TextStyle body1StyleDisabled =
+          normalTextStyle.copyWith(color: Colors.grey);
       return monthStarted && !monthEnded ? normalTextStyle : body1StyleDisabled;
     }
 
@@ -191,7 +204,8 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
                       onPressed: _onTapEditPeriod,
                       child: Text(
                         widget.editPeriodText,
-                        style: TextStyle(color: widget.themeColor, fontSize: 11),
+                        style:
+                            TextStyle(color: widget.themeColor, fontSize: 11),
                       ),
                     ),
                   ),
@@ -262,7 +276,10 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
                         padding: const EdgeInsets.only(top: 3),
                         child: Text(
                           today,
-                          style: TextStyle(color: widget.themeColor, fontSize: 10.0, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              color: widget.themeColor,
+                              fontSize: 10.0,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -273,7 +290,10 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
                 padding: const EdgeInsets.only(left: 50),
                 child: Text(
                   displayMonth,
-                  style: TextStyle(color: widget.themeColor, fontSize: 15.0, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: widget.themeColor,
+                      fontSize: 15.0,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
               Row(
@@ -304,14 +324,17 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
                 collapsed: Column(
                   children: [
                     calendarGridView(value),
-                    getInformationView(widget.daySelectedColor, widget.themeColor, items: 1),
+                    getInformationView(
+                        widget.daySelectedColor, widget.themeColor,
+                        items: 1),
                     const SizedBox(height: 10),
                   ],
                 ),
                 expanded: Column(
                   children: [
                     calendarGridView(value),
-                    getInformationView(widget.daySelectedColor, widget.themeColor),
+                    getInformationView(
+                        widget.daySelectedColor, widget.themeColor),
                     const SizedBox(height: 10),
                   ],
                 ),
@@ -330,10 +353,14 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Información'),
+          title: const Text(
+            'RECUERDA',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           content: Text(
             "Las fechas proporcionadas por el calendario menstrual son aproximaciones basadas en la información ingresada. La precisión puede variar según tu ciclo individual y otros factores externos.",
-            style: TextStyle(fontSize: 12),
+            textAlign: TextAlign.justify,
+            style: TextStyle(fontSize: 14),
           ),
           actions: [
             TextButton(
@@ -354,11 +381,13 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
     var lastDayOfCurrentWeek = _lastDayOfWeek(selectedDateTime);
 
     setState(() {
-      selectedWeekDays = dtu.daysInRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek).toList();
+      selectedWeekDays =
+          dtu.daysInRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek).toList();
       selectedMonthsDays = _daysInMonth(selectedDateTime);
       var monthFormat = formatter.formatDayMonth(selectedDateTime);
 
-      displayMonth = "${monthFormat[0].toUpperCase()}${monthFormat.substring(1)}";
+      displayMonth =
+          "${monthFormat[0].toUpperCase()}${monthFormat.substring(1)}";
       today = formatter.formatDay(selectedDateTime);
     });
   }
@@ -371,7 +400,8 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
       updateSelectedRange(firstDateOfNewMonth, lastDateOfNewMonth);
       selectedMonthsDays = _daysInMonth(selectedDateTime);
       var monthFormat = formatter.formatMonthYear(selectedDateTime);
-      displayMonth = "${monthFormat[0].toUpperCase()}${monthFormat.substring(1)}";
+      displayMonth =
+          "${monthFormat[0].toUpperCase()}${monthFormat.substring(1)}";
     });
   }
 
@@ -384,7 +414,8 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
       selectedMonthsDays = _daysInMonth(selectedDateTime);
       var monthFormat = formatter.formatMonthYear(selectedDateTime);
 
-      displayMonth = "${monthFormat[0].toUpperCase()}${monthFormat.substring(1)}";
+      displayMonth =
+          "${monthFormat[0].toUpperCase()}${monthFormat.substring(1)}";
     });
     // _launchDateSelectionCallback(selectedDateTime);
   }
@@ -432,7 +463,8 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
     }
     setState(() {
       selectedDateTime = day;
-      selectedWeekDays = dtu.daysInRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek).toList();
+      selectedWeekDays =
+          dtu.daysInRange(firstDayOfCurrentWeek, lastDayOfCurrentWeek).toList();
       selectedMonthsDays = _daysInMonth(day);
     });
     _launchDateSelectionCallback(day, dayType);
@@ -445,7 +477,8 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
   }
 
   DateTime _firstDayOfWeek(DateTime date) {
-    var day = DateTime.utc(selectedDateTime.year, selectedDateTime.month, selectedDateTime.day, 12);
+    var day = DateTime.utc(selectedDateTime.year, selectedDateTime.month,
+        selectedDateTime.day, 12);
     return day.subtract(Duration(days: day.weekday));
   }
 
@@ -472,14 +505,27 @@ class _MenstrualCycleCalendarViewState extends State<MenstrualCycleCalendarView>
 }
 
 final List<Map<String, dynamic>> informationItems = [
-  {"icon": Icons.water_drop_sharp, "color": defaultMenstruationColor, "text": "Período"},
-  {"icon": Icons.favorite_border, "color": defaultOvulationColor, "text": "Predicción de ovulación"},
-  {"icon": Icons.water_drop_outlined, "color": defaultMenstruationColor, "text": "Predicción de periodo"},
+  {
+    "icon": Icons.water_drop_sharp,
+    "color": defaultMenstruationColor,
+    "text": "Período"
+  },
+  {
+    "icon": Icons.favorite_border,
+    "color": defaultOvulationColor,
+    "text": "Predicción de ovulación"
+  },
+  {
+    "icon": Icons.water_drop_outlined,
+    "color": defaultMenstruationColor,
+    "text": "Predicción de periodo"
+  },
   {"icon": Icons.circle, "color": Colors.grey, "text": "Día seleccionado"},
   {"icon": Icons.circle, "color": Colors.black, "text": "Hoy"},
 ];
 
-Widget getInformationView(Color daySelectedColor, Color themeColor, {int items = 5}) {
+Widget getInformationView(Color daySelectedColor, Color themeColor,
+    {int items = 5}) {
   const double fontSize = 13;
   const double iconSize = 13;
 
@@ -505,7 +551,11 @@ Widget getInformationView(Color daySelectedColor, Color themeColor, {int items =
     child: Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: informationItems.sublist(0, items).map((item) => buildRow(item["icon"], item["color"], item["text"] as String)).toList(),
+      children: informationItems
+          .sublist(0, items)
+          .map((item) =>
+              buildRow(item["icon"], item["color"], item["text"] as String))
+          .toList(),
     ),
   );
 }
@@ -530,7 +580,8 @@ class _ExpansionCrossFade extends StatelessWidget {
       firstCurve: const Interval(0.0, 1.0, curve: Curves.fastOutSlowIn),
       secondCurve: const Interval(0.0, 1.0, curve: Curves.fastOutSlowIn),
       sizeCurve: Curves.decelerate,
-      crossFadeState: isExpanded! ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+      crossFadeState:
+          isExpanded! ? CrossFadeState.showSecond : CrossFadeState.showFirst,
       duration: const Duration(milliseconds: 1000),
     );
   }
