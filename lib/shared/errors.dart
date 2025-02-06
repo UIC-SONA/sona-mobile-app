@@ -29,7 +29,7 @@ ErrorExtractorNullable httpErrorExtractor = (e) {
     if (response != null) {
       try {
         final body = response.getBody<ProblemDetails>();
-        return Error(body.title, body.detail);
+        return Error(HttpStatusCode.fromCode(body.status).spanish, body.detail);
       } catch (e) {
         return Error(response.status.message, response.body);
       }

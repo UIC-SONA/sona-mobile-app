@@ -20,7 +20,9 @@ class AppointmentMenuScreen extends StatelessWidget {
           children: [
             Text(
               'Gestión de Citas',
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(

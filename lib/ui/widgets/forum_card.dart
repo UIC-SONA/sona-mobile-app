@@ -49,9 +49,14 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
       },
     );
     if (confirmed == true) {
-      await postService.reportPost(notifier.value);
-      if (!mounted) return;
-      showSnackBar(context, content: const Text('Publicación reportada'));
+      try {
+        await postService.reportPost(notifier.value);
+        if (!mounted) return;
+        showSnackBar(context, content: const Text('Publicación reportada'));
+      } catch (e) {
+        if (!mounted) return;
+        showAlertErrorDialog(context, error: e);
+      }
     }
   }
 

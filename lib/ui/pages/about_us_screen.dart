@@ -33,7 +33,10 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
                   const SizedBox(height: 20),
                   Image.asset(
                     'assets/images/logo.png',
-                    width: MediaQuery.of(context).size.height * 0.24,
+                    width: MediaQuery
+                        .of(context)
+                        .size
+                        .height * 0.24,
                   ),
                   const SizedBox(height: 20),
                   const Text(

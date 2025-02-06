@@ -118,10 +118,76 @@ enum HttpStatusCode {
     }
     throw Exception('Status code $code not found in StatusCode enum');
   }
+
+  String get spanish => switch (this) {
+        HttpStatusCode.continue_ => 'Continuar',
+        HttpStatusCode.switchingProtocols => 'Cambiar Protocolos',
+        HttpStatusCode.processing => 'Procesando',
+        HttpStatusCode.earlyHints => 'Indicios Tempranos',
+        HttpStatusCode.ok => 'OK',
+        HttpStatusCode.created => 'Creado',
+        HttpStatusCode.accepted => 'Aceptado',
+        HttpStatusCode.nonAuthoritativeInformation => 'Información No Autoritativa',
+        HttpStatusCode.noContent => 'Sin Contenido',
+        HttpStatusCode.resetContent => 'Reiniciar Contenido',
+        HttpStatusCode.partialContent => 'Contenido Parcial',
+        HttpStatusCode.multiStatus => 'Multi-Estado',
+        HttpStatusCode.alreadyReported => 'Ya Reportado',
+        HttpStatusCode.imUsed => 'IM Usado',
+        HttpStatusCode.multipleChoices => 'Múltiples Opciones',
+        HttpStatusCode.movedPermanently => 'Movido Permanentemente',
+        HttpStatusCode.found => 'Encontrado',
+        HttpStatusCode.seeOther => 'Ver Otro',
+        HttpStatusCode.notModified => 'No Modificado',
+        HttpStatusCode.useProxy => 'Usar Proxy',
+        HttpStatusCode.switchProxy => 'Cambiar Proxy',
+        HttpStatusCode.temporaryRedirect => 'Redirección Temporal',
+        HttpStatusCode.permanentRedirect => 'Redirección Permanente',
+        HttpStatusCode.badRequest => 'Solicitud Incorrecta',
+        HttpStatusCode.unauthorized => 'No Autorizado',
+        HttpStatusCode.paymentRequired => 'Pago Requerido',
+        HttpStatusCode.forbidden => 'Prohibido',
+        HttpStatusCode.notFound => 'No Encontrado',
+        HttpStatusCode.methodNotAllowed => 'Método No Permitido',
+        HttpStatusCode.notAcceptable => 'No Aceptable',
+        HttpStatusCode.proxyAuthenticationRequired => 'Autenticación de Proxy Requerida',
+        HttpStatusCode.requestTimeout => 'Tiempo de Solicitud Agotado',
+        HttpStatusCode.conflict => 'Conflicto',
+        HttpStatusCode.gone => 'Desaparecido',
+        HttpStatusCode.lengthRequired => 'Longitud Requerida',
+        HttpStatusCode.preconditionFailed => 'Precondición Fallida',
+        HttpStatusCode.payloadTooLarge => 'Carga Útil Demasiado Grande',
+        HttpStatusCode.uriTooLong => 'URI Demasiado Largo',
+        HttpStatusCode.unsupportedMediaType => 'Tipo de Medio No Soportado',
+        HttpStatusCode.rangeNotSatisfiable => 'Rango No Satisfactorio',
+        HttpStatusCode.expectationFailed => 'Expectativa Fallida',
+        HttpStatusCode.imATeapot => 'Soy una Tetera',
+        HttpStatusCode.misdirectedRequest => 'Solicitud Mal Dirigida',
+        HttpStatusCode.unprocessableEntity => 'Entidad No Procesable',
+        HttpStatusCode.locked => 'Bloqueado',
+        HttpStatusCode.failedDependency => 'Dependencia Fallida',
+        HttpStatusCode.tooEarly => 'Demasiado Temprano',
+        HttpStatusCode.upgradeRequired => 'Actualización Requerida',
+        HttpStatusCode.preconditionRequired => 'Precondición Requerida',
+        HttpStatusCode.tooManyRequests => 'Demasiadas Solicitudes',
+        HttpStatusCode.requestHeaderFieldsTooLarge => 'Campos de Cabecera de Solicitud Demasiado Grandes',
+        HttpStatusCode.unavailableForLegalReasons => 'No Disponible Por Razones Legales',
+        HttpStatusCode.internalServerError => 'Error Interno del Servidor',
+        HttpStatusCode.notImplemented => 'No Implementado',
+        HttpStatusCode.badGateway => 'Puerta de Enlace Incorrecta',
+        HttpStatusCode.serviceUnavailable => 'Servicio No Disponible',
+        HttpStatusCode.gatewayTimeout => 'Tiempo de Espera de la Puerta de Enlace',
+        HttpStatusCode.versionNotSupported => 'Versión de HTTP No Soportada',
+        HttpStatusCode.variantAlsoNegotiates => 'Variante También Negocia',
+        HttpStatusCode.insufficientStorage => 'Almacenamiento Insuficiente',
+        HttpStatusCode.loopDetected => 'Bucle Detectado',
+        HttpStatusCode.notExtended => 'No Extendido',
+        HttpStatusCode.networkAuthenticationRequired => 'Autenticación de Red Requerida',
+      };
 }
 
 abstract class QueryParametrable {
-  Map<String, dynamic /*String?|Iterable<String>*/> toQueryParameters();
+  Map<String, dynamic /*String?|Iterable<String>*/ > toQueryParameters();
 }
 
 abstract interface class WebResource {
@@ -135,7 +201,8 @@ abstract interface class WebResource {
   Map<String, String> get commonHeaders;
 }
 
-Future<http.Response> resource(WebResource resource, {
+Future<http.Response> resource(
+  WebResource resource, {
   String path = '',
   HttpMethod method = HttpMethod.get,
   Object? body,

@@ -50,10 +50,7 @@ class _TipDetailsScreenState extends State<TipDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return SonaScaffold(
-      actionButton: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: AutoRouter.of(context).back,
-      ),
+      actionButton: Container(),
       padding: 16,
       body: ValueListenableBuilder<Tip>(
         valueListenable: widget.notifier,
@@ -110,6 +107,14 @@ class _TipDetailsScreenState extends State<TipDetailsScreen> {
                       ],
                     ),
                     const SizedBox(height: 20),
+                    Text(
+                      'Calificación:',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
                     ValueListenableBuilder<double>(
                       valueListenable: _ratingNotifier,
                       builder: (context, value, child) => Container(
