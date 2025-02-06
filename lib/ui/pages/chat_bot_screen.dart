@@ -91,13 +91,37 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
       hideBgLogo: true,
       actionButton: SonaActionButton.home(),
       padding: 0,
-      body: SonaChatView(
-        chatController: _chatController,
-        chatViewState: _chatViewState,
-        sendMessage: _sendMessage,
-        enableCameraImagePicker: false,
-        enableGalleryImagePicker: false,
-        allowRecordingVoice: false,
+      body: Column(
+        children: [
+          Expanded(
+            child: SonaChatView(
+              chatController: _chatController,
+              chatViewState: _chatViewState,
+              sendMessage: _sendMessage,
+              enableCameraImagePicker: false,
+              enableGalleryImagePicker: false,
+              allowRecordingVoice: false,
+            ),
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    'Tus consultas están siendo utilizadas para retroalimentar a la Inteligencia Artificial. Considera que este bot puede cometer errores, no es 100% confiable.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
+          SizedBox(height: 8),
+        ],
       ),
     );
   }

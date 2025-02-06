@@ -129,6 +129,8 @@ class SonaChatView extends StatelessWidget {
           hintText: 'Escribe un mensaje...',
           borderRadius: BorderRadius.circular(10),
           textStyle: const TextStyle(color: Colors.black, fontSize: 16),
+          margin: const EdgeInsets.all(0),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
         ),
       ),
     );
