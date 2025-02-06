@@ -6,7 +6,7 @@ abstract class SonaIcons {
   static final IconData messageCard = _ofCharacter('A');
   static final IconData padlock = _ofCharacter('B');
   static final IconData eye = _ofCharacter('C');
-  static final IconData eyeOff = _ofCharacter('Z');
+  static final IconData eyeOff = _ofCharacter('a');
   static final IconData menu = _ofCharacter('D');
   static final IconData user = _ofCharacter('E');
   static final IconData campaing = _ofCharacter('F');
@@ -29,6 +29,21 @@ abstract class SonaIcons {
   static final IconData plusSquare = _ofCharacter('W');
   static final IconData send = _ofCharacter('X');
   static final IconData like = _ofCharacter('Y');
+
+  static final IconData phone = _ofCharacter('b');
+  static final IconData settings = _ofCharacter('c');
+  static final IconData likeFill = _ofCharacter('d');
+  static final IconData flag = _ofCharacter('e');
+  static final IconData chat = _ofCharacter('f');
+  static final IconData professional = _ofCharacter('g');
+  static final IconData filter = _ofCharacter('h');
+  static final IconData search = _ofCharacter('i');
+  static final IconData calendar = _ofCharacter('j');
+  static final IconData clock = _ofCharacter('k');
+  static final IconData emptyUser = _ofCharacter('l');
+  static final IconData fillUser = _ofCharacter('m');
+  static final IconData fillCamera = _ofCharacter('n');
+  static final IconData drop = _ofCharacter('o');
 
   static IconData _ofCharacter(String character) {
     return IconData(character.codeUnitAt(0), fontFamily: _fontFamily);

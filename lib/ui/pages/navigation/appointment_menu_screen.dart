@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
 
+import '../../theme/icons.dart';
+
 @RoutePage()
 class AppointmentMenuScreen extends StatelessWidget {
   const AppointmentMenuScreen({super.key});
@@ -31,14 +33,14 @@ class AppointmentMenuScreen extends StatelessWidget {
             _MenuCard(
               title: 'Agendar Nueva Cita',
               description: 'Programa una cita con un profesional',
-              icon: Icons.calendar_month_outlined,
+              icon: SonaIcons.calendar,
               onTap: () => AutoRouter.of(context).push(const NewAppointmentRoute()),
             ),
             const SizedBox(height: 16),
             _MenuCard(
               title: 'Mis Citas',
               description: 'Ver y gestionar tus citas programadas',
-              icon: Icons.schedule_outlined,
+              icon: SonaIcons.clock,
               onTap: () => AutoRouter.of(context).push(const MyAppointmentsRoute()),
             ),
           ],

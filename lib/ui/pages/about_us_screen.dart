@@ -20,7 +20,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
       body: Column(
         children: [
           const Text(
-            'SONA APP',
+            'Sona',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,

@@ -14,6 +14,8 @@ import 'package:sona/ui/widgets/loading_button.dart';
 import 'package:sona/ui/widgets/sized_text_button.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../theme/icons.dart';
+
 @RoutePage()
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -78,9 +80,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
         children: [
           FormBuilderTextField(
             name: 'firstName',
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Nombre',
-              prefixIcon: Icon(Icons.person),
+              prefixIcon: Icon(SonaIcons.emptyUser),
               errorMaxLines: errorMaxLines,
             ),
             validator: FormBuilderValidators.required(),
@@ -88,9 +90,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
           const SizedBox(height: 10),
           FormBuilderTextField(
             name: 'lastName',
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Apellido',
-              prefixIcon: Icon(Icons.person),
+              prefixIcon: Icon(SonaIcons.emptyUser),
               errorMaxLines: errorMaxLines,
             ),
             validator: FormBuilderValidators.required(),
@@ -98,9 +100,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
           const SizedBox(height: 10),
           FormBuilderTextField(
             name: 'username',
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Nombre de usuario',
-              prefixIcon: Icon(Icons.person),
+              prefixIcon: Icon(SonaIcons.emptyUser),
               errorMaxLines: errorMaxLines,
             ),
             validator: FormBuilderValidators.required(),
@@ -108,9 +110,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
           const SizedBox(height: 10),
           FormBuilderTextField(
             name: 'email',
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Email',
-              prefixIcon: Icon(Icons.email),
+              prefixIcon: Icon(SonaIcons.messageCard),
               errorMaxLines: errorMaxLines,
             ),
             validator: FormBuilderValidators.compose([
@@ -124,10 +126,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
             obscureText: _obscurePassword,
             decoration: InputDecoration(
               labelText: 'Password',
-              prefixIcon: const Icon(Icons.lock),
+              prefixIcon: Icon(SonaIcons.padlock),
               suffixIcon: IconButton(
                 onPressed: _togglePasswordVisibility,
-                icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+                icon: Icon(_obscurePassword ? SonaIcons.eye : SonaIcons.eyeOff),
               ),
               errorMaxLines: errorMaxLines,
             ),
@@ -146,10 +148,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
             obscureText: _obscureConfirmPassword,
             decoration: InputDecoration(
               labelText: 'Confirmar Password',
-              prefixIcon: const Icon(Icons.lock),
+              prefixIcon: Icon(SonaIcons.padlock),
               suffixIcon: IconButton(
                 onPressed: _toggleConfirmPasswordVisibility,
-                icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off),
+                icon: Icon(_obscureConfirmPassword ? SonaIcons.eye : SonaIcons.eyeOff),
               ),
               errorMaxLines: errorMaxLines,
             ),

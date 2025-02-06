@@ -16,6 +16,8 @@ import 'package:sona/ui/widgets/full_state_widget.dart';
 import 'package:sona/ui/widgets/loading_button.dart';
 import 'package:sona/ui/widgets/sized_text_button.dart';
 
+import '../../theme/icons.dart';
+
 @RoutePage()
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -108,7 +110,7 @@ class _LoginScreenState extends FullState<LoginScreen> {
   Widget _userIcon() {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
-      child: Icon(Icons.person, color: Theme.of(context).primaryColor, size: 35),
+      child: Icon(SonaIcons.fillUser, color: Theme.of(context).primaryColor, size: 35),
     );
   }
 
@@ -122,7 +124,7 @@ class _LoginScreenState extends FullState<LoginScreen> {
             decoration: InputDecoration(
               labelText: 'Correo o usuario',
               enabled: !_loading,
-              prefixIcon: const Icon(Icons.email),
+              prefixIcon: Icon(SonaIcons.messageCard),
             ),
             validator: FormBuilderValidators.required(),
           ),
@@ -132,10 +134,10 @@ class _LoginScreenState extends FullState<LoginScreen> {
             obscureText: _obscurePasswordText,
             decoration: InputDecoration(
               labelText: 'Contraseña',
-              prefixIcon: const Icon(Icons.lock),
+              prefixIcon: Icon(SonaIcons.padlock),
               suffixIcon: IconButton(
                 onPressed: _togglePasswordVisibility,
-                icon: Icon(_obscurePasswordText ? Icons.visibility : Icons.visibility_off),
+                icon: Icon(_obscurePasswordText ? SonaIcons.eye : SonaIcons.eyeOff),
               ),
             ),
             validator: FormBuilderValidators.required(),

@@ -9,6 +9,8 @@ import 'package:sona/ui/theme/colors.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/widgets/loading_button.dart';
 
+import '../../theme/icons.dart';
+
 @RoutePage()
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -41,9 +43,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 const SizedBox(height: 20),
                 FormBuilderTextField(
                   name: 'emailOrUsername',
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Correo electrónico o nombre de usuario',
-                    prefixIcon: Icon(Icons.email),
+                    prefixIcon: Icon(SonaIcons.messageCard),
                   ),
                   validator: FormBuilderValidators.compose([
                     FormBuilderValidators.required(),
