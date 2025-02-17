@@ -94,7 +94,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
                 const SizedBox(width: 12),
                 if (post.iAmAuthor)
                   IconButton(
-                    icon: Icon(SonaIcons.trash),
+                    icon: Icon(AppIcons.trash),
                     onPressed: () => _deletePost(post),
                   ),
               ],
@@ -121,7 +121,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
                     final isLiked = post.likedBy.contains(user.id);
                     return TextButton.icon(
                       onPressed: () => _toggleLike(isLiked),
-                      icon: isLiked ? Icon(SonaIcons.likeFill) : Icon(SonaIcons.like),
+                      icon: isLiked ? Icon(AppIcons.likeFill) : Icon(AppIcons.like),
                       label: Text('${post.likedBy.length}'),
                     );
                   },
@@ -133,7 +133,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
                   builder: (context, post, _) {
                     return TextButton.icon(
                       onPressed: widget.onComment,
-                      icon: Icon(SonaIcons.message),
+                      icon: Icon(AppIcons.message),
                       label: Text('${post.comments.length}'),
                     );
                   },
@@ -144,7 +144,7 @@ class _PostCardState extends FullState<PostCard> with UserServiceWidgetHelper, P
                   builder: (context, post, _) {
                     return IconButton(
                       color: Theme.of(context).primaryColor,
-                      icon: Icon(SonaIcons.forbidden),
+                      icon: Icon(AppIcons.forbidden),
                       onPressed: _reportPost,
                     );
                   },

@@ -54,8 +54,8 @@ class _ChatScreenState extends FullState<ChatScreen> {
           : BottomNavigationBar(
               currentIndex: _currentPage,
               items: [
-                BottomNavigationBarItem(icon: Icon(SonaIcons.chat), label: 'Chat'),
-                BottomNavigationBarItem(icon: Icon(SonaIcons.professional), label: 'Profesionales'),
+                BottomNavigationBarItem(icon: Icon(AppIcons.chat), label: 'Chat'),
+                BottomNavigationBarItem(icon: Icon(AppIcons.professional), label: 'Profesionales'),
               ],
               onTap: (index) {
                 _controller.animateToPage(
@@ -362,10 +362,10 @@ class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAli
       controller: searchController,
       decoration: InputDecoration(
         hintText: 'Buscar profesional',
-        prefixIcon: Icon(SonaIcons.search),
+        prefixIcon: Icon(AppIcons.search),
         suffixIcon: IconButton(
           onPressed: _openFilterSettings,
-          icon: Icon(SonaIcons.filter),
+          icon: Icon(AppIcons.filter),
         ),
       ),
     );

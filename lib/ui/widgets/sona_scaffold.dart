@@ -42,7 +42,7 @@ class SonaAppBar extends StatelessWidget implements PreferredSizeWidget {
                 return IconButton(
                   padding: const EdgeInsets.all(0),
                   onPressed: Scaffold.of(context).openDrawer,
-                  icon: Icon(SonaIcons.menu),
+                  icon: Icon(AppIcons.menu),
                 );
               },
             )
@@ -51,15 +51,15 @@ class SonaAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: title ??
           Row(
             children: [
-              SvgPicture.asset(
-                height: 45,
-                'assets/images/logo.svg',
-                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-              ),
+              // SvgPicture.asset(
+              //   height: 45,
+              //   'assets/images/logo.svg',
+              //   colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              // ),
               const SizedBox(width: 5),
               const Text(
-                'Sona',
-                style: TextStyle(fontSize: 45, fontWeight: FontWeight.w500),
+                'Warmi',
+                style: TextStyle(fontSize: 40, fontWeight: FontWeight.w500),
               ),
             ],
           ),
@@ -143,7 +143,7 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
                 ),
                 ListTile(
                   title: const Text('Mi perfil'),
-                  leading: Icon(SonaIcons.emptyUser),
+                  leading: Icon(AppIcons.emptyUser),
                   onTap: () => AutoRouter.of(context).push(ProfileRoute()),
                 ),
                 // if (kDebugMode)
@@ -154,22 +154,22 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
                 //   ),
                 ListTile(
                   title: const Text('Acerca de'),
-                  leading: Icon(SonaIcons.warning),
+                  leading: Icon(AppIcons.warning),
                   onTap: () => AutoRouter.of(context).push(AboutUsRoute()),
                 ),
                 ListTile(
                   title: const Text('Cambiar contraseña'),
-                  leading: Icon(SonaIcons.reloadPadlock),
+                  leading: Icon(AppIcons.reloadPadlock),
                   onTap: () => AutoRouter.of(context).push(ChangePasswordRoute()),
                 ),
                 ListTile(
                   title: const Text('911'),
-                  leading: Icon(SonaIcons.phone),
+                  leading: Icon(AppIcons.phone),
                   onTap: _openTel911,
                 ),
                 ListTile(
                   title: const Text('Cerrar sesión'),
-                  leading: Icon(SonaIcons.back),
+                  leading: Icon(AppIcons.back),
                   onTap: _showLogoutConfirmDialog,
                 ),
               ],

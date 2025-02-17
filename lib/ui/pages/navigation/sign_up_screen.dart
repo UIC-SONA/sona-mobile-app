@@ -82,7 +82,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             name: 'firstName',
             decoration: InputDecoration(
               labelText: 'Nombre',
-              prefixIcon: Icon(SonaIcons.emptyUser),
+              prefixIcon: Icon(AppIcons.emptyUser),
               errorMaxLines: errorMaxLines,
             ),
             validator: FormBuilderValidators.required(),
@@ -92,7 +92,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             name: 'lastName',
             decoration: InputDecoration(
               labelText: 'Apellido',
-              prefixIcon: Icon(SonaIcons.emptyUser),
+              prefixIcon: Icon(AppIcons.emptyUser),
               errorMaxLines: errorMaxLines,
             ),
             validator: FormBuilderValidators.required(),
@@ -102,7 +102,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             name: 'username',
             decoration: InputDecoration(
               labelText: 'Nombre de usuario',
-              prefixIcon: Icon(SonaIcons.emptyUser),
+              prefixIcon: Icon(AppIcons.emptyUser),
               errorMaxLines: errorMaxLines,
             ),
             validator: FormBuilderValidators.required(),
@@ -112,7 +112,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             name: 'email',
             decoration: InputDecoration(
               labelText: 'Email',
-              prefixIcon: Icon(SonaIcons.messageCard),
+              prefixIcon: Icon(AppIcons.messageCard),
               errorMaxLines: errorMaxLines,
             ),
             validator: FormBuilderValidators.compose([
@@ -126,10 +126,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
             obscureText: _obscurePassword,
             decoration: InputDecoration(
               labelText: 'Password',
-              prefixIcon: Icon(SonaIcons.padlock),
+              prefixIcon: Icon(AppIcons.padlock),
               suffixIcon: IconButton(
                 onPressed: _togglePasswordVisibility,
-                icon: Icon(_obscurePassword ? SonaIcons.eye : SonaIcons.eyeOff),
+                icon: Icon(_obscurePassword ? AppIcons.eye : AppIcons.eyeOff),
               ),
               errorMaxLines: errorMaxLines,
             ),
@@ -148,10 +148,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
             obscureText: _obscureConfirmPassword,
             decoration: InputDecoration(
               labelText: 'Confirmar Password',
-              prefixIcon: Icon(SonaIcons.padlock),
+              prefixIcon: Icon(AppIcons.padlock),
               suffixIcon: IconButton(
                 onPressed: _toggleConfirmPasswordVisibility,
-                icon: Icon(_obscureConfirmPassword ? SonaIcons.eye : SonaIcons.eyeOff),
+                icon: Icon(_obscureConfirmPassword ? AppIcons.eye : AppIcons.eyeOff),
               ),
               errorMaxLines: errorMaxLines,
             ),

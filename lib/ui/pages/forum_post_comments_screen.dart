@@ -227,7 +227,7 @@ class _ForumPostCommentsScreenState extends FullState<ForumPostCommentsScreen> w
                             onPressed: () => _toggleLike(isLiked, comment),
                             iconSize: 20,
                             padding: const EdgeInsets.all(0),
-                            icon: isLiked ? Icon(SonaIcons.likeFill, color: primaryColor) : Icon(SonaIcons.like),
+                            icon: isLiked ? Icon(AppIcons.likeFill, color: primaryColor) : Icon(AppIcons.like),
                           ),
                           Text(comment.likedBy.length.toString()),
                         ],
@@ -236,7 +236,7 @@ class _ForumPostCommentsScreenState extends FullState<ForumPostCommentsScreen> w
                         onPressed: () => _reportComment(comment),
                         iconSize: 20,
                         padding: const EdgeInsets.all(0),
-                        icon: Icon(SonaIcons.flag),
+                        icon: Icon(AppIcons.flag),
                       ),
                     ],
                   )

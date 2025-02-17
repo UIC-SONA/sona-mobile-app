@@ -87,7 +87,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
 
     return SonaScaffold(
       actionButton: IconButton(
-        icon: Icon(SonaIcons.settings),
+        icon: Icon(AppIcons.settings),
         onPressed: _settingsPeriod,
       ),
       body: Column(
@@ -284,7 +284,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
                       IconButton(
                         onPressed: () => AutoRouter.of(context).push(const MenuOptionsRoute()),
                         icon: Icon(
-                          SonaIcons.drop,
+                          AppIcons.drop,
                           color: defaultMenstruationColor,
                         ),
                       ),

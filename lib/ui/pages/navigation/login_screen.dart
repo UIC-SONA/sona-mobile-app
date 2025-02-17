@@ -110,7 +110,7 @@ class _LoginScreenState extends FullState<LoginScreen> {
   Widget _userIcon() {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
-      child: Icon(SonaIcons.fillUser, color: Theme.of(context).primaryColor, size: 35),
+      child: Icon(AppIcons.fillUser, color: Theme.of(context).primaryColor, size: 35),
     );
   }
 
@@ -124,7 +124,7 @@ class _LoginScreenState extends FullState<LoginScreen> {
             decoration: InputDecoration(
               labelText: 'Correo o usuario',
               enabled: !_loading,
-              prefixIcon: Icon(SonaIcons.messageCard),
+              prefixIcon: Icon(AppIcons.messageCard),
             ),
             validator: FormBuilderValidators.required(),
           ),
@@ -134,10 +134,10 @@ class _LoginScreenState extends FullState<LoginScreen> {
             obscureText: _obscurePasswordText,
             decoration: InputDecoration(
               labelText: 'Contraseña',
-              prefixIcon: Icon(SonaIcons.padlock),
+              prefixIcon: Icon(AppIcons.padlock),
               suffixIcon: IconButton(
                 onPressed: _togglePasswordVisibility,
-                icon: Icon(_obscurePasswordText ? SonaIcons.eye : SonaIcons.eyeOff),
+                icon: Icon(_obscurePasswordText ? AppIcons.eye : AppIcons.eyeOff),
               ),
             ),
             validator: FormBuilderValidators.required(),

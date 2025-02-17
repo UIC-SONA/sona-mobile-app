@@ -1,34 +1,34 @@
 import 'package:flutter/material.dart';
 
 // COLORS
-const primaryColor = Color(0xFF880158);
-const accentColor = Color(0xFF003F36);
-const turquoiseGreen = Color(0xFF2CD8A3);
-const magenta = Color(0xFFff08D1);
-const blue = Color(0xFF3655A4);
-const orange = Color(0xFFFF6447);
-const softPink = Color(0xFFFFD5FF);
-const red = Color(0xFFFF003B);
-const softGreen = Colors.white;
-const deepMagenta = Color(0xFF880158);
-const vividMagenta = Color(0xFFFF00AB);
-const teal = Color(0xFF008A74);
+const primaryColor = Color(0xFF6555B4); // Color base
+const accentColor = Color(0xFF5D4FA7); // Ligeramente más oscuro
+const turquoiseGreen = Color(0xFF6E60C0); // Más claro
+const magenta = Color(0xFF7A6CD0); // Variación 1
+const blue = Color(0xFF5C4CA0); // Variación 2
+const orange = Color(0xFF8979D8); // Variación 3
+const softPink = Color(0xFF8E80DA); // Más brillante
+const red = Color(0xFF54459A); // Más saturado
+const softGreen = Colors.white; // Mantenemos blanco
+const deepMagenta = Color(0xFF4A3F8F); // Base más oscura
+const vividMagenta = Color(0xFF7563BE); // Variación clara
+const teal = Color(0xFF6050AA); // Variación suave
 
 // COLORS PROVIDED BY CONAGOPARE
-const intenseMagenta = Color(0x00CC198E);
-const neonMagenta = Color(0x00FF00AE);
-const paleLavanderPink = Color(0x00FFD2FF);
-const limeGreen = Color(0x00E3FFCA);
-const darkEmeraldGreen = Color(0x00004036);
+const intenseMagenta = Color(0xFF6555B4); // Base
+const neonMagenta = Color(0xFF7563BE); // Variación clara
+const paleLavanderPink = Color(0xFF8E80DA); // Muy claro
+const limeGreen = Color(0xFF6555B4); // Base original
+const darkEmeraldGreen = Color(0xFF5D4FA7); // Más oscuro
 
-const hintColor = Color(0xFFA9A9A9);
+const hintColor = Color(0xFFA9A9A9); // Gris sin cambios
 
 // GRADIENTS
 const bgGradientMagenta = LinearGradient(
   colors: [
-    Color(0xFF890159),
-    Color(0xFFC40595),
-    Color(0xFFF84AD8),
+    Color(0xFF9C8BFA),
+    Color(0xFFACA0E5),
+    Color(0xFFB8AEF3),
   ],
   begin: Alignment.bottomLeft,
   end: Alignment.topRight,
@@ -36,8 +36,8 @@ const bgGradientMagenta = LinearGradient(
 
 const bgGradientLight = LinearGradient(
   colors: [
-    Color(0xFFEAFED1),
-    Color(0xFFFFD4FD),
+    Color(0xFFCCC9F8),
+    Color(0xFF8179A8),
   ],
   begin: Alignment.bottomLeft,
   end: Alignment.topRight,
@@ -46,10 +46,9 @@ const bgGradientLight = LinearGradient(
 //GRADIENT BUTTON 1
 const bgGradientButton1 = LinearGradient(
   colors: [
-    Color(0xFFBC308C),
-    Color(0xFFFF00AB),
+    Color(0xFF6555B4),
+    Color(0xFF7563BE),
   ],
-  //Falta 100% angulo 45
   begin: Alignment.bottomLeft,
   end: Alignment.topRight,
 );
@@ -57,10 +56,9 @@ const bgGradientButton1 = LinearGradient(
 //GRADIENT BUTTON 2
 const bgGradientButton2 = LinearGradient(
   colors: [
-    Color(0xFFFFD2FF),
-    Color(0xFFE3FFCA),
+    Color(0xFF8E80DA),
+    Color(0xFF6555B4),
   ],
-  //Falta 100% angulo 45
   begin: Alignment.bottomLeft,
   end: Alignment.topRight,
 );
@@ -68,10 +66,9 @@ const bgGradientButton2 = LinearGradient(
 //GRADIENT HEADER
 const bgGradientAppBar = LinearGradient(
   colors: [
-    Color(0xFFFF00AE),
-    Color(0xFF94005A),
+    Color(0xFF7563BE),
+    Color(0xFF6555B4),
   ],
-  //Falta 100% angulo 0
   begin: Alignment.bottomLeft,
   end: Alignment.topRight,
 );
@@ -81,29 +78,20 @@ const bgGradientNotification = LinearGradient(
   colors: [
     Color(0xFFFFFFFF),
   ],
-  //Falta 33%
   begin: Alignment.bottomLeft,
   end: Alignment.topRight,
 );
 
 //GRADIENT BACK PROFESIONAL
 const bgGradientBackProfesional = LinearGradient(
-  colors: [
-    Color(0xFF8AB7AC),
-    Color(0xFFA5E5C8)
-  ],
-  //Falta angulo 0
+  colors: [Color(0xFF6555B4), Color(0xFF8E80DA)],
   begin: Alignment.bottomLeft,
   end: Alignment.topRight,
 );
 
 //GRADIENT BACK CHATBOT
 const bgGradientBackChatbot = LinearGradient(
-  colors: [
-    Color(0xFF964578),
-    Color(0xFFF285CA)
-  ],
-  //Falta angulo 0
+  colors: [Color(0xFF6555B4), Color(0xFF7563BE)],
   begin: Alignment.bottomLeft,
   end: Alignment.topRight,
 );

@@ -124,7 +124,7 @@ class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHel
           await context.router.push(const ForumNewPostRoute());
           pagingController.refresh();
         },
-        child: Icon(SonaIcons.plusSquare),
+        child: Icon(AppIcons.plusSquare),
       ),
     );
   }

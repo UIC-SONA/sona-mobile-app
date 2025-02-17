@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-abstract class SonaIcons {
+abstract class AppIcons {
   static const String _fontFamily = 'SonaIcons';
 
   static final IconData messageCard = _ofCharacter('A');

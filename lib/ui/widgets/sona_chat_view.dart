@@ -122,7 +122,7 @@ class SonaChatView extends StatelessWidget {
         enableGalleryImagePicker: enableGalleryImagePicker,
         allowRecordingVoice: allowRecordingVoice,
         sendButtonIcon: Icon(
-          SonaIcons.send,
+          AppIcons.send,
           color: primaryColor,
         ),
         textFieldConfig: TextFieldConfiguration(

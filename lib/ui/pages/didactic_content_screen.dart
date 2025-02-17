@@ -189,7 +189,7 @@ class _DidacticContentExpansionTileState extends State<DidacticContentExpansionT
                     color: Colors.white,
                     onPressed: widget.onToggle,
                     icon: Icon(
-                      widget.isExpanded ? SonaIcons.eyeOff : SonaIcons.eye,
+                      widget.isExpanded ? AppIcons.eyeOff : AppIcons.eye,
                     ),
                   ),
                 ),

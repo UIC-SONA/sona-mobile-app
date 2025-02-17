@@ -47,10 +47,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   labelText: 'Nueva contraseña',
-                  prefixIcon: Icon(SonaIcons.padlock),
+                  prefixIcon: Icon(AppIcons.padlock),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscurePassword ? SonaIcons.eye : SonaIcons.eyeOff,
+                      _obscurePassword ? AppIcons.eye : AppIcons.eyeOff,
                     ),
                     onPressed: () => setState(() {
                       _obscurePassword = !_obscurePassword;
@@ -72,10 +72,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 obscureText: _obscureConfirmPassword,
                 decoration: InputDecoration(
                   labelText: 'Confirmar nueva contraseña',
-                  prefixIcon: Icon(SonaIcons.padlock),
+                  prefixIcon: Icon(AppIcons.padlock),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscureConfirmPassword ? SonaIcons.eye : SonaIcons.eyeOff,
+                      _obscureConfirmPassword ? AppIcons.eye : AppIcons.eyeOff,
                     ),
                     onPressed: () => setState(() {
                       _obscureConfirmPassword = !_obscureConfirmPassword;

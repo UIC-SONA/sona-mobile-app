@@ -45,7 +45,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   name: 'emailOrUsername',
                   decoration: InputDecoration(
                     labelText: 'Correo electrónico o nombre de usuario',
-                    prefixIcon: Icon(SonaIcons.messageCard),
+                    prefixIcon: Icon(AppIcons.messageCard),
                   ),
                   validator: FormBuilderValidators.compose([
                     FormBuilderValidators.required(),

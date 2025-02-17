@@ -35,14 +35,14 @@ class AppointmentMenuScreen extends StatelessWidget {
             _MenuCard(
               title: 'Agendar Nueva Cita',
               description: 'Programa una cita con un profesional',
-              icon: SonaIcons.calendar,
+              icon: AppIcons.calendar,
               onTap: () => AutoRouter.of(context).push(const NewAppointmentRoute()),
             ),
             const SizedBox(height: 16),
             _MenuCard(
               title: 'Mis Citas',
               description: 'Ver y gestionar tus citas programadas',
-              icon: SonaIcons.clock,
+              icon: AppIcons.clock,
               onTap: () => AutoRouter.of(context).push(const MyAppointmentsRoute()),
             ),
           ],

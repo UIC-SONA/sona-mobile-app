@@ -94,7 +94,7 @@ class _ForumNewPostScreenState extends FullState<ForumNewPostScreen> with UserSe
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (anonymous) ... [
-            Icon(SonaIcons.fillUser),
+            Icon(AppIcons.fillUser),
             Text(
               "Anónimo",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),

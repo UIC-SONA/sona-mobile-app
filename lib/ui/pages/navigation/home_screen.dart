@@ -67,11 +67,11 @@ class _HomeScreenState extends State<HomeScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          '¡Bienvenida ',
+          '¡Bienvenida a ',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
         ),
         Text(
-          'SONA',
+          'Warmi PL',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: deepMagenta),
         ),
         Text(
