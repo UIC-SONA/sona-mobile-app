@@ -29,7 +29,7 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
     otherUsers: [
       ChatUser(
         id: '2',
-        name: 'Sona Bot',
+        name: 'Warmi Bot',
       ),
     ],
     currentUser: ChatUser(

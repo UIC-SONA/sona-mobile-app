@@ -24,7 +24,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
               child: Column(
                 children: [
                   const Text(
-                    'Sona',
+                    'Warmi PL',
                     style: TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
@@ -41,7 +41,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
                   const SizedBox(height: 20),
                   const Text(
                     """
-“Sona" significa "mujer" en tsáfiqui, un nombre que refleja nuestra misión de empoderar a todas las mujeres. Sona App es una herramienta pensada especialmente para ti, con el objetivo de ofrecerte apoyo y recursos enfocados en tu salud, tu bienestar y tu educación.
+“Warmi" significa "mujer" en quechua, un nombre que refleja nuestra misión de empoderar a todas las mujeres. Warmi PL es una herramienta pensada especialmente para ti, con el objetivo de ofrecerte apoyo y recursos enfocados en tu salud, tu bienestar y tu educación.
 \nAquí encontrarás:\n
 Calendario Menstrual: Lleva un registro preciso de tu ciclo menstrual, para que puedas entender mejor tu cuerpo y anticipar los cambios que experimentas cada mes. La app te proporciona alertas sobre tus días fértiles, la ovulación y el inicio de tu período, ayudándote a cuidar tu salud.\n
 Contenido Didáctico: Accede a una amplia variedad de artículos, videos y recursos educativos sobre salud femenina, sexualidad, autoestima, derechos y más. Aquí encontrarás información confiable para empoderarte, tomar decisiones informadas y cuidar de ti misma.\n
