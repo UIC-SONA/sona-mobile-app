@@ -32,22 +32,7 @@ class SonaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      routerConfig: appRouter.config(),
-      localizationsDelegates: const [
-        ...GlobalMaterialLocalizations.delegates,
-        GlobalWidgetsLocalizations.delegate,
-        FormBuilderLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('es'),
-        Locale('en'),
-      ],
-      locale: const Locale('es'),
-      title: 'SONA',
-      theme: theme,
-      builder: (context, child) => Initializer(child: child!),
-    );
+    return MaterialApp.router(debugShowCheckedModeBanner: false, routerConfig: appRouter.config(), localizationsDelegates: const [...GlobalMaterialLocalizations.delegates, GlobalWidgetsLocalizations.delegate, FormBuilderLocalizations.delegate], supportedLocales: const [Locale('es'), Locale('en')], locale: const Locale('es'), title: 'SONA', theme: theme, builder: (context, child) => Initializer(child: child!));
   }
 }
 

@@ -11,30 +11,120 @@ final injector = Injector.appInstance;
 const credentialsKey = 'credentials';
 
 Future<void> setupDependencies() async {
-  //SECURITY
-  final storage = const FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-      keyCipherAlgorithm: KeyCipherAlgorithm.RSA_ECB_PKCS1Padding,
-      storageCipherAlgorithm: StorageCipherAlgorithm.AES_CBC_PKCS7Padding,
+  injector.registerSingleton<FlutterSecureStorage>(
+    () => const FlutterSecureStorage(
+      aOptions: AndroidOptions(
+        encryptedSharedPreferences: true,
+        keyCipherAlgorithm: KeyCipherAlgorithm.RSA_ECB_PKCS1Padding,
+        storageCipherAlgorithm: StorageCipherAlgorithm.AES_CBC_PKCS7Padding,
+      ),
     ),
   );
-  var credentials = await storage.read(key: credentialsKey);
-  final localeProvider = SystemLocaleProvider();
-  localeProvider.locale = "es";
-  final authProvider = KeycloakAuthProvider(
-    storage: storage,
-    credentialsKey: credentialsKey,
-    credentials: credentials != null ? oauth2.Credentials.fromJson(credentials) : null,
+
+  injector.registerSingleton<LocaleProvider>(
+    () => SystemLocaleProvider()..locale = 'es',
+  );
+  injector.registerSingleton<AuthProvider>(() {
+    final storage = injector.get<FlutterSecureStorage>();
+    return KeycloakAuthProvider(
+      saveCredentials: (credentials) async => await storage.write(
+        key: credentialsKey,
+        value: credentials.toJson(),
+      ),
+      deleteCredentials: () async => await storage.delete(key: credentialsKey),
+    );
+  });
+  injector.registerSingleton<UserService>(
+    () => ApiUserService(
+      authProvider: injector.get<AuthProvider>(),
+      localeProvider: injector.get<LocaleProvider>(),
+    ),
+  );
+  injector.registerSingleton<NotificationService>(
+    () => ApiNotificationService(
+      authProvider: injector.get<AuthProvider>(),
+      localeProvider: injector.get<LocaleProvider>(),
+    ),
+  );
+  injector.registerSingleton<MenstrualCycleService>(
+    () => MenstrualCycleServiceImpl(
+      authProvider: injector.get<AuthProvider>(),
+      localeProvider: injector.get<LocaleProvider>(),
+      userService: injector.get<UserService>(),
+    ),
+  );
+  injector.registerSingleton<ChatService>(
+    () => ApiStompChatService(
+      authProvider: injector.get<AuthProvider>(),
+      localeProvider: injector.get<LocaleProvider>(),
+      userService: injector.get<UserService>(),
+    ),
+  );
+  injector.registerSingleton<ChatBotService>(
+    () => ApiChatBotService(
+      authProvider: injector.get<AuthProvider>(),
+      localeProvider: injector.get<LocaleProvider>(),
+    ),
+  );
+  injector.registerSingleton<TipService>(
+    () => ApiTipService(
+      authProvider: injector.get<AuthProvider>(),
+      localeProvider: injector.get<LocaleProvider>(),
+    ),
+  );
+  injector.registerSingleton<PostService>(
+    () => ApiPostService(
+      authProvider: injector.get<AuthProvider>(),
+      localeProvider: injector.get<LocaleProvider>(),
+    ),
+  );
+  injector.registerSingleton<DidacticContentService>(
+    () => ApiDidacticContentService(
+      authProvider: injector.get<AuthProvider>(),
+      localeProvider: injector.get<LocaleProvider>(),
+    ),
+  );
+  injector.registerSingleton<AppointmentService>(
+    () => ApiAppointmentService(
+      authProvider: injector.get<AuthProvider>(),
+      localeProvider: injector.get<LocaleProvider>(),
+    ),
+  );
+  injector.registerSingleton<ProfessionalScheduleService>(
+    () => ApiProfessionalScheduleService(
+      authProvider: injector.get<AuthProvider>(),
+      localeProvider: injector.get<LocaleProvider>(),
+    ),
   );
 
-  injector.registerSingleton<FlutterSecureStorage>(() => storage);
-  injector.registerSingleton<LocaleProvider>(() => localeProvider);
-  injector.registerSingleton<AuthProvider>(() => authProvider);
+  injector.registerSingleton<AuthGuard>(
+    () => AuthGuard(
+      authProvider: injector.get<AuthProvider>(),
+    ),
+  );
+  injector.registerSingleton<AppRouter>(
+    () => AppRouter(
+      guards: [injector.get<AuthGuard>()],
+    ),
+  );
 
-  //Services
-  final userService = ApiUserService(authProvider: authProvider, localeProvider: localeProvider);
-  final notificationService = ApiNotificationService(authProvider: authProvider, localeProvider: localeProvider);
+  await _configure();
+}
+
+Future<void> _configure() async {
+  final storage = injector.get<FlutterSecureStorage>();
+  final credentials = await storage.read(key: credentialsKey);
+
+  final authProvider = injector.get<AuthProvider>();
+
+  if (credentials != null) {
+    final oauth2Credentials = oauth2.Credentials.fromJson(credentials);
+    await authProvider.useCredentials(oauth2Credentials);
+  }
+
+  final userService = injector.get<UserService>();
+  final notificationService = injector.get<NotificationService>();
+
   if (await authProvider.isAuthenticated()) {
     await userService.refreshCurrentUser();
     await notificationService.suscribe();
@@ -42,19 +132,4 @@ Future<void> setupDependencies() async {
   authProvider.addLogoutListener(CalendarNotificationScheduler.clear);
   authProvider.addLogoutListener(notificationService.unsuscribe);
   authProvider.addLoginListener(notificationService.suscribe);
-
-  injector.registerSingleton<UserService>(() => userService);
-  injector.registerSingleton<NotificationService>(() => notificationService);
-  injector.registerSingleton<MenstrualCycleService>(() => MenstrualCycleServiceImpl(authProvider: authProvider, localeProvider: localeProvider, userService: userService));
-  injector.registerSingleton<ChatService>(() => ApiStompChatService(authProvider: authProvider, localeProvider: localeProvider, userService: userService));
-  injector.registerSingleton<ChatBotService>(() => ApiChatBotService(authProvider: authProvider, localeProvider: localeProvider));
-  injector.registerSingleton<TipService>(() => ApiTipService(authProvider: authProvider, localeProvider: localeProvider));
-  injector.registerSingleton<PostService>(() => ApiPostService(authProvider: authProvider, localeProvider: localeProvider));
-  injector.registerSingleton<DidacticContentService>(() => ApiDidacticContentService(authProvider: authProvider, localeProvider: localeProvider));
-  injector.registerSingleton<AppointmentService>(() => ApiAppointmentService(authProvider: authProvider, localeProvider: localeProvider));
-  injector.registerSingleton<ProfessionalScheduleService>(() => ApiProfessionalScheduleService(authProvider: authProvider, localeProvider: localeProvider));
-
-  var authGuard = AuthGuard(authProvider: authProvider);
-  injector.registerSingleton<AuthGuard>(() => authGuard);
-  injector.registerSingleton<AppRouter>(() => AppRouter(guards: [authGuard]));
 }

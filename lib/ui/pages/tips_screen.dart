@@ -21,13 +21,7 @@ class TipsScreen extends StatefulWidget {
 
 class _TipsScreenState extends State<TipsScreen> {
   final _tipsService = injector.get<TipService>();
-  final _pagingController = PagingQueryController<Tip>(firstPage: 0);
-
-  @override
-  void initState() {
-    super.initState();
-    _pagingController.configurePageRequestListener(_loadPageActiveTips);
-  }
+  late final _pagingController = PagingRequestController<Tip>(_loadPageActiveTips);
 
   Future<List<Tip>> _loadPageActiveTips(int page) async {
     final result = await _tipsService.actives(PageQuery(
@@ -54,14 +48,15 @@ class _TipsScreenState extends State<TipsScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: () => Future.sync(_pagingController.refresh),
-        child: PagedListView<int, Tip>(
-          pagingController: _pagingController,
-          builderDelegate: PagedChildBuilderDelegate<Tip>(
-            noItemsFoundIndicatorBuilder: (context) => const Center(child: Text('No se encontraron tips.')),
-            itemBuilder: (context, tip, index) {
-              final notifier = ValueNotifier(tip);
-              return _TipCard(notifier: notifier);
-            },
+        child: PagingListener(
+          controller: _pagingController,
+          builder: (context, state, fetchNextPage) => PagedListView<int, Tip>(
+            state: state,
+            fetchNextPage: fetchNextPage,
+            builderDelegate: PagedChildBuilderDelegate<Tip>(
+              noItemsFoundIndicatorBuilder: (context) => const Center(child: Text('No se encontraron tips.')),
+              itemBuilder: (context, tip, index) => _TipCard(notifier: ValueNotifier(tip)),
+            ),
           ),
         ),
       ),

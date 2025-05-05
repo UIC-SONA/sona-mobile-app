@@ -28,14 +28,13 @@ class _ProfileScreenState extends State<ProfileScreen> with UserServiceWidgetHel
   final userService = injector.get<UserService>();
   @override
   final postService = injector.get<PostService>();
-  final pagingController = PagingQueryController<PostWithUser>(firstPage: 0);
   final picker = ImagePicker();
+  late final pagingController = PagingRequestController<PostWithUser>(_loadPagePostWihtUser);
 
   @override
   void initState() {
     super.initState();
     clearUserCaches();
-    pagingController.configurePageRequestListener(_loadPagePostWihtUser);
   }
 
   Future<List<PostWithUser>> _loadPagePostWihtUser(int page) async {

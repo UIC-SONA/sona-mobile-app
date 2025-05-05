@@ -46,3 +46,6 @@ app.*.map.json
 # Accounts
 /android/app/google-services.json
 android/app/google-services.json
+
+# Ignorar compilación nativa de Android
+android/app/.cxx/

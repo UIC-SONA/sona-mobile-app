@@ -1,31 +1,22 @@
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-import 'package:logger/logger.dart';
 
-final _log = Logger(level: Level.debug);
+class PagingRequestController<T> extends PagingController<int, T> {
+  Future<List<T>> Function(int page) fetcher;
 
-class PagingQueryController<T> extends PagingController<int, T> {
-  PagingQueryController({
-    required int firstPage,
-  }) : super(firstPageKey: firstPage);
+  PagingRequestController(this.fetcher)
+      : super(
+          getNextPageKey: (state) => (state.keys?.last ?? -1) + 1,
+          fetchPage: fetcher,
+        );
 
-  void configurePageRequestListener(Future<List<T>> Function(int page) fetcher) {
-    addPageRequestListener((pageKey) async {
-      final page = pageKey;
-      try {
-        final items = await fetcher(page);
-
-        final length = items.length;
-        final isLastPage = length == 0;
-        if (isLastPage) {
-          appendLastPage(items);
-        } else {
-          final nextPageKey = pageKey + 1;
-          appendPage(items, nextPageKey);
-        }
-      } catch (error, stackTrace) {
-        _log.e('Error fetching page $page', error: error, stackTrace: stackTrace);
-        this.error = error;
-      }
-    });
+  /// Fetches the next page.
+  ///
+  /// If called while a page is fetching or no more pages are available, this method does nothing.
+  @override
+  void fetchNextPage() async {
+    if (value.pages?.last.isEmpty == true && value.error == null) {
+      value = value.copyWith(hasNextPage: false);
+    }
+    super.fetchNextPage();
   }
 }

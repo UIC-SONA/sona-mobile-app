@@ -26,14 +26,8 @@ class DidacticContentScreen extends StatefulWidget {
 
 class _DidacticContentScreenState extends FullState<DidacticContentScreen> {
   final _didacticContentService = injector.get<DidacticContentService>();
-  final _pagingController = PagingQueryController<DidaticContent>(firstPage: 0);
+  late final _pagingController = PagingRequestController<DidaticContent>(_loadPageDidacticContent);
   String? _expandedTileId;
-
-  @override
-  void initState() {
-    super.initState();
-    _pagingController.configurePageRequestListener(_loadPageDidacticContent);
-  }
 
   Future<List<DidaticContent>> _loadPageDidacticContent(int page) async {
     final result = await _didacticContentService.page(PageQuery(
@@ -66,21 +60,25 @@ class _DidacticContentScreenState extends FullState<DidacticContentScreen> {
       onRefresh: () {
         return Future.sync(_pagingController.refresh);
       },
-      child: PagedListView<int, DidaticContent>(
-        pagingController: _pagingController,
-        builderDelegate: PagedChildBuilderDelegate<DidaticContent>(
-          noItemsFoundIndicatorBuilder: (context) {
-            return const Center(
-              child: Text('No se encontraron contenidos didácticos'),
-            );
-          },
-          itemBuilder: (context, didaticContent, index) {
-            return DidacticContentExpansionTile(
-              didaticContent: didaticContent,
-              isExpanded: _expandedTileId == didaticContent.id,
-              onToggle: () => _handleTileExpansion(didaticContent.id),
-            );
-          },
+      child: PagingListener(
+        controller: _pagingController,
+        builder: (context, state, fetchNextPage) => PagedListView<int, DidaticContent>(
+          state: state,
+          fetchNextPage: fetchNextPage,
+          builderDelegate: PagedChildBuilderDelegate<DidaticContent>(
+            noItemsFoundIndicatorBuilder: (context) {
+              return const Center(
+                child: Text('No se encontraron contenidos didácticos'),
+              );
+            },
+            itemBuilder: (context, didaticContent, index) {
+              return DidacticContentExpansionTile(
+                didaticContent: didaticContent,
+                isExpanded: _expandedTileId == didaticContent.id,
+                onToggle: () => _handleTileExpansion(didaticContent.id),
+              );
+            },
+          ),
         ),
       ),
     );

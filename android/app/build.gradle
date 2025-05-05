@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "ec.gob.conagopare.sona"
+    namespace = "ec.gob.conagopare.app.sona"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "25.1.8937393"
 
@@ -25,7 +25,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "ec.gob.conagopare.sona"
+        applicationId = "ec.gob.conagopare.app.sona"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -50,5 +50,5 @@ flutter {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 }

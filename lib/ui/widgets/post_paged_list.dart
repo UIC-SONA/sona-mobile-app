@@ -7,7 +7,7 @@ import 'package:sona/ui/utils/paging.dart';
 import 'package:sona/ui/widgets/forum_card.dart';
 
 class PostListView extends StatelessWidget {
-  final PagingQueryController<PostWithUser> controller;
+  final PagingRequestController<PostWithUser> controller;
 
   const PostListView({
     super.key,
@@ -16,28 +16,32 @@ class PostListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PagedListView<int, PostWithUser>(
-      pagingController: controller,
-      builderDelegate: PagedChildBuilderDelegate<PostWithUser>(
-        noItemsFoundIndicatorBuilder: (context) {
-          return const Center(
-            child: Text('No hay publicaciones'),
-          );
-        },
-        itemBuilder: (context, post, index) {
-          final notifier = ValueNotifier(post);
-          return PostCard(
-            notifier: notifier,
-            onComment: () => _openCommentsScreen(notifier, context),
-          );
-        },
+    return PagingListener(
+      controller: controller,
+      builder: (context, state, fetchNextPage) => PagedListView<int, PostWithUser>(
+        state: state,
+        fetchNextPage: fetchNextPage,
+        builderDelegate: PagedChildBuilderDelegate<PostWithUser>(
+          noItemsFoundIndicatorBuilder: (context) {
+            return const Center(
+              child: Text('No hay publicaciones'),
+            );
+          },
+          itemBuilder: (context, post, index) {
+            final notifier = ValueNotifier(post);
+            return PostCard(
+              notifier: notifier,
+              onComment: () => _openCommentsScreen(notifier, context),
+            );
+          },
+        ),
       ),
     );
   }
 }
 
 class PostSliverList extends StatelessWidget {
-  final PagingQueryController<PostWithUser> controller;
+  final PagingRequestController<PostWithUser> controller;
 
   const PostSliverList({
     super.key,
@@ -46,21 +50,25 @@ class PostSliverList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PagedSliverList<int, PostWithUser>(
-      pagingController: controller,
-      builderDelegate: PagedChildBuilderDelegate<PostWithUser>(
-        noItemsFoundIndicatorBuilder: (context) {
-          return const Center(
-            child: Text('No hay publicaciones'),
-          );
-        },
-        itemBuilder: (context, post, index) {
-          final notifier = ValueNotifier(post);
-          return PostCard(
-            notifier: notifier,
-            onComment: () => _openCommentsScreen(notifier, context),
-          );
-        },
+    return PagingListener(
+      controller: controller,
+      builder: (context, state, fetchNextPage) => PagedSliverList<int, PostWithUser>(
+        state: state,
+        fetchNextPage: fetchNextPage,
+        builderDelegate: PagedChildBuilderDelegate<PostWithUser>(
+          noItemsFoundIndicatorBuilder: (context) {
+            return const Center(
+              child: Text('No hay publicaciones'),
+            );
+          },
+          itemBuilder: (context, post, index) {
+            final notifier = ValueNotifier(post);
+            return PostCard(
+              notifier: notifier,
+              onComment: () => _openCommentsScreen(notifier, context),
+            );
+          },
+        ),
       ),
     );
   }

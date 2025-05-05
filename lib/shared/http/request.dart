@@ -9,7 +9,7 @@ import 'exceptions.dart';
 import 'types.dart';
 
 const Duration kHttpRequestTimeout = Duration(seconds: 60);
-final Logger _log = Logger(level: Level.error);
+final Logger _log = Logger(level: Level.debug);
 
 Future<Response> request(
   Uri url, {

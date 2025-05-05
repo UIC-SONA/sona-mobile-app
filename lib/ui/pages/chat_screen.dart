@@ -321,7 +321,7 @@ class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAli
   final chatService = injector.get<ChatService>();
   @override
   final userService = injector.get<UserService>();
-  final pagingController = PagingQueryController<User>(firstPage: 0);
+  late final pagingController = PagingRequestController<User>(_loadPageProfessionals);
   final searchController = TextEditingController();
 
   var _authorities = professionalAuthorities;
@@ -329,7 +329,6 @@ class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAli
   @override
   void initState() {
     super.initState();
-    pagingController.configurePageRequestListener(_loadPageProfessionals);
     searchController.addListener(Debouncing.build(const Duration(milliseconds: 500), pagingController.refresh));
   }
 
@@ -374,50 +373,53 @@ class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAli
   Widget _buildListUsers() {
     return RefreshIndicator(
       onRefresh: () => Future.sync(pagingController.refresh),
-      child: PagedListView<int, User>(
-        pagingController: pagingController,
-        builderDelegate: PagedChildBuilderDelegate<User>(
-          noItemsFoundIndicatorBuilder: (context) => const Center(child: Text('No se encontraron usuarios')),
-          firstPageErrorIndicatorBuilder: (context) {
-            final error = extractError(pagingController.error);
-            final title = error.title;
-            final message = error.message;
+      child: PagingListener<int, User>(
+        controller: pagingController,
+        builder: (context, state, fetchNextPage) => PagedListView(
+            state: state,
+            fetchNextPage: fetchNextPage,
+            builderDelegate: PagedChildBuilderDelegate<User>(
+              noItemsFoundIndicatorBuilder: (context) => const Center(child: Text('No se encontraron usuarios')),
+              firstPageErrorIndicatorBuilder: (context) {
+                final error = extractError(state.error);
+                final title = error.title;
+                final message = error.message;
 
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(title),
-                  const SizedBox(height: 10),
-                  Text(message),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: pagingController.refresh,
-                    child: const Text('Reintentar'),
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(title),
+                      const SizedBox(height: 10),
+                      Text(message),
+                      const SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: pagingController.refresh,
+                        child: const Text('Reintentar'),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            );
-          },
-          itemBuilder: (context, user, index) {
-            if (user.id == currentUser.id) return const SizedBox();
-            return TextButton(
-              style: ButtonStyle(
-                padding: WidgetStateProperty.all(const EdgeInsets.all(0)),
-              ),
-              onPressed: () => _openChat(user),
-              child: ListTile(
-                title: Text(
-                  '${user.firstName} ${user.lastName}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text('@${user.username}'),
-                leading: buildUserAvatar(user),
-                trailing: Icon(Icons.chat, color: Theme.of(context).primaryColor),
-              ),
-            );
-          },
-        ),
+                );
+              },
+              itemBuilder: (context, user, index) {
+                if (user.id == currentUser.id) return const SizedBox();
+                return TextButton(
+                  style: ButtonStyle(
+                    padding: WidgetStateProperty.all(const EdgeInsets.all(0)),
+                  ),
+                  onPressed: () => _openChat(user),
+                  child: ListTile(
+                    title: Text(
+                      '${user.firstName} ${user.lastName}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text('@${user.username}'),
+                    leading: buildUserAvatar(user),
+                    trailing: Icon(Icons.chat, color: Theme.of(context).primaryColor),
+                  ),
+                );
+              },
+            )),
       ),
     );
   }

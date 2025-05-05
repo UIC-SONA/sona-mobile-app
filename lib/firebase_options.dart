@@ -17,19 +17,13 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -52,11 +46,30 @@ class DefaultFirebaseOptions {
     }
   }
 
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyCVKA8zuITRbhRWU6cx9ZAMXhHi3HwP2Ko',
+    appId: '1:52775469826:web:517dcf805c71b9dbf9381b',
+    messagingSenderId: '52775469826',
+    projectId: 'elated-cathode-438218-g7',
+    authDomain: 'elated-cathode-438218-g7.firebaseapp.com',
+    storageBucket: 'elated-cathode-438218-g7.firebasestorage.app',
+    measurementId: 'G-6MYQ3VFE6V',
+  );
+
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCPPW1e21W0CBjWKJ5JnUQTc1BIkwy1q3k',
-    appId: '1:52775469826:android:a51e5f4ea2dcd073f9381b',
+    appId: '1:52775469826:android:02e279905f67d99df9381b',
     messagingSenderId: '52775469826',
     projectId: 'elated-cathode-438218-g7',
     storageBucket: 'elated-cathode-438218-g7.firebasestorage.app',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyCfOV3pZ9gQviCRg12O_VFv69iJ0pnXTiE',
+    appId: '1:52775469826:ios:67b19ff8fafe0d7bf9381b',
+    messagingSenderId: '52775469826',
+    projectId: 'elated-cathode-438218-g7',
+    storageBucket: 'elated-cathode-438218-g7.firebasestorage.app',
+    iosBundleId: 'ec.gob.conagopare.app.sona',
   );
 }

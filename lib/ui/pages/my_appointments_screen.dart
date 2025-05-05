@@ -21,12 +21,11 @@ class MyAppointmentsScreen extends StatefulWidget {
 
 class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
   final _appointmentService = injector.get<AppointmentService>();
-  final _pagingController = PagingQueryController<Appointment>(firstPage: 0);
+  late final _pagingController = PagingRequestController<Appointment>(_loadPageAppointments);
 
   @override
   void initState() {
     super.initState();
-    _pagingController.configurePageRequestListener(_loadPageAppointments);
   }
 
   Future<List<Appointment>> _loadPageAppointments(int page) async {
@@ -46,12 +45,14 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
       actionButton: SonaActionButton.home(),
       body: RefreshIndicator(
         onRefresh: () => Future.sync(_pagingController.refresh),
-        child: PagedListView<int, Appointment>(
-          pagingController: _pagingController,
-          builderDelegate: PagedChildBuilderDelegate<Appointment>(
-            noItemsFoundIndicatorBuilder: (context) => const Center(child: Text('No tienes citas.')),
-            itemBuilder: (context, appointment, index) => AppointmentListItem(
-              appointment: appointment,
+        child: PagingListener(
+          controller: _pagingController,
+          builder: (context, state, fetchNextPage) => PagedListView<int, Appointment>(
+            state: state,
+            fetchNextPage: fetchNextPage,
+            builderDelegate: PagedChildBuilderDelegate<Appointment>(
+              noItemsFoundIndicatorBuilder: (context) => const Center(child: Text('No tienes citas.')),
+              itemBuilder: (context, appointment, index) => AppointmentListItem(appointment: appointment),
             ),
           ),
         ),

@@ -30,12 +30,11 @@ class _ForumScreenState extends FullState<ForumScreen> with UserServiceWidgetHel
   @override
   final postService = injector.get<PostService>();
   final storage = injector.get<FlutterSecureStorage>();
-  final pagingController = PagingQueryController<PostWithUser>(firstPage: 0);
+  late final pagingController = PagingRequestController<PostWithUser>(_loadPagePostWithUser);
 
   @override
   void initState() {
     super.initState();
-    pagingController.configurePageRequestListener(_loadPagePostWithUser);
     tryImportantMessage();
   }
 

@@ -45,7 +45,10 @@ List<ErrorExtractorNullable> errorExtractors = [
   defaultErrorExtractor,
 ];
 
-Error extractError(Object e) {
+Error extractError(Object? e) {
+  if (e == null) {
+    return Error('Error', 'Unknown error');
+  }
   for (final extractor in errorExtractors) {
     final error = extractor(e);
     if (error != null) return error;

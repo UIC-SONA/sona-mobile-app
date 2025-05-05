@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -30,6 +29,8 @@ const invalidGrantError = 'OAuth authorization error (invalid_grant):';
 
 class _LoginScreenState extends FullState<LoginScreen> {
   final authProvider = injector.get<AuthProvider>();
+  final userService = injector.get<UserService>();
+
   final formKey = GlobalKey<FormBuilderState>();
   var _loading = false;
   var _obscurePasswordText = true;
@@ -37,12 +38,7 @@ class _LoginScreenState extends FullState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     const radius = 25.0;
-    const BorderRadius borderRadius = BorderRadius.only(
-      topLeft: Radius.zero,
-      topRight: Radius.zero,
-      bottomLeft: Radius.circular(radius),
-      bottomRight: Radius.circular(radius),
-    );
+    const BorderRadius borderRadius = BorderRadius.only(topLeft: Radius.zero, topRight: Radius.zero, bottomLeft: Radius.circular(radius), bottomRight: Radius.circular(radius));
 
     final height = MediaQuery.of(context).size.height * 0.5;
 
@@ -69,37 +65,16 @@ class _LoginScreenState extends FullState<LoginScreen> {
                           borderRadius: borderRadius,
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 35, bottom: 10),
-                        child: Center(
-                          child: Image.asset(
-                            'assets/images/logo.png',
-                            width: imageSize,
-                          ),
-                        ),
-                      ),
+                      Padding(padding: const EdgeInsets.only(top: 35, bottom: 10), child: Center(child: Image.asset('assets/images/logo.png', width: imageSize))),
                     ],
                   );
                 },
               ),
             ),
             SliverList(
-              delegate: SliverChildListDelegate(
-                [
-                  Column(
-                    children: [
-                      const SizedBox(height: 25),
-                      _userIcon(),
-                      Padding(
-                        padding: const EdgeInsets.all(25),
-                        child: _buildForm(),
-                      ),
-                      _buildFooter(),
-                      const SizedBox(height: 20),
-                    ],
-                  ),
-                ],
-              ),
+              delegate: SliverChildListDelegate([
+                Column(children: [const SizedBox(height: 25), _userIcon(), Padding(padding: const EdgeInsets.all(25), child: _buildForm()), _buildFooter(), const SizedBox(height: 20)]),
+              ]),
             ),
           ],
         ),
@@ -108,10 +83,7 @@ class _LoginScreenState extends FullState<LoginScreen> {
   }
 
   Widget _userIcon() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      child: Icon(SonaIcons.fillUser, color: Theme.of(context).primaryColor, size: 35),
-    );
+    return Container(margin: const EdgeInsets.only(bottom: 20), child: Icon(SonaIcons.fillUser, color: Theme.of(context).primaryColor, size: 35));
   }
 
   Widget _buildForm() {
@@ -119,39 +91,11 @@ class _LoginScreenState extends FullState<LoginScreen> {
       key: formKey,
       child: Column(
         children: [
-          FormBuilderTextField(
-            name: 'emailOrUsername',
-            decoration: InputDecoration(
-              labelText: 'Correo o usuario',
-              enabled: !_loading,
-              prefixIcon: Icon(SonaIcons.messageCard),
-            ),
-            validator: FormBuilderValidators.required(),
-          ),
+          FormBuilderTextField(name: 'emailOrUsername', enabled: !_loading, decoration: InputDecoration(labelText: 'Correo o usuario', enabled: !_loading, prefixIcon: Icon(SonaIcons.messageCard)), validator: FormBuilderValidators.required()),
           const SizedBox(height: 10),
-          FormBuilderTextField(
-            name: 'password',
-            obscureText: _obscurePasswordText,
-            decoration: InputDecoration(
-              labelText: 'Contraseña',
-              prefixIcon: Icon(SonaIcons.padlock),
-              suffixIcon: IconButton(
-                onPressed: _togglePasswordVisibility,
-                icon: Icon(_obscurePasswordText ? SonaIcons.eye : SonaIcons.eyeOff),
-              ),
-            ),
-            validator: FormBuilderValidators.required(),
-          ),
+          FormBuilderTextField(name: 'password', enabled: !_loading, obscureText: _obscurePasswordText, decoration: InputDecoration(labelText: 'Contraseña', enabled: !_loading, prefixIcon: Icon(SonaIcons.padlock), suffixIcon: IconButton(onPressed: _togglePasswordVisibility, icon: Icon(_obscurePasswordText ? SonaIcons.eye : SonaIcons.eyeOff))), validator: FormBuilderValidators.required()),
           const SizedBox(height: 30),
-          LoadingButton(
-            icon: const Icon(Icons.login),
-            onPressed: _loginUser,
-            loading: _loading,
-            child: const Text(
-              'Ingresar',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
+          LoadingButton(icon: const Icon(Icons.login), onPressed: _loginUser, loading: _loading, child: const Text('Ingresar', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
         ],
       ),
     );
@@ -161,27 +105,11 @@ class _LoginScreenState extends FullState<LoginScreen> {
     return Column(
       children: [
         const SizedBox(height: 30),
-        const Text(
-          '¿Olvidaste tu contraseña?',
-          style: TextStyle(fontWeight: FontWeight.w500),
-        ),
-        SizedTextbutton(
-          'Recuperar contraseña',
-          onPressed: () => AutoRouter.of(context).push(const ResetPasswordRoute()),
-          height: 30,
-          enabled: !_loading,
-        ),
+        const Text('¿Olvidaste tu contraseña?', style: TextStyle(fontWeight: FontWeight.w500)),
+        SizedTextbutton('Recuperar contraseña', onPressed: () => AutoRouter.of(context).push(const ResetPasswordRoute()), height: 30, enabled: !_loading),
         const SizedBox(height: 10),
-        const Text(
-          '¿No tienes cuenta?',
-          style: TextStyle(fontWeight: FontWeight.w500),
-        ),
-        SizedTextbutton(
-          'Crear cuenta',
-          onPressed: () => AutoRouter.of(context).push(const SignUpRoute()),
-          height: 30,
-          enabled: !_loading,
-        ),
+        const Text('¿No tienes cuenta?', style: TextStyle(fontWeight: FontWeight.w500)),
+        SizedTextbutton('Crear cuenta', onPressed: () => AutoRouter.of(context).push(const SignUpRoute()), height: 30, enabled: !_loading),
       ],
     );
   }
@@ -200,7 +128,6 @@ class _LoginScreenState extends FullState<LoginScreen> {
 
     try {
       await authProvider.login(email, password);
-      final userService = injector.get<UserService>();
       await userService.refreshCurrentUser();
       final currentUser = userService.currentUser;
       if (!currentUser.authorities.contains(Authority.user)) {

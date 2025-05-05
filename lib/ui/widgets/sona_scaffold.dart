@@ -135,7 +135,11 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
             child: ListView(
               children: [
                 ListTile(
-                  title: anonymizeState.isLoading ? const Text('Cambiando...') : const Text('Modo anónimo'),
+                  title: anonymizeState.isLoading
+                      ? const Text('Cambiando...')
+                      : user.anonymous
+                          ? const Text('Desactivar anonimato')
+                          : const Text('Activar anonimato'),
                   leading: Switch(
                     value: user.anonymous,
                     onChanged: anonymizeState.isLoading ? null : (value) => anonymizeState.fetch([value]),
@@ -146,12 +150,11 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
                   leading: Icon(SonaIcons.emptyUser),
                   onTap: () => AutoRouter.of(context).push(ProfileRoute()),
                 ),
-                // if (kDebugMode)
-                //   ListTile(
-                //     title: const Text('Notificaciones'),
-                //     leading: const Icon(Icons.notifications),
-                //     onTap: () => AutoRouter.of(context).push(SchedulePushRoute()),
-                //   ),
+                ListTile(
+                  title: const Text('Funciones'),
+                  leading: Icon(Icons.view_module),
+                  onTap: () => AutoRouter.of(context).push(MenuOptionsRoute()),
+                ),
                 ListTile(
                   title: const Text('Acerca de'),
                   leading: Icon(SonaIcons.warning),

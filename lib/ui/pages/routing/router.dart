@@ -113,7 +113,7 @@ class AuthGuard extends AutoRouteGuard {
 
     if (isAuthenticated) {
       if (unauthenticatedRoutes.contains(currentRouteName)) {
-        resolver.redirect(const HomeRoute());
+        resolver.redirectUntil(const HomeRoute());
       } else {
         resolver.next(true);
       }
@@ -121,7 +121,7 @@ class AuthGuard extends AutoRouteGuard {
       if (unauthenticatedRoutes.contains(currentRouteName)) {
         resolver.next(true);
       } else {
-        resolver.redirect(const LoginRoute());
+        resolver.redirectUntil(const LoginRoute());
       }
     }
   }

@@ -1,4 +1,4 @@
-package ec.gob.conagopare.sona
+package ec.gob.conagopare.app.sona
 
 import io.flutter.embedding.android.FlutterActivity
 
