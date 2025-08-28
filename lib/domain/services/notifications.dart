@@ -48,7 +48,7 @@ class ApiNotificationService extends NotificationService implements WebResource 
       token = await messaging.getToken();
       if (token == null) return;
     } catch (e) {
-      _log.w("Error getting FCM token, try with APNS token", error: e, stackTrace: StackTrace.current
+      _log.w("Error getting FCM token, try with APNS token", error: e, stackTrace: StackTrace.current);
       try {
         token = await messaging.getAPNSToken();
         if (token == null) return;
