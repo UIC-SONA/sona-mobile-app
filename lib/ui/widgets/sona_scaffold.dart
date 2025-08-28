@@ -104,7 +104,7 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
       child: Column(
         children: [
           SizedBox(
-            height: 240,
+            height: 260,
             width: double.infinity,
             child: DrawerHeader(
               decoration: BoxDecoration(
@@ -114,7 +114,7 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   buildProfilePicture(radius: 50),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
                   Column(
                     children: [
                       Text(

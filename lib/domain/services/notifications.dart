@@ -43,8 +43,20 @@ class ApiNotificationService extends NotificationService implements WebResource 
   @override
   Future<void> suscribe() async {
     await messaging.requestPermission();
-    final token = await messaging.getToken();
-    if (token == null) return;
+    String? token;
+    try {
+      token = await messaging.getToken();
+      if (token == null) return;
+    } catch (e) {
+      _log.w("Error getting FCM token, try with APNS token", e);
+      try {
+        token = await messaging.getAPNSToken();
+        if (token == null) return;
+      } catch (e) {
+        _log.e("Error getting APNS token", error: e, stackTrace: StackTrace.current);
+        return;
+      }
+    }
 
     await request(
       uri.replace(path: '$path/suscribe'),
