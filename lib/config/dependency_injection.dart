@@ -1,5 +1,8 @@
+import 'dart:ui';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:injector/injector.dart';
+import 'package:intl/intl.dart';
 import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/domain/providers/locale.dart';
 import 'package:sona/domain/services/services.dart';
@@ -21,9 +24,12 @@ Future<void> setupDependencies() async {
     ),
   );
 
-  injector.registerSingleton<LocaleProvider>(
-    () => SystemLocaleProvider()..locale = 'es',
-  );
+  injector.registerSingleton<LocaleProvider>(() {
+    final localeProvider = SystemLocaleProvider();
+    final locale = PlatformDispatcher.instance.locale;
+    localeProvider.locale = locale.toString();
+    return localeProvider;
+  });
   injector.registerSingleton<AuthProvider>(() {
     final storage = injector.get<FlutterSecureStorage>();
     return KeycloakAuthProvider(

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:sona/config/dependency_injection.dart';
-import 'package:sona/domain/models/models.dart';
 import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/domain/services/services.dart';
 import 'package:sona/shared/validation/forms.dart';
@@ -65,7 +64,12 @@ class _LoginScreenState extends FullState<LoginScreen> {
                           borderRadius: borderRadius,
                         ),
                       ),
-                      Padding(padding: const EdgeInsets.only(top: 35, bottom: 10), child: Center(child: Image.asset('assets/images/logo.png', width: imageSize))),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 35, bottom: 10),
+                        child: Center(
+                          child: Image.asset('assets/images/logo.png', width: imageSize),
+                        ),
+                      ),
                     ],
                   );
                 },
@@ -73,7 +77,16 @@ class _LoginScreenState extends FullState<LoginScreen> {
             ),
             SliverList(
               delegate: SliverChildListDelegate([
-                Column(children: [const SizedBox(height: 25), _userIcon(), Padding(padding: const EdgeInsets.all(25), child: _buildForm()), _buildFooter(), const SizedBox(height: 20)]),
+                Column(children: [
+                  const SizedBox(height: 25),
+                  _userIcon(),
+                  Padding(
+                      padding: const EdgeInsets.all(25),
+                      child: _buildForm(),
+                  ),
+                  _buildFooter(),
+                  const SizedBox(height: 20)],
+                ),
               ]),
             ),
           ],
@@ -83,7 +96,14 @@ class _LoginScreenState extends FullState<LoginScreen> {
   }
 
   Widget _userIcon() {
-    return Container(margin: const EdgeInsets.only(bottom: 20), child: Icon(SonaIcons.fillUser, color: Theme.of(context).primaryColor, size: 35));
+    return Container(
+        margin: const EdgeInsets.only(bottom: 20),
+        child: Icon(
+            SonaIcons.fillUser,
+            color: Theme.of(context).primaryColor,
+            size: 35,
+        )
+    );
   }
 
   Widget _buildForm() {
@@ -129,14 +149,11 @@ class _LoginScreenState extends FullState<LoginScreen> {
     try {
       await authProvider.login(email, password);
       await userService.refreshCurrentUser();
-      final currentUser = userService.currentUser;
-      if (!currentUser.authorities.contains(Authority.user)) {
-        throw 'No tienes permisos para acceder a la aplicación';
-      }
 
       if (mounted) {
         AutoRouter.of(context).replaceAll([const HomeRoute()]);
       }
+
     } catch (error) {
       if (!mounted) return;
       final message = error.toString();

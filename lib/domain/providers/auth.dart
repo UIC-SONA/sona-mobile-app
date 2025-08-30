@@ -44,12 +44,7 @@ class KeycloakAuthProvider extends AuthProvider<oauth2.Client> {
 
   @override
   Future<void> useCredentials(oauth2.Credentials credentials) async {
-    _client = oauth2.Client(
-      credentials,
-      identifier: identifier,
-      secret: secret,
-      onCredentialsRefreshed: saveCredentials,
-    );
+    _client = oauth2.Client(credentials, identifier: identifier, secret: secret, onCredentialsRefreshed: saveCredentials);
   }
 
   @override
@@ -70,16 +65,7 @@ class KeycloakAuthProvider extends AuthProvider<oauth2.Client> {
         }
       }
 
-      var response = await http.post(
-        introspectionEndpoint,
-        headers: {
-          'Authorization': 'Basic $introspectionAuthorization',
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: {
-          'token': credentials.accessToken,
-        },
-      );
+      var response = await http.post(introspectionEndpoint, headers: {'Authorization': 'Basic $introspectionAuthorization', 'Content-Type': 'application/x-www-form-urlencoded'}, body: {'token': credentials.accessToken});
 
       if (response.statusCode != 200) return false;
       return jsonDecode(response.body)['active'] == true;
@@ -90,15 +76,7 @@ class KeycloakAuthProvider extends AuthProvider<oauth2.Client> {
 
   @override
   Future<oauth2.Client> login(String username, String password) async {
-    var newClient = await oauth2.resourceOwnerPasswordGrant(
-      tokenEndpoint,
-      username,
-      password,
-      identifier: identifier,
-      secret: secret,
-      scopes: ['profile', 'email', 'offline_access', 'openid'],
-      onCredentialsRefreshed: saveCredentials,
-    );
+    var newClient = await oauth2.resourceOwnerPasswordGrant(tokenEndpoint, username, password, identifier: identifier, secret: secret, scopes: ['profile', 'email', 'offline_access', 'openid'], onCredentialsRefreshed: saveCredentials);
 
     await saveCredentials(newClient.credentials);
     _client = newClient;
@@ -112,14 +90,14 @@ class KeycloakAuthProvider extends AuthProvider<oauth2.Client> {
   Future<void> logout() async {
     if (_client == null) return;
     try {
+      for (var listener in _logoutListeners) {
+        listener();
+      }
       await _client!.post(endSessionEndpoint);
     } catch (e) {
       // Ignorar errores
     } finally {
       await deleteCredentials();
-      for (var listener in _logoutListeners) {
-        listener();
-      }
       _client = null;
     }
   }
