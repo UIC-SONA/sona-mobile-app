@@ -1,4 +1,6 @@
 import 'package:auto_route/annotations.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -58,12 +60,26 @@ class _ProfileScreenState extends State<ProfileScreen> with UserServiceWidgetHel
       if (!mounted || pickedFile == null) return;
       final filePath = pickedFile.path;
 
-      final croppedFile = await ImageCropper().cropImage(sourcePath: filePath, aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1), uiSettings: [AndroidUiSettings(toolbarTitle: 'Editar Imagen', toolbarColor: Theme.of(context).primaryColor, toolbarWidgetColor: Colors.white, initAspectRatio: CropAspectRatioPreset.square, lockAspectRatio: true), IOSUiSettings(title: 'Editar Imagen', minimumAspectRatio: 1.0)]);
-
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: filePath,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+        uiSettings: [
+          AndroidUiSettings(toolbarTitle: 'Editar Imagen', toolbarColor: Theme.of(context).primaryColor, toolbarWidgetColor: Colors.white, initAspectRatio: CropAspectRatioPreset.square, lockAspectRatio: true),
+          IOSUiSettings(title: 'Editar Imagen', minimumAspectRatio: 1.0),
+        ],
+      );
       if (!mounted || croppedFile == null) return;
 
       showLoadingDialog(context);
       final message = await userService.uploadProfilePicture(croppedFile.path);
+
+      PaintingBinding.instance.imageCache.clearLiveImages();
+      final evicted = PaintingBinding.instance.imageCache.evict(userService.profilePicture(userId: userService.currentUser.id));
+      if (kDebugMode) {
+        print('Evict exitoso: $evicted');
+        print('Cache size después del evict: ${PaintingBinding.instance.imageCache.currentSize}');
+      }
+
       await refreshCurrentUser();
       if (!mounted) return;
       showSnackBar(context, content: Text(message.message));
@@ -88,7 +104,26 @@ class _ProfileScreenState extends State<ProfileScreen> with UserServiceWidgetHel
             child: Column(
               children: [
                 const SizedBox(height: 24),
-                Stack(children: [buildProfilePicture(radius: radius), Positioned(top: 0, right: 0, child: SizedBox(height: 30, width: 30, child: IconButton(iconSize: 15, color: Theme.of(context).primaryColor, style: ButtonStyle(backgroundColor: WidgetStateProperty.all(Colors.white)), onPressed: _onEditProfilePicture, icon: const Icon(Icons.camera_alt))))]),
+                Stack(
+                  children: [
+                    buildProfilePictureAvatar(radius: radius),
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: SizedBox(
+                        height: 30,
+                        width: 30,
+                        child: IconButton(
+                          iconSize: 15,
+                          color: Theme.of(context).primaryColor,
+                          style: ButtonStyle(backgroundColor: WidgetStateProperty.all(Colors.white)),
+                          onPressed: _onEditProfilePicture,
+                          icon: const Icon(Icons.camera_alt),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 24),
                 Text('${user.firstName} ${user.lastName}', style: Theme.of(context).textTheme.headlineMedium),
                 const SizedBox(height: 8),
@@ -97,11 +132,29 @@ class _ProfileScreenState extends State<ProfileScreen> with UserServiceWidgetHel
                 _buildInfoCard(context: context, title: 'Información Personal', children: [_buildInfoRow('Email', user.email), _buildInfoRow('Nombre', user.fullName)]),
                 const SizedBox(height: 14),
                 if (user.anonymous) ...[
-                  Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.amber.shade100, borderRadius: BorderRadius.circular(8)), child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.warning, color: Colors.orange), SizedBox(width: 8), Text('Usuario Anónimo')])),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: Colors.amber.shade100, borderRadius: BorderRadius.circular(8)),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.warning, color: Colors.orange),
+                        SizedBox(width: 8),
+                        Text('Usuario Anónimo'),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 14),
                 ],
                 const Divider(),
-                SizedBox(width: double.infinity, child: Text('Tus publicaciones', textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold))),
+                SizedBox(
+                  width: double.infinity,
+                  child: Text(
+                    'Tus publicaciones',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ),
                 const SizedBox(height: 14),
               ],
             ),
@@ -113,10 +166,44 @@ class _ProfileScreenState extends State<ProfileScreen> with UserServiceWidgetHel
   }
 
   Widget _buildInfoCard({required BuildContext context, required String title, required List<Widget> children}) {
-    return Card(child: Padding(padding: const EdgeInsets.all(16.0), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [SizedBox(width: double.infinity, child: Text(title, textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold))), Divider(color: Colors.grey[300]), ...children])));
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ),
+            Divider(color: Colors.grey[300]),
+            ...children,
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildInfoRow(String label, String value) {
-    return Padding(padding: const EdgeInsets.symmetric(vertical: 8.0), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(label, style: const TextStyle(fontWeight: FontWeight.bold)), Flexible(child: Text(value, style: const TextStyle(color: Colors.grey), overflow: TextOverflow.ellipsis))]));
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Flexible(
+            child: Text(
+              value,
+              style: const TextStyle(color: Colors.grey),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

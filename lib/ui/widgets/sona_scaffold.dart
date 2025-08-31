@@ -113,7 +113,7 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  buildProfilePicture(radius: 50),
+                  buildProfilePictureAvatar(radius: 50),
                   const SizedBox(height: 10),
                   Column(
                     children: [

@@ -9,19 +9,19 @@ import 'types.dart';
 
 extension BaseResponseExtension on BaseResponse {
   //
-  get informational => status.statusClass == HttpStatusClass.informational;
+  bool get informational => status.statusClass == HttpStatusClass.informational;
 
-  get successful => status.statusClass == HttpStatusClass.success;
+  bool get successful => status.statusClass == HttpStatusClass.success;
 
-  get redirection => status.statusClass == HttpStatusClass.redirection;
+  bool get redirection => status.statusClass == HttpStatusClass.redirection;
 
-  get clientError => status.statusClass == HttpStatusClass.clientError;
+  bool get clientError => status.statusClass == HttpStatusClass.clientError;
 
-  get serverError => status.statusClass == HttpStatusClass.serverError;
+  bool get serverError => status.statusClass == HttpStatusClass.serverError;
 
-  get ok => [HttpStatusClass.informational, HttpStatusClass.success, HttpStatusClass.redirection].contains(status.statusClass);
+  bool get ok => [HttpStatusClass.informational, HttpStatusClass.success, HttpStatusClass.redirection].contains(status.statusClass);
 
-  get error => [HttpStatusClass.clientError, HttpStatusClass.serverError].contains(status.statusClass);
+  bool get error => [HttpStatusClass.clientError, HttpStatusClass.serverError].contains(status.statusClass);
 
   HttpStatusCode get status => HttpStatusCode.fromCode(statusCode);
 }

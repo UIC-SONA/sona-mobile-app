@@ -26,7 +26,7 @@ mixin UserService implements ReadOperations<User, int> {
     required String email,
   });
 
-  ImageProvider<Object> profilePicture({int? userId, String? cacheBuster});
+  ImageProvider<Object> profilePicture({int? userId});
 
   String profilePictureUrl(int userId);
 
@@ -106,11 +106,10 @@ class ApiUserService extends RestReadOperations<User, int> with UserService {
   }
 
   @override
-  ImageProvider<Object> profilePicture({int? userId, String? cacheBuster}) {
+  ImageProvider<Object> profilePicture({int? userId}) {
     return HttpImageProvider(
       uri.replace(
         path: userId != null ? '$path/$userId/profile-picture' : '$path/profile-picture',
-        queryParameters: cacheBuster != null ? {'cacheBuster': cacheBuster} : null,
       ),
       headers: commonHeaders,
       client: client,
@@ -133,7 +132,6 @@ class ApiUserService extends RestReadOperations<User, int> with UserService {
         request.files.add(await MultipartFile.fromPath('photo', filePath));
       },
     );
-
     return await response.getBody<Message>();
   }
 

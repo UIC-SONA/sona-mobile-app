@@ -580,7 +580,7 @@ Widget buildHighlightTransition({required BuildContext context, required Animati
 }
 
 /// used to invoke async functions in order
-Future<T> co<T>(key, FutureOr<T> Function() action) async {
+Future<T> co<T>(dynamic key, FutureOr<T> Function() action) async {
   for (;;) {
     final c = _locks[key];
     if (c == null) break;

@@ -424,7 +424,7 @@ class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAli
     );
   }
 
-  _openChat(User user) async {
+  Future<void> _openChat(User user) async {
     showLoadingDialog(context);
     try {
       final room = await roomData(userId: user.id);

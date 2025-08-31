@@ -14,17 +14,17 @@ final Logger _log = Logger(level: Level.debug);
 typedef ProgressCallback = void Function(int bytes, int totalBytes);
 typedef MultipartRequestFactory = Future<void> Function(MultipartRequestAccessor request);
 
-class RequesPart {
+class RequestPart {
   final String field;
   final List<int> value;
   final String? filename;
   final String contentType;
 
-  RequesPart(this.field, this.value, this.filename, {this.contentType = 'application/octet-stream'});
+  RequestPart(this.field, this.value, this.filename, {this.contentType = 'application/octet-stream'});
 
-  RequesPart.applicationJson(this.field, this.value, this.filename) : contentType = 'application/json';
+  RequestPart.applicationJson(this.field, this.value, this.filename) : contentType = 'application/json';
 
-  RequesPart.textPlain(this.field, this.value, this.filename) : contentType = 'text/plain';
+  RequestPart.textPlain(this.field, this.value, this.filename) : contentType = 'text/plain';
 }
 
 Future<StreamedResponse> multipartRequest(
@@ -52,7 +52,7 @@ abstract class MultipartRequestAccessor {
 
   List<MultipartFile> get files;
 
-  List<RequesPart> get parts;
+  List<RequestPart> get parts;
 
   Map<String, List<int>> get bytes;
 }
@@ -64,7 +64,7 @@ class _MultipartRequest extends BaseRequest implements MultipartRequestAccessor 
 
   final Map<String, String> _fields = <String, String>{};
   final List<MultipartFile> _files = <MultipartFile>[];
-  final List<RequesPart> _parts = <RequesPart>[];
+  final List<RequestPart> _parts = <RequestPart>[];
   final ProgressCallback? onProgress;
 
   @override
@@ -74,7 +74,7 @@ class _MultipartRequest extends BaseRequest implements MultipartRequestAccessor 
   List<MultipartFile> get files => _files;
 
   @override
-  List<RequesPart> get parts => _parts;
+  List<RequestPart> get parts => _parts;
 
   @override
   Map<String, List<int>> get bytes => {};
@@ -180,7 +180,7 @@ class _MultipartRequest extends BaseRequest implements MultipartRequestAccessor 
     return _headerFor(file.field, contentType: file.contentType.toString(), filename: file.filename);
   }
 
-  String _headerForPart(RequesPart part) {
+  String _headerForPart(RequestPart part) {
     return _headerFor(part.field, contentType: part.contentType, filename: part.filename);
   }
 

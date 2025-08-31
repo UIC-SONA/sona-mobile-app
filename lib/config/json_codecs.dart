@@ -3,7 +3,7 @@ import 'package:sona/shared/json.dart';
 import 'package:sona/shared/schemas/message.dart';
 import 'package:sona/shared/schemas/page.dart';
 
-setupJsonCodecs() {
+void setupJsonCodecs() {
   //
   Json.registerDefaultsCodecs();
   Json.register<Message>(fromJson: Message.fromJson, toJson: (Message value) => value.toJson());

@@ -360,23 +360,24 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> with UserSe
                         valueListenable: appointmentType,
                         builder: (context, type, _) {
                           Widget listTile(AppointmentType type, String title) {
-                            return RadioListTile(
+                            return RadioListTile<AppointmentType>(
                               title: Text(title),
                               value: type,
-                              groupValue: appointmentType.value,
-                              onChanged: (value) => appointmentType.value = value!,
                               contentPadding: const EdgeInsets.all(0),
                               dense: true,
                               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               visualDensity: VisualDensity.compact,
                             );
                           }
-
-                          return Column(
-                            children: [
-                              listTile(AppointmentType.presential, 'Presencial'),
-                              listTile(AppointmentType.virtual, 'Virtual'),
-                            ],
+                          return RadioGroup<AppointmentType>(
+                            groupValue: appointmentType.value,
+                            onChanged: (value) => appointmentType.value = value!,
+                            child: Column(
+                              children: [
+                                listTile(AppointmentType.presential, 'Presencial'),
+                                listTile(AppointmentType.virtual, 'Virtual'),
+                              ],
+                            ),
                           );
                         },
                       ),

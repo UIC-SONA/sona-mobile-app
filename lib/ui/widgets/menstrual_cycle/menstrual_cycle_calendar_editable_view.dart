@@ -134,7 +134,7 @@ class _MenstrualCycleCalendarEditableViewState extends State<MenstrualCycleCalen
     selectedDate = dtu.nextMonth(selectedDate);
   }
 
-  titleCalendarBuilder() {
+  List<Widget> titleCalendarBuilder() {
     List<Widget> dayWidgets = [];
 
     for (var day in formatter.weekTitles) {
@@ -156,7 +156,7 @@ class _MenstrualCycleCalendarEditableViewState extends State<MenstrualCycleCalen
     return dayWidgets;
   }
 
-  monthCalendarBuilder(DateTime selectedDate, bool isConsiderFutureDate) {
+  List<DateTime> monthCalendarBuilder(DateTime selectedDate, bool isConsiderFutureDate) {
     List<DateTime> dayWidgets = [];
     List<DateTime>? calendarDays = _daysInMonth(selectedDate);
     for (var day in calendarDays) {
@@ -188,7 +188,7 @@ class _MenstrualCycleCalendarEditableViewState extends State<MenstrualCycleCalen
     }
   }
 
-  saveSelectedPeriodDate() async {
+  Future<void> saveSelectedPeriodDate() async {
     if (dataHasChanged()) {
       widget.controller.pastPeriodDays = List.from(selectedPeriodsDate);
       widget.onDataChanged?.call();

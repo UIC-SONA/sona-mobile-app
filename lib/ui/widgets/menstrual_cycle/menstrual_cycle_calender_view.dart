@@ -164,7 +164,7 @@ class _MenstrualCycleCalendarViewState
     return day;
   }
 
-  TextStyle configureDateStyle(monthStarted, monthEnded) {
+  TextStyle configureDateStyle(bool monthStarted, bool monthEnded) {
     TextStyle normalTextStyle =
         TextStyle(color: widget.themeColor, fontWeight: FontWeight.normal);
 

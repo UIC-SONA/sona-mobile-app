@@ -33,7 +33,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
   var _selectedDate = DateTime.now();
   CycleDayType? _selectedDateDayType;
 
-  updateMenstrualData() async {
+  Future<void> updateMenstrualData() async {
     await menstrualCycleService.saveCycleDetails(
       periodDuration: _periodLength,
       cycleLength: _cycleLength,
@@ -100,7 +100,7 @@ class _MenstrualCalendarScreenState extends FullState<MenstrualCalendarScreen> w
               children: [
                 Row(
                   children: [
-                    buildProfilePicture(radius: 35),
+                    buildProfilePictureAvatar(radius: 35),
                     const SizedBox(width: 10),
                     Text(
                       profile.firstName,

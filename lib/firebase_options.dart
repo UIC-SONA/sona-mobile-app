@@ -72,4 +72,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'elated-cathode-438218-g7.firebasestorage.app',
     iosBundleId: 'ec.gob.conagopare.app.sona',
   );
+
 }

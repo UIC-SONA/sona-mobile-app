@@ -88,6 +88,8 @@ class SonaChatView extends StatelessWidget {
         enableDoubleTapToLike: false,
         enableOtherUserProfileAvatar: true,
         enableCurrentUserProfileAvatar: false,
+        enableReplySnackBar: false,
+        enableSwipeToReply: false,
       ),
       onSendTap: sendMessage,
       chatBackgroundConfig: const ChatBackgroundConfiguration(
