@@ -60,10 +60,22 @@ mixin UserServiceWidgetHelper {
   }
 
   Widget buildUserAvatar(User user, {double radius = 20.0}) {
-    if (user.hasProfilePicture) {
+   return buildAvatar(
+      hasProfilePicture: user.hasProfilePicture,
+      userId: user.id,
+      radius: radius,
+    );
+  }
+
+  Widget buildAvatar({
+    required  bool hasProfilePicture,
+    required int userId,
+    double radius = 20.0,
+  }) {
+    if (hasProfilePicture) {
       return CircleAvatar(
         radius: radius,
-        backgroundImage: userService.profilePicture(userId: user.id),
+        backgroundImage: userService.profilePicture(userId: userId),
       );
     }
     return CircleAvatar(
@@ -80,7 +92,6 @@ mixin UserServiceWidgetHelper {
       ),
     );
   }
-
 
   Widget buildProfilePictureAvatar({double radius = 20.0}) {
     return buildUserAvatar(currentUser, radius: radius);

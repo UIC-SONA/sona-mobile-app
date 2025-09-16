@@ -1,9 +1,19 @@
-
 enum ChatMessageType {
   image,
   text,
   voice,
+  video,
   custom;
+
+  bool get isImage => this == ChatMessageType.image;
+
+  bool get isText => this == ChatMessageType.text;
+
+  bool get isVoice => this == ChatMessageType.voice;
+
+  bool get isVideo => this == ChatMessageType.video;
+
+  bool get isCustom => this == ChatMessageType.custom;
 
   static ChatMessageType fromString(String value) {
     var type = value.trim().toLowerCase();
@@ -31,21 +41,61 @@ enum ChatRoomType {
   }
 }
 
+class ChatUser {
+  final int id;
+  final String username;
+  final String firstName;
+  final String lastName;
+  final bool enabled;
+  final String email;
+  final bool hasProfilePicture;
+
+  ChatUser({
+    required this.id,
+    required this.username,
+    required this.firstName,
+    required this.lastName,
+    required this.enabled,
+    required this.email,
+    required this.hasProfilePicture,
+  });
+
+  factory ChatUser.fromJson(Map<String, dynamic> json) {
+    return ChatUser(
+      id: json['id'],
+      username: json['username'],
+      firstName: json['firstName'],
+      lastName: json['lastName'],
+      enabled: json['enabled'],
+      email: json['email'],
+      hasProfilePicture: json['hasProfilePicture'],
+    );
+  }
+
+  String get fullName => '$firstName $lastName';
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'username': username,
+      'firstName': firstName,
+      'lastName': lastName,
+      'enabled': enabled,
+      'email': email,
+      'hasProfilePicture': hasProfilePicture,
+    };
+  }
+}
+
 class ChatMessage {
   //
   final String id;
-
   final String message;
-
   final DateTime createdAt;
-
-  final int sentBy;
-
+  final ChatUser sentBy;
   final ChatMessageType type;
-
   final Duration? voiceMessageDuration;
-
-  final List<ReadBy> readBy;
+  final List<ChatReadBy> readBy;
 
   ChatMessage({
     required this.id,
@@ -54,18 +104,18 @@ class ChatMessage {
     required this.sentBy,
     required this.type,
     required this.voiceMessageDuration,
-    this.readBy = const [],
+    this.readBy = const []
   });
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
     return ChatMessage(
       id: json['id'],
       message: json['message'],
-      createdAt: DateTime.parse(json['createdAt']),
-      sentBy: json['sentBy'],
+      createdAt: DateTime.parse(json['createdAt']).toLocal(),
+      sentBy: ChatUser.fromJson(json['sentBy']),
       type: ChatMessageType.fromString(json['type']),
       voiceMessageDuration: json['voiceMessageDuration'] != null ? Duration(milliseconds: json['voiceMessageDuration']) : null,
-      readBy: (json['readBy'] as List<dynamic>? ?? []).map((e) => ReadBy.fromJson(e as Map<String, dynamic>)).toList(),
+      readBy: (json['readBy'] as List<dynamic>? ?? []).map((e) => ChatReadBy.fromJson(e)).toList(),
     );
   }
 
@@ -77,42 +127,32 @@ class ChatMessage {
       'sentBy': sentBy,
       'type': type.toString(),
       'voiceMessageDuration': voiceMessageDuration?.inMilliseconds,
-      'readBy': readBy.map((e) => e.toJson()).toList(),
+      'readBy': readBy.map((e) => e.toJson()).toList()
     };
-  }
-
-  @override
-  String toString() {
-    return 'ChatMessage{id: $id, message: $message, createdAt: $createdAt, sentBy: $sentBy, type: $type, voiceMessageDuration: $voiceMessageDuration';
   }
 }
 
-class ReadBy {
-  final int participantId;
+class ChatReadBy {
+  final ChatUser participant;
   final DateTime readAt;
 
-  ReadBy({
-    required this.participantId,
-    required this.readAt,
+  ChatReadBy({
+    required this.participant,
+    required this.readAt
   });
 
-  factory ReadBy.fromJson(Map<String, dynamic> json) {
-    return ReadBy(
-      participantId: json['participantId'],
-      readAt: DateTime.parse(json['readAt']),
+  factory ChatReadBy.fromJson(Map<String, dynamic> json) {
+    return ChatReadBy(
+        participant: ChatUser.fromJson(json['participant']),
+        readAt: DateTime.parse(json['readAt'])
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'participantId': participantId,
-      'readAt': readAt.toIso8601String(),
+      'participant': participant.toJson(),
+      'readAt': readAt.toIso8601String()
     };
-  }
-
-  @override
-  String toString() {
-    return 'ReadBy{participantId: $participantId, readAt: $readAt}';
   }
 }
 
@@ -121,21 +161,21 @@ class ChatRoom {
   final String id;
   final String name;
   final ChatRoomType type;
-  final List<int> participants;
+  final List<ChatUser> participants;
 
   ChatRoom({
     required this.id,
     required this.name,
     required this.type,
-    required this.participants,
+    this.participants = const []
   });
 
   factory ChatRoom.fromJson(Map<String, dynamic> json) {
     return ChatRoom(
-      id: json['id'],
-      name: json['name'],
-      type: ChatRoomType.fromString(json['type']),
-      participants: List<int>.from(json['participants'] as List<dynamic>),
+        id: json['id'],
+        name: json['name'],
+        type: ChatRoomType.fromString(json['type']),
+        participants: (json['participants'] as List<dynamic>? ?? []).map((e) => ChatUser.fromJson(e)).toList()
     );
   }
 
@@ -144,27 +184,27 @@ class ChatRoom {
       'id': id,
       'name': name,
       'type': type.toString(),
-      'participants': participants,
+      'participants': participants.map((e) => e.toJson()).toList()
     };
   }
 }
 
-class ChatMessageSent {
+class ChatMessageDto {
   final ChatMessage message;
   final String roomId;
   final String requestId;
 
-  ChatMessageSent({
+  ChatMessageDto({
     required this.message,
     required this.roomId,
-    required this.requestId,
+    required this.requestId
   });
 
-  factory ChatMessageSent.fromJson(Map<String, dynamic> json) {
-    return ChatMessageSent(
-      message: ChatMessage.fromJson(json['message']),
-      requestId: json['requestId'],
-      roomId: json['roomId'],
+  factory ChatMessageDto.fromJson(Map<String, dynamic> json) {
+    return ChatMessageDto(
+        message: ChatMessage.fromJson(json['message']),
+        requestId: json['requestId'],
+        roomId: json['roomId']
     );
   }
 
@@ -172,32 +212,27 @@ class ChatMessageSent {
     return {
       'message': message.toJson(),
       'roomId': roomId,
-      'requestId': requestId,
+      'requestId': requestId
     };
-  }
-
-  @override
-  String toString() {
-    return 'ChatMessageSent{message: $message, requestId: $requestId, roomId: $roomId}';
   }
 }
 
-class ReadMessages {
+class ChatReadMessages {
   final String roomId;
-  final ReadBy readBy;
+  final ChatReadBy readBy;
   final List<String> messageIds;
 
-  ReadMessages({
+  ChatReadMessages({
     required this.roomId,
     required this.readBy,
-    required this.messageIds,
+    required this.messageIds
   });
 
-  factory ReadMessages.fromJson(Map<String, dynamic> json) {
-    return ReadMessages(
-      roomId: json['roomId'],
-      readBy: ReadBy.fromJson(json['readBy']),
-      messageIds: List<String>.from(json['messageIds'] as List<dynamic>),
+  factory ChatReadMessages.fromJson(Map<String, dynamic> json) {
+    return ChatReadMessages(
+        roomId: json['roomId'],
+        readBy: ChatReadBy.fromJson(json['readBy']),
+        messageIds: List<String>.from(json['messageIds'] as List<dynamic>)
     );
   }
 
@@ -205,12 +240,7 @@ class ReadMessages {
     return {
       'roomId': roomId,
       'readBy': readBy.toJson(),
-      'messageIds': messageIds,
+      'messageIds': messageIds
     };
-  }
-
-  @override
-  String toString() {
-    return 'ReadMessages{roomId: $roomId, readBy: $readBy, messageIds: $messageIds}';
   }
 }

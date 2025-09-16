@@ -42,9 +42,7 @@ class _ProfileScreenState extends State<ProfileScreen> with UserServiceWidgetHel
       PageQuery(
         page: page,
         sort: [Sort('createdAt', Direction.desc)],
-        params: {
-          'author': [userService.currentUser.id.toString()],
-        },
+        query: "author=='${userService.currentUser.id}'",
       ),
     );
     return result.content;

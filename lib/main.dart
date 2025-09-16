@@ -1,3 +1,4 @@
+import 'package:chatview/chatview.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,30 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await LocalNotifications.initialize();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  PackageStrings.addLocaleObject(
+    'es',
+    const ChatViewLocale(
+      today: 'Hoy',
+      yesterday: 'Ayer',
+      repliedToYou: 'Te respondió',
+      repliedBy: 'Respondido por',
+      more: 'Más',
+      unsend: 'Desenviar',
+      reply: 'Responder',
+      replyTo: 'Responder a',
+      message: 'Mensaje',
+      reactionPopupTitle: 'Mantén presionado para multiplicar tu reacción',
+      photo: 'Foto',
+      send: 'Enviar',
+      you: 'Tú',
+      report: 'Reportar',
+      noMessage: 'No hay mensajes',
+      somethingWentWrong: 'Algo salió mal',
+      reload: 'Recargar',
+    ),
+  );
+  PackageStrings.setLocale('es');
+
   tz.initializeTimeZones();
   setupJsonCodecs();
   await setupDependencies();

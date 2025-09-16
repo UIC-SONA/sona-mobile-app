@@ -98,8 +98,8 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
               chatController: _chatController,
               chatViewState: _chatViewState,
               sendMessage: _sendMessage,
-              enableCameraImagePicker: false,
-              enableGalleryImagePicker: false,
+              enableCameraPicker: false,
+              enableGalleryPicker: false,
               allowRecordingVoice: false,
             ),
           ),
@@ -126,7 +126,7 @@ class _ChatBotScreenState extends FullState<ChatBotScreen> {
     );
   }
 
-  void _sendMessage(String message, ReplyMessage replyMessage, MessageType messageType) async {
+  void _sendMessage(String message, ReplyMessage replyMessage, MessageType messageType, {String? customType}) async {
     final messageSent = Message(
       id: const Uuid().v4(),
       createdAt: DateTime.now(),

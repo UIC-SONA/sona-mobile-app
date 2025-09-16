@@ -89,7 +89,7 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
   @override
   final userService = injector.get<UserService>();
 
-  final listenner = ChatRoomDataListenner();
+  final listenner = ChatRoomsListenner();
   late final _loading = loadingState(false);
 
   @override
@@ -110,14 +110,14 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
 
   Future<void> _loadData() async {
     await _loading.run(() async {
-      final rooms = await roomsData();
+      final rooms = await chatRoom();
       listenner.clearRooms();
       listenner.addRooms(rooms);
     });
   }
 
   @override
-  void onReceiveMessage(ChatMessageSent messageSent) async {
+  void onReceiveMessage(ChatMessageDto messageSent) async {
     if (!mounted) return;
     final message = messageSent.message;
     final roomId = messageSent.roomId;
@@ -127,11 +127,11 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
       return;
     }
 
-    listenner.addRoom(await roomData(roomId: roomId));
+    listenner.addRoom(await chatRooms(roomId: roomId));
   }
 
   @override
-  void onReadMessage(ReadMessages readMessages) async {
+  void onReadMessage(ChatReadMessages readMessages) async {
     if (!mounted) return;
     final roomId = readMessages.roomId;
     final messageIds = readMessages.messageIds;
@@ -145,13 +145,13 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
         final set = messageIds.toSet();
         if (!set.contains(messages.id)) return;
 
-        if (messages.readBy.any((readBy) => readBy.participantId == readBy.participantId)) return;
+        if (messages.readBy.any((readBy) => readBy.participant.id == readBy.participant.id)) return;
         messages.readBy.add(readBy);
         listenner.updateRoomLastMessage(roomId, messages);
       }
     }
 
-    listenner.addRoom(await roomData(roomId: roomId));
+    listenner.addRoom(await chatRooms(roomId: roomId));
   }
 
   @override
@@ -175,13 +175,13 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
     );
   }
 
-  Widget _buildListRooms(List<ChatRoomData> roomsData) {
+  Widget _buildListRooms(List<ChatRoomUi> chatRooms) {
     return RefreshIndicator(
       onRefresh: _loadData,
       child: ListView.builder(
-        itemCount: roomsData.length,
+        itemCount: chatRooms.length,
         itemBuilder: (context, index) {
-          final roomData = roomsData[index];
+          final chatRoom = chatRooms[index];
 
           return Column(
             children: [
@@ -190,14 +190,14 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
                   padding: WidgetStateProperty.all(const EdgeInsets.all(0)),
                 ),
                 onPressed: () {
-                  AutoRouter.of(context).push(ChatRoomRoute(roomData: roomData));
+                  AutoRouter.of(context).push(ChatRoomRoute(roomData: chatRoom));
                 },
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  title: _buildTitle(roomData),
-                  subtitle: _buildSubtitle(roomData),
-                  leading: _buildLeading(roomData),
-                  trailing: _buildTrailing(roomData),
+                  title: _buildTitle(chatRoom),
+                  subtitle: _buildSubtitle(chatRoom),
+                  leading: _buildLeading(chatRoom),
+                  trailing: _buildTrailing(chatRoom),
                 ),
               ),
             ],
@@ -257,27 +257,28 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
     );
   }
 
-  Widget _buildTitle(ChatRoomData room) {
+  Widget _buildTitle(ChatRoomUi room) {
     return Text(
-        switch (room.room.type) {
-          ChatRoomType.group => room.room.name,
-          ChatRoomType.private => room.participants.first.fullName,
+        switch (room.type) {
+          ChatRoomType.group => room.name,
+          ChatRoomType.private => room.participants.firstWhere((user) => user.id != currentUser.id).fullName,
         },
         style: const TextStyle(fontWeight: FontWeight.bold));
   }
 
-  Widget _buildSubtitle(ChatRoomData room) {
+  Widget _buildSubtitle(ChatRoomUi room) {
     final lastMessage = room.lastMessage;
     if (lastMessage == null) return const SizedBox();
     final message = switch (lastMessage.type) {
       ChatMessageType.image => 'Imagen',
       ChatMessageType.voice => 'Mensaje de voz',
+      ChatMessageType.video => 'Video',
       _ => lastMessage.message,
     };
     return SizedBox(
       width: 250.0, // Ancho fijo para el subtítulo
       child: Text(
-        lastMessage.sentBy == currentUser.id ? 'Tú: $message' : message,
+        lastMessage.sentBy.id == currentUser.id ? 'Tú: $message' : message,
         style: const TextStyle(color: Colors.grey),
         overflow: TextOverflow.ellipsis, // Trunca el texto si es demasiado largo
         maxLines: 1, // Solo una línea
@@ -285,23 +286,23 @@ class _ChatsPageViewState extends FullState<ChatsPageView> with AutomaticKeepAli
     );
   }
 
-  Widget _buildLeading(ChatRoomData state) {
-    final room = state.room;
+  Widget _buildLeading(ChatRoomUi room) {
     if (room.type == ChatRoomType.group) {
       return const Icon(Icons.group);
     }
-    final participant = state.participants.firstWhere((user) => user.id != currentUser.id);
-    return buildUserAvatar(participant);
+    final participant = room.participants.firstWhere((user) => user.id != currentUser.id);
+    return buildAvatar(
+      hasProfilePicture: participant.hasProfilePicture,
+      userId: participant.id,
+    );
   }
 
-  Widget _buildTrailing(ChatRoomData roomData) {
+  Widget _buildTrailing(ChatRoomUi roomData) {
     final lastMessage = roomData.lastMessage;
     if (lastMessage == null) return const SizedBox();
-    if (lastMessage.sentBy == currentUser.id) return const Icon(Icons.chevron_right, color: Colors.grey);
+    if (lastMessage.sentBy.id == currentUser.id) return const Icon(Icons.chevron_right, color: Colors.grey);
 
-    final readBy = lastMessage.readBy.map((readBy) => readBy.participantId).toSet();
-    final isRead = readBy.contains(currentUser.id);
-
+    final isRead = lastMessage.readBy.any((readBy) => readBy.participant.id == currentUser.id);
     return isRead ? const Icon(Icons.chevron_right, color: Colors.grey) : Icon(Icons.info, color: Theme.of(context).primaryColor);
   }
 }
@@ -337,9 +338,7 @@ class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAli
       page: page,
       size: 20,
       search: searchController.text,
-      params: {
-        'authorities': _authorities.map((authority) => authority.authority).toList(),
-      },
+      query: 'authorities=in=(${_authorities.map((e) => e.authority).join(",")})',
     ));
     return result.content;
   }
@@ -427,7 +426,7 @@ class _UsersPageViewState extends FullState<UsersPageView> with AutomaticKeepAli
   Future<void> _openChat(User user) async {
     showLoadingDialog(context);
     try {
-      final room = await roomData(userId: user.id);
+      final room = await chatRooms(userId: user.id);
 
       if (!mounted) return;
       Navigator.of(context).pop();

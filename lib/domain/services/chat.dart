@@ -11,8 +11,8 @@ import 'package:sona/shared/http/http.dart';
 import 'package:http/http.dart' as http;
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 
-typedef OnReceiveMessage = void Function(ChatMessageSent message);
-typedef OnReadMessage = void Function(ReadMessages messagesIds);
+typedef OnReceiveMessage = void Function(ChatMessageDto message);
+typedef OnReadMessage = void Function(ChatReadMessages messagesIds);
 
 Logger _log = Logger();
 
@@ -26,22 +26,28 @@ abstract class ChatService {
   Future<void> close();
 
   //
-  Future<ChatMessageSent> send({
+  Future<ChatMessageDto> send({
     required ChatRoom room,
     required String requestId,
     required String message,
   });
 
-  Future<ChatMessageSent> sendImage({
+  Future<ChatMessageDto> sendImage({
     required ChatRoom room,
     required String requestId,
     required String imagePath,
   });
 
-  Future<ChatMessageSent> sendVoice({
+  Future<ChatMessageDto> sendVoice({
     required ChatRoom room,
     required String requestId,
     required String audioPath,
+  });
+
+  Future<ChatMessageDto> sendVideo({
+    required ChatRoom room,
+    required String requestId,
+    required String videoPath,
   });
 
   Future<List<ChatRoom>> rooms();
@@ -124,9 +130,11 @@ mixin ChatMessageListenner {
     }
   }
 
-  void onReceiveMessage(ChatMessageSent messageSent);
+  @protected
+  void onReceiveMessage(ChatMessageDto messageSent);
 
-  void onReadMessage(ReadMessages readMessages);
+  @protected
+  void onReadMessage(ChatReadMessages readMessages);
 //
 }
 
@@ -172,13 +180,11 @@ class ApiStompChatService extends ChatService implements WebResource {
         onWebSocketError: (error) => _log.e('WebSocket error: $error'),
         onConnect: (frame) {
           _subscribeOnReadMessage(stompClient!, '/topic/chat.inbox.$userId.read', (readMessages) {
-            _log.i('Read messages: $readMessages');
             for (final listener in _onReadMessageListeners) {
               listener(readMessages);
             }
           });
           _subscribeOnReceiveMessage(stompClient!, '/topic/chat.inbox.$userId', (messageSent) {
-            _log.i('Received message: $messageSent');
             for (final listener in _onReceiveMessageListeners) {
               listener(messageSent);
             }
@@ -197,7 +203,7 @@ class ApiStompChatService extends ChatService implements WebResource {
   }
 
   @override
-  Future<ChatMessageSent> send({
+  Future<ChatMessageDto> send({
     required ChatRoom room,
     required String requestId,
     required String message,
@@ -213,11 +219,11 @@ class ApiStompChatService extends ChatService implements WebResource {
       body: message,
     );
 
-    return response.getBody<ChatMessageSent>();
+    return response.getBody<ChatMessageDto>();
   }
 
   @override
-  Future<ChatMessageSent> sendImage({
+  Future<ChatMessageDto> sendImage({
     required ChatRoom room,
     required String requestId,
     required String imagePath,
@@ -232,11 +238,11 @@ class ApiStompChatService extends ChatService implements WebResource {
       },
     );
 
-    return response.getBody<ChatMessageSent>();
+    return response.getBody<ChatMessageDto>();
   }
 
   @override
-  Future<ChatMessageSent> sendVoice({
+  Future<ChatMessageDto> sendVoice({
     required ChatRoom room,
     required String requestId,
     required String audioPath,
@@ -247,11 +253,30 @@ class ApiStompChatService extends ChatService implements WebResource {
       client: client,
       headers: commonHeaders,
       factory: (request) async {
-        request.files.add(await http.MultipartFile.fromPath('audio', audioPath));
+        request.files.add(await http.MultipartFile.fromPath('voice', audioPath));
       },
     );
 
-    return response.getBody<ChatMessageSent>();
+    return response.getBody<ChatMessageDto>();
+  }
+
+  @override
+  Future<ChatMessageDto> sendVideo({
+    required ChatRoom room,
+    required String requestId,
+    required String videoPath,
+  }) async {
+    final response = await multipartRequest(
+      uri.replace(path: '$path/send/${room.id}/video', queryParameters: {'requestId': requestId}),
+      method: HttpMethod.post,
+      client: client,
+      headers: commonHeaders,
+      factory: (request) async {
+        request.files.add(await http.MultipartFile.fromPath('video', videoPath));
+      },
+    );
+
+    return response.getBody<ChatMessageDto>();
   }
 
   @override
@@ -352,7 +377,7 @@ StompUnsubscribe _subscribeOnReceiveMessage(StompClient client, String destinati
     destination: destination,
     callback: (frame) {
       if (frame.body == null) return;
-      onReceiveMessage(ChatMessageSent.fromJson(jsonDecode(frame.body!)));
+      onReceiveMessage(ChatMessageDto.fromJson(jsonDecode(frame.body!)));
     },
   );
 }
@@ -363,7 +388,7 @@ StompUnsubscribe _subscribeOnReadMessage(StompClient client, String destination,
     destination: destination,
     callback: (frame) {
       if (frame.body == null) return;
-      onReadMessage(ReadMessages.fromJson(jsonDecode(frame.body!)));
+      onReadMessage(ChatReadMessages.fromJson(jsonDecode(frame.body!)));
     },
   );
 }

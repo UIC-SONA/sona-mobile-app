@@ -1,32 +1,50 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:chatview/chatview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:mime/mime.dart';
+import 'package:photo_view/photo_view.dart';
 import 'package:sona/ui/theme/colors.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../theme/icons.dart';
+
 
 class SonaChatView extends StatelessWidget {
   final ChatController chatController;
   final ChatViewState chatViewState;
-  final StringMessageCallBack? sendMessage;
-  final bool enableCameraImagePicker;
-  final bool enableGalleryImagePicker;
+  final void Function(
+      String message,
+      ReplyMessage replyMessage,
+      MessageType messageType,
+      {String? customType}
+      )? sendMessage;
+  final bool enableCameraPicker;
+  final bool enableGalleryPicker;
   final bool allowRecordingVoice;
+  final AsyncCallback? loadMoreData;
+  final CustomMessageBuilder? customMessageBuilder;
 
   const SonaChatView({
     super.key,
     required this.chatController,
     required this.chatViewState,
     this.sendMessage,
-    this.enableCameraImagePicker = true,
-    this.enableGalleryImagePicker = true,
+    this.enableCameraPicker = true,
+    this.enableGalleryPicker = true,
     this.allowRecordingVoice = true,
+    this.loadMoreData,
+    this.customMessageBuilder,
   });
+
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
+    final primaryColor = Theme
+        .of(context)
+        .primaryColor;
 
     const chatBubbleSenderNameTextStyle = TextStyle(
       color: Colors.black,
@@ -81,6 +99,7 @@ class SonaChatView extends StatelessWidget {
     );
 
     return ChatView(
+      loadMoreData: loadMoreData,
       chatController: chatController,
       chatViewState: chatViewState,
       featureActiveConfig: const FeatureActiveConfig(
@@ -91,7 +110,11 @@ class SonaChatView extends StatelessWidget {
         enableReplySnackBar: false,
         enableSwipeToReply: false,
       ),
-      onSendTap: sendMessage,
+      onSendTap: sendMessage == null ? null : (message,replyMessage,messageType)=> sendMessage!(
+        message,
+        replyMessage,
+        messageType,
+      ),
       chatBackgroundConfig: const ChatBackgroundConfiguration(
         backgroundColor: Colors.transparent,
       ),
@@ -115,14 +138,16 @@ class SonaChatView extends StatelessWidget {
       ),
       messageConfig: MessageConfiguration(
         imageMessageConfig: ImageMessageConfiguration(
-          onTap: _onTapImage,
+          onTap: (message) => _onTapImage(message, context),
         ),
+        customMessageBuilder: customMessageBuilder,
       ),
       sendMessageConfig: SendMessageConfiguration(
         replyTitleColor: primaryColor,
-        enableCameraImagePicker: enableCameraImagePicker,
-        enableGalleryImagePicker: enableGalleryImagePicker,
+        // enableCameraImagePicker: enableCameraImagePicker,
+        // enableGalleryImagePicker: enableGalleryImagePicker,
         allowRecordingVoice: allowRecordingVoice,
+        cancelRecordConfiguration: CancelRecordConfiguration(),
         sendButtonIcon: Icon(
           SonaIcons.send,
           color: primaryColor,
@@ -133,6 +158,30 @@ class SonaChatView extends StatelessWidget {
           textStyle: const TextStyle(color: Colors.black, fontSize: 16),
           margin: const EdgeInsets.all(0),
           padding: const EdgeInsets.symmetric(horizontal: 10),
+          trailingActions: (context, textEdtingController) {
+            // get widget from context
+            return [
+              if (enableGalleryPicker) ...[
+                /// Botón IMAGEN
+                TextFieldActionButton(
+                  icon: Icon(Icons.image, color: primaryColor),
+                  onPressed: () => pickAndSend(context, isVideo: false),
+                ),
+
+                /// Botón VIDEO
+                TextFieldActionButton(
+                  icon: Icon(Icons.videocam, color: primaryColor),
+                  onPressed: () => pickAndSend(context, isVideo: true),
+                ),
+              ],
+            ];
+          },
+        ),
+        voiceRecordingConfiguration: VoiceRecordingConfiguration(
+          waveStyle: WaveStyle(
+            showMiddleLine: false,
+            extendWaveform: true,
+          ),
         ),
       ),
     );
@@ -152,21 +201,91 @@ class SonaChatView extends StatelessWidget {
     );
   }
 
-  void _onTapImage(Message message) async {
-    final imageUrl = message.message;
+  void _onTapImage(Message message, BuildContext context) async {
+    final image = message.message;
 
-    try {
-      // Para Android necesitas definir esto en el AndroidManifest.xml
-      if (await canLaunchUrl(Uri.parse(imageUrl))) {
-        await launchUrl(
-          Uri.parse(imageUrl),
-          mode: LaunchMode.externalApplication,
-        );
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error al abrir la imagen: $e');
-      }
-    }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) =>
+            Scaffold(
+              appBar: AppBar(
+                backgroundColor: Theme
+                    .of(context)
+                    .primaryColor,
+                title: const Text('Imagen'),
+              ),
+              body: InteractiveViewer(
+                child: PhotoView(imageProvider: resolveImageProvider(image),),
+              ),
+            ),
+      ),
+    );
   }
+
+  Future<void> pickAndSend(BuildContext context, {required bool isVideo}) async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(isVideo ? Icons.video_library : Icons.photo_library),
+                title: Text("Galería"),
+                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+              ),
+              ListTile(
+                leading: Icon(isVideo ? Icons.videocam : Icons.camera_alt),
+                title: Text("Cámara"),
+                onTap: () => Navigator.pop(ctx, ImageSource.camera),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (source == null) return;
+
+    final picker = ImagePicker();
+    final XFile? media = isVideo
+        ? await picker.pickVideo(source: source)
+        : await picker.pickImage(source: source);
+
+    if (media == null || media.path.isEmpty) return;
+
+    final mimeType = lookupMimeType(media.path) ?? '';
+    if (mimeType.isEmpty) return;
+
+    final (messageType, customType) = resolveMessageType(mimeType);
+    sendMessage?.call(media.path, ReplyMessage(), messageType, customType: customType);
+
+    chatController.scrollToLastMessage();
+  }
+}
+
+
+(MessageType type, String? customType) resolveMessageType(String mimeType) {
+  if (mimeType.startsWith('image/')) {
+    return (MessageType.image, null);
+  }
+  if (mimeType.startsWith('video/')) {
+    return (MessageType.custom, 'video');
+  }
+  return (MessageType.custom, null);
+}
+
+
+ImageProvider<Object> resolveImageProvider(String image) {
+  if (image.startsWith('data:image')) {
+    return MemoryImage(base64Decode(image.substring(image.indexOf('base64') + 7)));
+  }
+  if (Uri
+      .tryParse(image)
+      ?.isAbsolute ?? false) {
+    return NetworkImage(image);
+  }
+
+  return FileImage(File(image));
 }

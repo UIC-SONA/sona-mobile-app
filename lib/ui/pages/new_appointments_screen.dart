@@ -46,14 +46,12 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> with UserSe
     );
   }
 
-  Future<List<User>> _onSearch(String query, int page) async {
+  Future<List<User>> _onSearch(String search, int page) async {
     final users = await userService.page(PageQuery(
-      search: query,
+      search: search,
       page: page - 1,
       size: pageSize,
-      params: {
-        'authorities': _authorities.map((e) => e.authority),
-      },
+      query: 'authorities=in=(${_authorities.map((e) => e.authority).join(",")})',
     ));
     return users.content;
   }

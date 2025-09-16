@@ -49,6 +49,7 @@ class PageQuery {
   final int? page;
   final int? size;
   final List<Sort> sort;
+  final String? query; //rsql query
   final Map<String, Iterable<String>> params;
 
   PageQuery({
@@ -56,6 +57,7 @@ class PageQuery {
     this.page,
     this.size,
     this.sort = const [],
+    this.query,
     this.params = const {},
   });
 
@@ -67,6 +69,7 @@ class PageQuery {
       'sort': [
         for (final s in sort) '${s.property},${s.direction.value}',
       ],
+      'query': query,
       ...params,
     };
   }

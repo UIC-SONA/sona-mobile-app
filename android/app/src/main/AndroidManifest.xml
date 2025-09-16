@@ -16,14 +16,18 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32"/>
     <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
 
-    <!-- Si necesitas servicios en primer plano -->
+    <!-- Permiso para leer servicios en primer plano -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <!--    IMAGE PIKER LO AGREGA POR DEFECTO, SE ELIMINA PARA QUE GOOGLE NO LO RECHACE-->
-    <uses-permission
-        android:name="android.permission.READ_MEDIA_VIDEO"
-        tools:node="remove" />
+    <!-- Permisos para usar el micrófono -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
+
+    <!--    IMAGE PIKER LO AGREGA POR DEFECTO, SE ELIMINA PARA QUE GOOGLE NO LO RECHACE LA PUBLICACIÓN YA QUE NO SE USA EL ENVIO DE VIDEO-->
+    <!--    <uses-permission-->
+    <!--        android:name="android.permission.READ_MEDIA_VIDEO"-->
+    <!--        tools:node="remove" />-->
 
     <application
         android:name="${applicationName}"
