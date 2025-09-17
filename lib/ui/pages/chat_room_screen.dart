@@ -9,7 +9,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/models/models.dart' hide ChatUser;
 import 'package:sona/domain/services/services.dart';
-import 'package:sona/shared/constants.dart';
+import 'package:sona/shared/chat/extensions.dart';
 import 'package:sona/ui/theme/colors.dart';
 import 'package:sona/ui/utils/dialogs.dart';
 import 'package:sona/ui/utils/helpers/chat_service_widget_helper.dart';
@@ -198,19 +198,12 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
         MessageType.image => chatService.sendImage(room: chatRoom, imagePath: message, requestId: localMessageId),
         MessageType.voice => chatService.sendVoice(room: chatRoom, audioPath: message, requestId: localMessageId),
         MessageType.custom => () {
-         if (customType == "video") {
-            return chatService.sendVideo(room: chatRoom, videoPath: message, requestId: localMessageId);
-          }
+         if (customType == "video") return chatService.sendVideo(room: chatRoom, videoPath: message, requestId: localMessageId);
           throw Exception('Unsupported custom message type: $customType');
         }()
       };
 
-      // Si es un mensaje de voz, cachear el audio enviado
-      if (messageType == MessageType.voice) {
-        await _cacheOutgoingVoice(response.message.message, message);
-      }
-
-      updateMessage(chatController, localMessageId, newMessage.copyWith(
+      chatController.updateMessage(localMessageId, newMessage.copyWith(
         id: response.message.id,
         createdAt: response.message.createdAt,
         status: MessageStatus.delivered,
@@ -220,38 +213,12 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
       _log.e('Error sending message', error: e);
 
       if (mounted) showAlertErrorDialog(context, error: e);
-      updateMessage(chatController, localMessageId, newMessage.copyWith(
+      chatController.updateMessage(localMessageId, newMessage.copyWith(
         status: MessageStatus.undelivered,
       ));
     }
   }
 
-  Future<void> _cacheOutgoingVoice(String message, String localAudioPath) async {
-    try {
-      // Construir la URL que se usará para este audio
-      final voiceUrl = buildResourceUrl(message);
-
-      // Leer el archivo local
-      final localFile = File(localAudioPath);
-      if (!await localFile.exists()) {
-        _log.w('Local audio file not found: $localAudioPath');
-        return;
-      }
-
-      final audioBytes = await localFile.readAsBytes();
-
-      // Guardarlo en el caché usando la URL como key
-      await DefaultCacheManager().putFile(
-        voiceUrl,
-        audioBytes,
-        maxAge: Duration(days: 30), // Mantener por 30 días
-      );
-
-      _log.i('Cached outgoing voice message: $message');
-    } catch (e) {
-      _log.e('Error caching outgoing voice message', error: e);
-    }
-  }
   void _updateChatViewStatus() {
     if (chatViewState == ChatViewState.noData && chatController.initialMessageList.isNotEmpty) {
       setState(() {
@@ -308,7 +275,7 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
     if (src == null) return const SizedBox.shrink();
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         gradient: LinearGradient(
@@ -384,7 +351,7 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
   }
 
 
-  Future<void> _downloadResource(Message message, {
+  Future<void> _downloadMedia(Message message, {
     required Function(File file) onDownloaded,
     required Function() onError
   }) async {
@@ -392,22 +359,10 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
     if (src == null) return;
 
     try {
-      // Verificar si ya está en caché
-      final cacheFile = await DefaultCacheManager().getFileFromCache(src);
+      final loadingMessage = message.copyWithCustom("loading");
+      chatController.updateMessage(message.id, loadingMessage);
 
-      if (cacheFile != null && await cacheFile.file.exists()) {
-        // Ya está en caché, usar directamente
-        onDownloaded(cacheFile.file);
-        return;
-      }
-
-      // No está en caché, mostrar loading y descargar
-      final loadingMessage = copyWithCustomMessage(message, "loading");
-
-      updateMessage(chatController, message.id, loadingMessage);
-
-      final file = await DefaultCacheManager().getSingleFile(src);
-
+      final file = await DefaultCacheManager().getSingleFile(src, key: message.id);
       onDownloaded(file);
 
     } catch (error) {
@@ -438,9 +393,9 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
   }
 
   Future<void> _downloadVoice(Message message) async {
-    _downloadResource(message,
+    _downloadMedia(message,
         onDownloaded: (file) {
-          updateMessage(chatController, message.id, message.copyWith(
+          chatController.updateMessage(message.id, message.copyWith(
             message: file.path,
             messageType: MessageType.voice,
             update: null,
@@ -449,19 +404,19 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
         onError: () {
           final src = message.update?['src'] as String?;
           if (src == null) return;
-          final errorMessage = copyWithCustomMessage(message, "error", {
+          final errorMessage = message.copyWithCustom("error", {
             'src': src,
             "originalType": "voice_preview",
           });
-          updateMessage(chatController, message.id, errorMessage);
+          chatController.updateMessage(message.id, errorMessage);
         }
     );
   }
 
   Future<void> _downloadVideo(Message message) async {
-    _downloadResource(message,
+    _downloadMedia(message,
         onDownloaded: (file) {
-          updateMessage(chatController, message.id, message.copyWith(
+          chatController.updateMessage(message.id, message.copyWith(
             message: file.path,
             messageType: MessageType.custom,
             update: {
@@ -473,11 +428,11 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
         onError: () {
           final src = message.update?['src'] as String?;
           if (src == null) return;
-          final errorMessage = copyWithCustomMessage(message, "error", {
+          final errorMessage = message.copyWithCustom("error", {
             'src': src,
             "originalType": "video_preview",
           });
-          updateMessage(chatController, message.id, errorMessage);
+          chatController.updateMessage(message.id, errorMessage);
         }
     );
   }
@@ -486,7 +441,7 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
 
   Widget _buildVoicePreviewMessage(Message message) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
@@ -539,10 +494,9 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
     );
   }
 
-
   Widget _buildVideoPreviewMessage(Message message) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
@@ -597,7 +551,7 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
 
   Widget _buildLoadingMessage() {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
@@ -618,7 +572,7 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
           ),
           const SizedBox(width: 12),
           Text(
-            'Descargando...',
+            'Cargando...',
             style: TextStyle(
               fontSize: 14,
               color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
@@ -633,7 +587,7 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
     final errorColor = Theme.of(context).colorScheme.error;
     final errorColorOpacity = errorColor.withValues(alpha: 0.7);
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
@@ -707,48 +661,45 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
     );
 
     if (type.isVideo) {
-      final videoUrl = buildResourceUrl(chatMessage.message);
-      _loadFromCache(videoUrl,
+      _loadFromCache(baseMessage.id,
           onLoaded: (file) {
-            final cachedMessage = copyWithCustomMessage(baseMessage, "video", {
+            final cachedMessage = baseMessage.copyWithCustom("video", {
               'src': file.path,
             });
-            updateMessage(chatController, chatMessage.id, cachedMessage);
+            chatController.updateMessage(chatMessage.id, cachedMessage);
           },
           onMissing: () {
-            var videoPrenviewMessage= copyWithCustomMessage(baseMessage, "video_preview", {
-              'src': videoUrl,
+            var videoPreviewMessage= baseMessage.copyWithCustom("video_preview", {
+              'src': chatMessage.message,
             });
-            updateMessage(chatController, chatMessage.id, videoPrenviewMessage);
+            chatController.updateMessage(chatMessage.id, videoPreviewMessage);
           }
       );
-      return copyWithCustomMessage(baseMessage, "loading");
+      return baseMessage.copyWithCustom("loading");
     }
 
     if (type.isVoice) {
-      final voiceUrl = buildResourceUrl(chatMessage.message);
-      _loadFromCache(voiceUrl,
+      _loadFromCache(baseMessage.id,
           onLoaded: (file) {
             final cachedMessage = baseMessage.copyWith(
               message: file.path,
               messageType: MessageType.voice,
             );
-            updateMessage(chatController, chatMessage.id, cachedMessage);
+            chatController.updateMessage(chatMessage.id, cachedMessage);
           },
           onMissing: () {
-            var voicePrenviewMessage= copyWithCustomMessage(baseMessage, "voice_preview", {
-              'src': voiceUrl,
+            final voicePrenviewMessage= baseMessage.copyWithCustom("voice_preview", {
+              'src': chatMessage.message,
             });
-            updateMessage(chatController, chatMessage.id, voicePrenviewMessage);
+            chatController.updateMessage(chatMessage.id, voicePrenviewMessage);
           }
       );
 
-      return copyWithCustomMessage(baseMessage, "loading");
+      return baseMessage.copyWithCustom("loading");
     }
 
     if (type.isImage) {
-      final imageUrl = buildResourceUrl(chatMessage.message);
-      return baseMessage.copyWith(message: imageUrl);
+      return baseMessage.copyWith(message: chatMessage.message);
     }
 
     return baseMessage;
@@ -759,40 +710,14 @@ class _ChatRoomScreenState extends FullState<ChatRoomScreen> with ChatMessageLis
   }
 }
 
-String buildResourceUrl(String resourceId) {
-  return apiUri.replace(
-    path: '/chat/resource',
-    queryParameters: {'id': resourceId},
-  ).toString();
-}
-// Helper para crear mensajes custom
-Message copyWithCustomMessage(Message baseMessage, String customType, [Map<String, dynamic>? update]) {
-  return baseMessage.copyWith(
-    messageType: MessageType.custom,
-    update: {
-      "customType": customType,
-      ...?update,
-    },
-  );
-}
-
-void updateMessage(ChatController controller, String messageId, Message newMessage) {
-  final index = controller.initialMessageList.indexWhere((message) => message.id == messageId);
-  if (index != -1) {
-    controller.initialMessageList[index] = newMessage;
-    if (controller.messageStreamController.isClosed) return;
-    controller.messageStreamController.sink.add(controller.initialMessageList);
-  }
-}
-
 MessageStatus solveMessageStatus(ChatRoom room, ChatMessage message, int userId) {
-
   //obtenmos los ids de los participantes excluyendo al usuario actual
   final participants = room.participants.where((participant) => participant.id != userId).toList();
 
-
   // Si aalguno de los participantes no ha leído el mensaje, está entregado
-  if (message.readBy.length != participants.length) return MessageStatus.delivered;
+  if (message.readBy.length != participants.length) {
+    return MessageStatus.delivered;
+  }
 
   // Si todos los participantes han leído el mensaje, está leído
   if (message.readBy.every((readBy) => participants.any((p) => p.id == readBy.participant.id))) {
