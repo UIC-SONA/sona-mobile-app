@@ -175,12 +175,44 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
                   leading: Icon(SonaIcons.back),
                   onTap: _showLogoutConfirmDialog,
                 ),
+                ListTile(
+                  title: const Text('Eliminar cuenta'),
+                  leading: Icon(Icons.delete_forever, color: Colors.red.shade700),
+                  onTap: _showDeleteAccountDialog,
+                ),
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _showDeleteAccountDialog() async {
+    final isConfirmed = await showAlertDialog<bool>(
+      context,
+      title: 'Eliminar cuenta',
+      message: '¿Estás seguro de que deseas eliminar tu cuenta? Esta acción es irreversible.',
+      actions: {
+        'Cancelar': () => Navigator.of(context).pop(false),
+        'Aceptar': () => Navigator.of(context).pop(true),
+      },
+    );
+
+    if (!mounted) return;
+
+    if (isConfirmed != null && isConfirmed) {
+      showLoadingDialog(context);
+      try {
+        await userService.deleteMyAccount();
+        await authProvider.logout();
+        if (mounted) AutoRouter.of(context).replaceAll([const HomeRoute()], updateExistingRoutes: false);
+      } catch (error) {
+        if (!mounted) return;
+        showAlertDialog(context, title: 'Error', message: error.toString());
+        Navigator.of(context).pop(); // Close loading dialog
+      }
+    }
   }
 
   Future<void> _openTel911() async {

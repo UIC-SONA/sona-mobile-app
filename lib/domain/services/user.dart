@@ -46,6 +46,8 @@ mixin UserService implements ReadOperations<User, int> {
     _currentUser = await profile();
   }
 
+  Future<void>  deleteMyAccount();
+
   static User notFound = User(
     id: -1,
     firstName: 'Usuario',
@@ -199,5 +201,20 @@ class ApiUserService extends RestReadOperations<User, int> with UserService {
     );
 
     return response.getBody<Message>();
+  }
+
+  @override
+  Future<void> deleteMyAccount() async {
+
+    final response = await request(
+      uri.replace(path: '$path/me'),
+      client: client,
+      method: HttpMethod.delete,
+      headers: commonHeaders,
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception('Failed to delete account');
+    }
   }
 }

@@ -105,7 +105,7 @@ class KeycloakAuthProvider extends AuthProvider<oauth2.Client> {
       for (var listener in _logoutListeners) {
         listener();
       }
-      await _client!.post(endSessionEndpoint);
+      // await _client!.post(endSessionEndpoint);
     } catch (e) {
       // Ignorar errores
     } finally {
