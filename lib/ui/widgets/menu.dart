@@ -17,12 +17,25 @@ class GridMenu extends StatelessWidget {
     required this.buttons,
   }) : assert(buttons.length != 0);
 
+  int _calculateCrossAxisCount(double width) {
+    if (width < 600) return 2;
+    if (width < 900) return 3;
+    return 4;
+  }
+
   @override
   Widget build(BuildContext context) {
-    var orientation = MediaQuery.of(context).orientation;
+
+    final width = MediaQuery.of(context).size.width;
+
+    if (kDebugMode) {
+      print('Screen width: $width');
+    }
+
+    final crossAxisCount = _calculateCrossAxisCount(width);
 
     return GridView.count(
-      crossAxisCount: orientation == Orientation.portrait ? 2 : 3,
+      crossAxisCount: crossAxisCount,
       clipBehavior: Clip.none,
       shrinkWrap: true,
       crossAxisSpacing: 20,
