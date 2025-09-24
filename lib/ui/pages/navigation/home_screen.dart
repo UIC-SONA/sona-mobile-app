@@ -24,41 +24,46 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Center(
             child: Padding(
               padding: const EdgeInsets.all(20.0),
-              child: Column(
+              child:Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset('assets/images/logo.png', width: MediaQuery.of(context).size.height * 0.3),
+                  Image.asset(
+                    'assets/images/logo.png',
+                    width: MediaQuery.of(context).size.height * 0.3,
+                  ),
                   const SizedBox(height: 30),
                   _text(),
                   const SizedBox(height: 30),
-                  GridMenu(
-                    buttons: [
-                      MenuButton(
-                        label: 'Calendario Menstrual',
-                        icon: SvgPicture.asset(
-                          'assets/icons/ICON1.svg',
-                          height: 80,
+                  Expanded(
+                    child: GridMenu(
+                      buttons: [
+                        MenuButton(
+                          label: 'Calendario Menstrual',
+                          icon: SvgPicture.asset(
+                            'assets/icons/ICON1.svg',
+                            height: 80,
+                          ),
+                          gradient: bgGradientButton1,
+                          onPressed: () => AutoRouter.of(context).push(const MenstrualCalendarRoute()),
+                          requiresAuth: true,
                         ),
-                        gradient: bgGradientButton1,
-                        onPressed: () => AutoRouter.of(context).push(const MenstrualCalendarRoute()),
-                        requiresAuth: true,
-                      ),
-                      MenuButton(
-                        label: 'Tips',
-                        icon: SvgPicture.asset('assets/icons/ICON7.svg', height: 90,),
-                        onPressed: () => AutoRouter.of(context).push(const TipsRoute()),
-                        gradient: bgGradientButton1,
-                      ),
-                      MenuButton(
-                        label: 'Contenido Didáctico',
-                        icon: SvgPicture.asset(
-                          'assets/icons/ICON2.svg',
-                          height: 80,
+                        MenuButton(
+                          label: 'Tips',
+                          icon: SvgPicture.asset('assets/icons/ICON7.svg', height: 90,),
+                          onPressed: () => AutoRouter.of(context).push(const TipsRoute()),
+                          gradient: bgGradientButton1,
                         ),
-                        gradient: bgGradientButton1,
-                        onPressed: () => AutoRouter.of(context).push(const DidacticContentRoute()),
-                      ),
-                    ],
+                        MenuButton(
+                          label: 'Contenido Didáctico',
+                          icon: SvgPicture.asset(
+                            'assets/icons/ICON2.svg',
+                            height: 80,
+                          ),
+                          gradient: bgGradientButton1,
+                          onPressed: () => AutoRouter.of(context).push(const DidacticContentRoute()),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
