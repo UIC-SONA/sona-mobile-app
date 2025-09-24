@@ -1,6 +1,5 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 import 'package:sona/domain/models/models.dart';
 import 'package:sona/ui/pages/about_us_screen.dart';
 import 'package:sona/ui/pages/change_password_screen.dart';
@@ -30,7 +29,6 @@ import 'package:sona/ui/utils/helpers/post_service_widget_helper.dart';
 
 part 'router.gr.dart';
 
-final _log = Logger();
 
 @AutoRouterConfig()
 class AppRouter extends RootStackRouter {
