@@ -1,5 +1,11 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:sona/config/dependency_injection.dart';
+import 'package:sona/domain/providers/auth.dart';
+import 'package:sona/ui/pages/routing/router.dart';
 import 'package:sona/ui/theme/colors.dart';
+import 'package:sona/ui/utils/dialogs.dart';
 
 import 'full_state_widget.dart';
 
@@ -32,6 +38,7 @@ class MenuButton extends StatefulWidget {
   final dynamic icon;
   final String? description;
   final Gradient? gradient;
+  final bool requiresAuth;
 
   const MenuButton({
     super.key,
@@ -40,6 +47,7 @@ class MenuButton extends StatefulWidget {
     required this.icon,
     this.description,
     this.gradient,
+    this.requiresAuth = false,
   }) : assert(icon is IconData || icon is Widget);
 
   @override
@@ -48,6 +56,8 @@ class MenuButton extends StatefulWidget {
 
 class _MenuButtonState extends FullState<MenuButton> {
   var _scale = 1.0;
+
+  final authProvider = injector.get<AuthProvider>();
 
   void _onTapDown(TapDownDetails details) {
     _scale = 1.05;
@@ -64,8 +74,38 @@ class _MenuButtonState extends FullState<MenuButton> {
     refresh();
   }
 
+  void _onPressed() {
+    if (widget.requiresAuth && !authProvider.isAuthenticatedSync()) {
+      // Mostrar mensaje de error
+      showAlertDialog(context,
+        title: 'Autenticación requerida',
+        message: 'Debes iniciar sesión para acceder a esta función.',
+        actions: {
+          'Autenticar': () {
+            AutoRouter.of(context).push(const LoginRoute());
+          },
+          'Cancelar': () {
+            Navigator.of(context).pop();
+          }
+        },
+      );
+      return;
+    }
+    if (widget.onPressed != null) {
+      widget.onPressed!();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    final isAuthenticated = authProvider.isAuthenticatedSync();
+    final needsLock = widget.requiresAuth && !isAuthenticated;
+
+    if (kDebugMode) {
+      print('isAuthenticated: $isAuthenticated');
+    }
+
     return GestureDetector(
       onTapDown: _onTapDown,
       onTapUp: _onTapUp,
@@ -82,7 +122,7 @@ class _MenuButtonState extends FullState<MenuButton> {
               ),
             ),
           ),
-          onPressed: widget.onPressed,
+          onPressed: _onPressed,
           child: Ink(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             width: double.infinity,
@@ -100,13 +140,46 @@ class _MenuButtonState extends FullState<MenuButton> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (widget.icon is IconData)
-                  Icon(
-                    widget.icon,
-                    color: Colors.white,
-                    size: 80,
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Icon(
+                        widget.icon,
+                        color: Colors.white.withValues(alpha: needsLock ? 0.4 : 1.0),
+                        size: 80,
+                      ),
+                      if (needsLock)
+                        const Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Icon(
+                            Icons.lock,
+                            size: 24,
+                            color: Colors.white,
+                          ),
+                        ),
+                    ],
                   )
                 else
-                  widget.icon,
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Opacity(
+                        opacity: needsLock ? 0.4 : 1.0,
+                        child: widget.icon,
+                      ),
+                      if (needsLock)
+                        const Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Icon(
+                            Icons.lock,
+                            size: 24,
+                            color: Colors.white,
+                          ),
+                        ),
+                    ],
+                  ),
                 const SizedBox(height: 10),
                 Text(
                   widget.label,

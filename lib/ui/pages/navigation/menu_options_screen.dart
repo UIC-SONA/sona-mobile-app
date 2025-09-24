@@ -25,12 +25,6 @@ class MenuOptionsScreen extends StatelessWidget {
                 gradient: bgGradientButton1,
               ),
               MenuButton(
-                label: 'Tips',
-                icon: SvgPicture.asset('assets/icons/ICON7.svg', height: 90,),
-                onPressed: () => AutoRouter.of(context).push(const TipsRoute()),
-                gradient: bgGradientButton1,
-              ),
-              MenuButton(
                 label: 'Foro',
                 icon: SvgPicture.asset('assets/icons/ICON8.svg', height: 90,),
                 onPressed: () => AutoRouter.of(context).push(const ForumRoute()),

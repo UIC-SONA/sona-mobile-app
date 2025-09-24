@@ -206,7 +206,7 @@ class _SonaDrawerState extends FullState<SonaDrawer> with UserServiceWidgetHelpe
     if (isConfirmed != null && isConfirmed) {
       showLoadingDialog(context);
       await authProvider.logout();
-      if (mounted) AutoRouter.of(context).replaceAll([const LoginRoute()]);
+      if (mounted) AutoRouter.of(context).replaceAll([const HomeRoute()], updateExistingRoutes: false);
     }
   }
 

@@ -13,7 +13,6 @@ import 'package:sona/ui/pages/navigation/menu_options_screen.dart';
 import 'package:sona/ui/pages/navigation/reset_password_screen.dart';
 import 'package:sona/ui/pages/navigation/sign_up_screen.dart';
 import 'package:sona/ui/pages/navigation/services_options_screen.dart';
-import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/ui/pages/chat_screen.dart';
 import 'package:sona/ui/pages/chat_bot_screen.dart';
 import 'package:sona/ui/pages/menstrual_calendar_screen.dart';
@@ -71,58 +70,4 @@ class AppRouter extends RootStackRouter {
 
   @override
   List<AutoRouteGuard> get guards => _guards;
-}
-
-final List<String> unauthenticatedRoutes = [
-  LoginRoute.name,
-  SignUpRoute.name,
-  ResetPasswordRoute.name,
-];
-
-class AuthGuard extends AutoRouteGuard {
-  final AuthProvider authProvider;
-  final Duration authCacheDuration; // Duración para el caché
-  DateTime? _lastAuthCheckTime; // Última vez que se validó la autenticación
-  bool? _cachedIsAuthenticated; // Estado autenticado en caché
-
-  AuthGuard({
-    required this.authProvider,
-    this.authCacheDuration = const Duration(minutes: 5), // Por defecto, 5 minutos
-  }) {
-    authProvider.addLogoutListener(() => _cachedIsAuthenticated = false);
-    authProvider.addLoginListener(() => _cachedIsAuthenticated = true);
-  }
-
-  @override
-  void onNavigation(NavigationResolver resolver, StackRouter router) async {
-    final currentRouteName = resolver.route.name;
-
-    _log.t('Navigation to $currentRouteName, cached auth: $_cachedIsAuthenticated');
-
-    if (_cachedIsAuthenticated == null || _lastAuthCheckTime == null || DateTime.now().difference(_lastAuthCheckTime!) > authCacheDuration) {
-      try {
-        _cachedIsAuthenticated = await authProvider.isAuthenticated();
-      } catch (e) {
-        _log.e('Error checking authentication: $e');
-        _cachedIsAuthenticated = false;
-      }
-      _lastAuthCheckTime = DateTime.now();
-    }
-
-    final isAuthenticated = _cachedIsAuthenticated!;
-
-    if (isAuthenticated) {
-      if (unauthenticatedRoutes.contains(currentRouteName)) {
-        resolver.redirectUntil(const HomeRoute());
-      } else {
-        resolver.next(true);
-      }
-    } else {
-      if (unauthenticatedRoutes.contains(currentRouteName)) {
-        resolver.next(true);
-      } else {
-        resolver.redirectUntil(const LoginRoute());
-      }
-    }
-  }
 }

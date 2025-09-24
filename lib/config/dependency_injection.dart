@@ -102,15 +102,8 @@ Future<void> setupDependencies() async {
     ),
   );
 
-  injector.registerSingleton<AuthGuard>(
-    () => AuthGuard(
-      authProvider: injector.get<AuthProvider>(),
-    ),
-  );
   injector.registerSingleton<AppRouter>(
-    () => AppRouter(
-      guards: [injector.get<AuthGuard>()],
-    ),
+    () => AppRouter(),
   );
 
   await _configure();

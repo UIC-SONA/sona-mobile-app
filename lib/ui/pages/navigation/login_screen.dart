@@ -151,7 +151,7 @@ class _LoginScreenState extends FullState<LoginScreen> {
       await userService.refreshCurrentUser();
 
       if (mounted) {
-        AutoRouter.of(context).replaceAll([const HomeRoute()]);
+        AutoRouter.of(context).replaceAll([const HomeRoute()], updateExistingRoutes: false);
       }
 
     } catch (error) {

@@ -4,6 +4,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_rating_stars/flutter_rating_stars.dart';
 import 'package:sona/config/dependency_injection.dart';
 import 'package:sona/domain/models/tip.dart';
+import 'package:sona/domain/providers/auth.dart';
 import 'package:sona/domain/services/tip.dart';
 import 'package:sona/ui/widgets/image_builder.dart';
 import 'package:sona/ui/widgets/sona_scaffold.dart';
@@ -26,6 +27,7 @@ class TipDetailsScreen extends StatefulWidget {
 
 class _TipDetailsScreenState extends State<TipDetailsScreen> {
   final _tipsService = injector.get<TipService>();
+  final _authProvider = injector.get<AuthProvider>();
   late final ValueNotifier<double> _ratingNotifier;
 
   @override
@@ -49,6 +51,9 @@ class _TipDetailsScreenState extends State<TipDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    final isAuthenticated = _authProvider.isAuthenticatedSync();
+
     return SonaScaffold(
       actionButton: Container(),
       padding: 16,
@@ -143,16 +148,42 @@ class _TipDetailsScreenState extends State<TipDetailsScreen> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            RatingStars(
-                              axis: Axis.horizontal,
-                              value: value,
-                              onValueChanged: (newValue) => _ratingNotifier.value = newValue,
-                              starCount: 5,
-                              starSize: 40,
-                              starColor: Colors.amber,
-                              animationDuration: const Duration(milliseconds: 100),
-                              valueLabelVisibility: false,
-                            ),
+
+                            if (isAuthenticated)
+                              RatingStars(
+                                axis: Axis.horizontal,
+                                value: value,
+                                onValueChanged: (newValue) => _ratingNotifier.value = newValue,
+                                starCount: 5,
+                                starSize: 40,
+                                starColor: Colors.amber,
+                                animationDuration: const Duration(milliseconds: 100),
+                                valueLabelVisibility: false,
+                              )
+                            else
+                              Column(
+                                children: [
+                                  RatingStars(
+                                    axis: Axis.horizontal,
+                                    value: value,
+                                    starCount: 5,
+                                    starSize: 40,
+                                    starColor: Colors.grey.shade400, // gris para indicar inactivo
+                                    animationDuration: const Duration(milliseconds: 100),
+                                    valueLabelVisibility: false,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Inicia sesión para calificar',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.red.shade400,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+
                             const SizedBox(height: 12),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -169,8 +200,7 @@ class _TipDetailsScreenState extends State<TipDetailsScreen> {
                               ],
                             )
                           ],
-                        ),
-                      ),
+                        ),                      ),
                     ),
                     const SizedBox(height: 20)
                   ],

@@ -41,6 +41,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         gradient: bgGradientButton1,
                         onPressed: () => AutoRouter.of(context).push(const MenstrualCalendarRoute()),
+                        requiresAuth: true,
+                      ),
+                      MenuButton(
+                        label: 'Tips',
+                        icon: SvgPicture.asset('assets/icons/ICON7.svg', height: 90,),
+                        onPressed: () => AutoRouter.of(context).push(const TipsRoute()),
+                        gradient: bgGradientButton1,
                       ),
                       MenuButton(
                         label: 'Contenido Didáctico',

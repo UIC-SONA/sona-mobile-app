@@ -15,6 +15,8 @@ abstract class AuthProvider<T extends http.Client> {
 
   Future<bool> isAuthenticated();
 
+  bool isAuthenticatedSync();
+
   Future<void> logout();
 
   Future<T> login(String username, String password);
@@ -72,6 +74,16 @@ class KeycloakAuthProvider extends AuthProvider<oauth2.Client> {
     } on StateError {
       return false;
     }
+  }
+
+  @override
+  bool isAuthenticatedSync() {
+    if (_client == null) return false;
+    final credentials = _client!.credentials;
+    if (credentials.isExpired) {
+      return false;
+    }
+    return true;
   }
 
   @override
