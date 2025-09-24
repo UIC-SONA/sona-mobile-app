@@ -55,6 +55,7 @@ class _TipDetailsScreenState extends State<TipDetailsScreen> {
     final isAuthenticated = _authProvider.isAuthenticatedSync();
 
     return SonaScaffold(
+      showLeading: false,
       actionButton: Container(),
       padding: 16,
       body: ValueListenableBuilder<Tip>(

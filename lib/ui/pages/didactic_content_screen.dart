@@ -50,6 +50,7 @@ class _DidacticContentScreenState extends FullState<DidacticContentScreen> {
   Widget build(BuildContext context) {
     return SonaScaffold(
       actionButton: const SizedBox(),
+      showLeading: false,
       padding: 20,
       body: _buildDidacticContent(),
     );

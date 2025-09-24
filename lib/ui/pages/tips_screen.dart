@@ -36,6 +36,7 @@ class _TipsScreenState extends State<TipsScreen> {
   @override
   Widget build(BuildContext context) {
     return SonaScaffold(
+      showLeading: false,
       actionButton: Container(
         margin: const EdgeInsets.symmetric(horizontal: 20),
         child: const Text(
