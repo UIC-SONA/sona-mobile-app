@@ -139,7 +139,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
               maxLength: 30,
               minLowercaseCount: 1,
               minUppercaseCount: 1,
-              minSpecialCharCount: 1,
               minNumberCount: 1,
             ),
           ),
