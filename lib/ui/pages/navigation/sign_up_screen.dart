@@ -135,7 +135,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
             validator: FormBuilderValidators.password(
               checkNullOrEmpty: true,
-              minLength: 12,
+              minLength: 6,
+              maxLength: 30,
               minLowercaseCount: 1,
               minUppercaseCount: 1,
               minSpecialCharCount: 1,
